@@ -3,7 +3,24 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "lint": "eslint .",
+    "dev": "concurrently \"NODE_ENV=development nodemon -L\" \"NODE_ENV=development npx ts-node ./src/MessageQueue/index.ts\"",
+    "dev:local": "concurrently \" nodemon -L\"",
+    "build": "tsc -p tsconfig.build.json",
+    "start": "concurrently \"TS_NODE_BASEURL=./dist node -r tsconfig-paths/register ./dist/src/app.js\" \"TS_NODE_BASEURL=./dist node -r tsconfig-paths/register ./dist/src/MessageQueue/index.js\"",
+    "test": "jest --detectOpenHandles --runInBand",
+    "test:local": "NODE_ENV=development jest",
+    "test:e2e": "vitest run --reporter=verbose",
+    "test:e2e:watch": "vitest --reporter=verbose",
+    "taze:local": "npx taze -r",
+    "taze:back": "npx taze major",
+    "taze:update": "npx taze major -w",
+    "taze:patch": "npx taze patch",
+    "compress:ubuntu": "sudo zip -r project.zip .",
+    "gen:app": "gen-import --app-config --lazy --map --module-pattern"
+  },
+  "prisma": {
+    "seed": "ts-node prisma/seeds/seed.ts"
   },
   "keywords": [],
   "author": "",
@@ -69,6 +86,7 @@
     "redis": "^6.0.0",
     "request-ip": "^3.3.0",
     "resend": "^6.12.4",
+    "socket.io": "^4.8.3",
     "supertest": "^7.2.2",
     "ts-node": "^10.9.2",
     "tsconfig-paths": "^4.2.0",
