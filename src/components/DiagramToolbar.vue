@@ -47,41 +47,45 @@ function confirmReset() {
 
 <template>
   <header
-    class="flex flex-wrap items-center gap-2 border-b border-slate-200 bg-white/80 px-4 py-2.5 backdrop-blur dark:border-slate-700 dark:bg-slate-900/80"
+    class="flex flex-wrap items-center gap-x-3 gap-y-2 border-b border-slate-200 bg-white/85 px-3 py-2 backdrop-blur dark:border-slate-700 dark:bg-slate-900/85 sm:px-4"
   >
-    <div class="mr-2 flex items-center gap-2">
+    <div class="mr-1 flex shrink-0 items-center gap-2.5">
       <span
-        class="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-500 to-violet-500 text-lg text-white shadow-sm"
+        class="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-500 to-violet-500 text-xl text-white shadow-sm"
       >
         <span class="i-carbon-flow-connection" aria-hidden="true" />
       </span>
-      <span
-        class="bg-gradient-to-r from-indigo-600 to-violet-600 bg-clip-text text-lg font-bold tracking-tight text-transparent dark:from-indigo-400 dark:to-violet-400"
-      >
-        SRVJ
+      <span class="flex min-w-[52px] flex-col leading-tight">
+        <span
+          class="bg-gradient-to-r from-indigo-600 to-violet-600 bg-clip-text text-lg font-bold tracking-tight text-transparent dark:from-indigo-400 dark:to-violet-400"
+        >
+          SRVJ
+        </span>
       </span>
     </div>
 
-    <span class="mx-1 h-6 w-px bg-slate-200 dark:bg-slate-700" />
+    <div class="flex flex-wrap items-center gap-2">
+      <span class="hidden h-6 w-px bg-slate-200 dark:bg-slate-700 sm:block" />
 
-    <ToolbarButton label="Undo" icon="i-ri-arrow-go-back-line" :disabled="!canUndo" @click="store.undo()" />
-    <ToolbarButton label="Redo" icon="i-ri-arrow-go-forward-line" :disabled="!canRedo" @click="store.redo()" />
+      <ToolbarButton label="Undo" icon="i-ri-arrow-go-back-line" :disabled="!canUndo" @click="store.undo()" />
+      <ToolbarButton label="Redo" icon="i-ri-arrow-go-forward-line" :disabled="!canRedo" @click="store.redo()" />
 
-    <span class="mx-1 h-6 w-px bg-slate-200 dark:bg-slate-700" />
+      <span class="hidden h-6 w-px bg-slate-200 dark:bg-slate-700 sm:block" />
 
-    <ToolbarButton
-      :label="selectedCount > 1 ? `Delete (${selectedCount})` : 'Delete'"
-      icon="i-mdi-trash-can-outline"
-      variant="danger"
-      :disabled="!hasSelection"
-      @click="store.deleteSelected()"
-    />
+      <ToolbarButton
+        :label="selectedCount > 1 ? `Delete (${selectedCount})` : 'Delete'"
+        icon="i-mdi-trash-can-outline"
+        variant="danger"
+        :disabled="!hasSelection"
+        @click="store.deleteSelected()"
+      />
 
-    <span class="mx-1 h-6 w-px bg-slate-200 dark:bg-slate-700" />
+      <span class="hidden h-6 w-px bg-slate-200 dark:bg-slate-700 sm:block" />
 
-    <ToolbarButton label="Export" icon="i-solar-download-minimalistic-linear" @click="exportJson" />
-    <ToolbarButton label="Import" icon="i-solar-upload-minimalistic-linear" @click="triggerImport" />
-    <ToolbarButton label="Reset" icon="i-codicon-clear-all" variant="danger" @click="confirmReset" />
+      <ToolbarButton label="Export" icon="i-solar-download-minimalistic-linear" @click="exportJson" />
+      <ToolbarButton label="Import" icon="i-solar-upload-minimalistic-linear" @click="triggerImport" />
+      <ToolbarButton label="Reset" icon="i-codicon-clear-all" variant="danger" @click="confirmReset" />
+    </div>
 
     <input
       ref="fileInput"
@@ -91,7 +95,7 @@ function confirmReset() {
       @change="onFileSelected"
     />
 
-    <div class="ml-auto flex items-center gap-3">
+    <div class="ml-auto flex flex-wrap items-center justify-end gap-2 sm:gap-3">
       <span class="hidden items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400 sm:flex">
         <span class="i-oui-node text-sm" aria-hidden="true" />
         {{ nodeCount }} nodes

@@ -229,7 +229,7 @@ function onOpacityInput(event: Event) {
     <span class="px-1 pb-0.5 text-[10px] font-semibold uppercase tracking-wider text-slate-400">
       Stroke
     </span>
-    <div class="grid grid-cols-3 gap-0.5">
+    <div class="grid grid-cols-1 gap-0.5">
       <button
         v-for="opt in strokeStyleOptions"
         :key="opt.value"
@@ -297,5 +297,15 @@ function onOpacityInput(event: Event) {
         {{ currentOpacity }}%
       </span>
     </div>
+
+    <span class="my-1 h-px w-9 bg-slate-200 dark:bg-slate-700" />
+    <a
+      href="https://elrefai.me/"
+      target="_blank"
+      rel="noopener noreferrer"
+      class="px-1 text-center text-[10px] font-semibold leading-tight text-slate-500 transition hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-300"
+    >
+      Powered by elrefai99
+    </a>
   </aside>
 </template>
