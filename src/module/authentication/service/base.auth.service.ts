@@ -1,5 +1,5 @@
 import prisma from "../../../config/prisma";
-import { RegisterDTO } from "../DTO/index.dto";
+import { LoginDTO, RegisterDTO } from "../DTO/index.dto";
 import bcrypt from "bcryptjs"
 
 export class BaseAuth {
@@ -14,7 +14,7 @@ export class BaseAuth {
                     email: payload.email.toLowerCase()
                },
                select: {
-                    id: true
+                    id: true,
                }
           })
           if (!user) {
@@ -43,5 +43,29 @@ export class BaseAuth {
                }
           })
           return { success: true, error: false, message: "Success create new account", data: { id: new_account.id } }
+     }
+
+     public async login_service(payload: LoginDTO): Promise<any> {
+          const user = await prisma.user.findFirst({
+               where: {
+                    email: payload.email.toLowerCase()
+               },
+               select: {
+                    id: true,
+                    password: true,
+                    fullname: true
+               }
+          })
+
+          if (!user) {
+               return { success: false, error: true, message: "this user account already exist", data: null }
+          }
+          const check_password = await bcrypt.compare(payload.password, user.password)
+          if (!check_password) {
+               return { success: false, error: true, message: "this user account already exist", data: null }
+          }
+
+          return { success: true, error: false, message: "Success fetch user account, success login", data: user }
+
      }
 }

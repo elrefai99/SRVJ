@@ -24,7 +24,7 @@ export const registerController: RequestHandler = asyncHandler(
                     status: "active",
                     account: "normal"
                },
-               access_device: req.useragent.browser,
+               access_device: req.useragent?.browser,
           }
           const token = await token_PASETO(token_data, "access")
           const refresh_token = await token_PASETO(token_data, "refresh")
@@ -35,8 +35,8 @@ export const registerController: RequestHandler = asyncHandler(
                subject: "Welcome to SRVJ",
                email: body.email,
                emailBody: {
-                    supportEmail: "elrefai99@gmail.com",
-                    dashboardUrl: "https://elrefai.me",
+                    supportEmail: process.env.EMAIL,
+                    dashboardUrl: "https://srvj.elrefai.me/",
                     firstName: body.fullname
                }
           }
