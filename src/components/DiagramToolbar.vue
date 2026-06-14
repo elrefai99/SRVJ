@@ -3,23 +3,19 @@ import { ref } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useDiagramStore } from '@/stores/diagram'
 import { useDarkMode } from '@/composables/useDarkMode'
-import type { NodeVariant } from '@/types/diagram'
+import { useSketchMode } from '@/composables/useSketchMode'
 import { downloadDiagram, parseDiagram, readFileAsText } from '@/utils/exportImport'
 import ToolbarButton from './ToolbarButton.vue'
 
 const store = useDiagramStore()
-const { canUndo, canRedo, selected, nodeCount, edgeCount } = storeToRefs(store)
+const { canUndo, canRedo, hasSelection, selectedCount, nodeCount, edgeCount } = storeToRefs(store)
 const { isDark, toggle: toggleDark } = useDarkMode()
+const { isSketch, toggle: toggleSketch } = useSketchMode()
 
-const nodeVariant = ref<NodeVariant>('default')
 const fileInput = ref<HTMLInputElement | null>(null)
 
-function addNode() {
-  store.addNode(nodeVariant.value)
-}
-
 function exportJson() {
-  downloadDiagram(store.snapshot, `diagram-${Date.now()}.json`)
+  downloadDiagram(store.snapshot, `srvj-diagram-${Date.now()}.json`)
 }
 
 function triggerImport() {
@@ -54,60 +50,38 @@ function confirmReset() {
     class="flex flex-wrap items-center gap-2 border-b border-slate-200 bg-white/80 px-4 py-2.5 backdrop-blur dark:border-slate-700 dark:bg-slate-900/80"
   >
     <div class="mr-2 flex items-center gap-2">
-      <span class="i-carbon-flow-connection text-xl text-indigo-500" aria-hidden="true" />
-      <span class="text-lg font-semibold text-slate-800 dark:text-slate-100">SRVJ</span>
-      <span class="ml-1 hidden items-center gap-1.5 md:flex" aria-hidden="true">
+      <span
+        class="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-500 to-violet-500 text-lg text-white shadow-sm"
+      >
+        <span class="i-carbon-flow-connection" aria-hidden="true" />
+      </span>
+      <span
+        class="bg-gradient-to-r from-indigo-600 to-violet-600 bg-clip-text text-lg font-bold tracking-tight text-transparent dark:from-indigo-400 dark:to-violet-400"
+      >
+        SRVJ
       </span>
     </div>
 
-    <div class="flex items-center gap-1.5">
-      <select
-        v-model="nodeVariant"
-        aria-label="Node type"
-        class="rounded-md border border-slate-300 bg-white px-2 py-1.5 text-sm text-slate-700 outline-none focus:border-indigo-500 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200"
-      >
-        <option value="default">Default</option>
-        <option value="input">Input</option>
-        <option value="output">Output</option>
-      </select>
-      <ToolbarButton label="Add Node" icon="i-carbon-add" variant="primary" @click="addNode" />
-    </div>
+    <span class="mx-1 h-6 w-px bg-slate-200 dark:bg-slate-700" />
+
+    <ToolbarButton label="Undo" icon="i-ri-arrow-go-back-line" :disabled="!canUndo" @click="store.undo()" />
+    <ToolbarButton label="Redo" icon="i-ri-arrow-go-forward-line" :disabled="!canRedo" @click="store.redo()" />
 
     <span class="mx-1 h-6 w-px bg-slate-200 dark:bg-slate-700" />
 
     <ToolbarButton
-      label="Delete"
+      :label="selectedCount > 1 ? `Delete (${selectedCount})` : 'Delete'"
       icon="i-mdi-trash-can-outline"
       variant="danger"
-      :disabled="!selected"
+      :disabled="!hasSelection"
       @click="store.deleteSelected()"
-    />
-
-    <span class="mx-1 h-6 w-px bg-slate-200 dark:bg-slate-700" />
-
-    <ToolbarButton
-      label="Undo"
-      icon="i-ri-arrow-go-back-line"
-      :disabled="!canUndo"
-      @click="store.undo()"
-    />
-    <ToolbarButton
-      label="Redo"
-      icon="i-ri-arrow-go-forward-line"
-      :disabled="!canRedo"
-      @click="store.redo()"
     />
 
     <span class="mx-1 h-6 w-px bg-slate-200 dark:bg-slate-700" />
 
     <ToolbarButton label="Export" icon="i-solar-download-minimalistic-linear" @click="exportJson" />
     <ToolbarButton label="Import" icon="i-solar-upload-minimalistic-linear" @click="triggerImport" />
-    <ToolbarButton
-      label="Reset"
-      icon="i-codicon-clear-all"
-      variant="danger"
-      @click="confirmReset"
-    />
+    <ToolbarButton label="Reset" icon="i-codicon-clear-all" variant="danger" @click="confirmReset" />
 
     <input
       ref="fileInput"
@@ -118,12 +92,29 @@ function confirmReset() {
     />
 
     <div class="ml-auto flex items-center gap-3">
-      <span class="hidden items-center gap-1 text-xs text-slate-500 dark:text-slate-400 sm:flex">
+      <span class="hidden items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400 sm:flex">
         <span class="i-oui-node text-sm" aria-hidden="true" />
         {{ nodeCount }} nodes
         <span class="i-nonicons-git-merge-16 ml-1 text-sm" aria-hidden="true" />
         {{ edgeCount }} edges
       </span>
+
+      <button
+        type="button"
+        :aria-pressed="isSketch"
+        title="Toggle hand-drawn (sketch) mode"
+        class="inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1.5 text-sm font-medium shadow-sm transition-colors"
+        :class="
+          isSketch
+            ? 'border-indigo-500 bg-indigo-500 text-white hover:bg-indigo-600'
+            : 'border-slate-300 bg-white text-slate-700 hover:bg-slate-100 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700'
+        "
+        @click="toggleSketch"
+      >
+        <span class="i-mdi-draw" aria-hidden="true" />
+        <span class="hidden lg:inline">Sketch</span>
+      </button>
+
       <button
         type="button"
         :aria-pressed="isDark"

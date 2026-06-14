@@ -33,6 +33,16 @@ export interface DiagramNode {
   position: XYPosition
   data: DiagramNodeData
   selected?: boolean
+  /** Inline size applied to the node element (e.g. `{ width: '176px', height: '72px' }`). */
+  style?: Record<string, string>
+}
+
+/** Rectangle reported by the node resizer (top-left origin + size). */
+export interface NodeRect {
+  x: number
+  y: number
+  width: number
+  height: number
 }
 
 /** A diagram edge (plain, serialisable shape). */

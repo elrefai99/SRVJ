@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, nextTick, ref } from 'vue'
 import { Handle, Position, type NodeProps } from '@vue-flow/core'
+import { NodeResizer, type OnResize } from '@vue-flow/node-resizer'
 import type { DiagramNodeData, NodeColor } from '@/types/diagram'
 import { useDiagramStore } from '@/stores/diagram'
 
@@ -56,17 +57,6 @@ const color = computed(() => colorStyles[props.data.color])
 const hasTarget = computed(() => props.data.variant !== 'input')
 const hasSource = computed(() => props.data.variant !== 'output')
 
-const containerSize = computed(() => {
-  switch (shape.value) {
-    case 'ellipse':
-      return 'min-w-[176px] min-h-[96px]'
-    case 'diamond':
-      return 'h-[140px] w-[140px]'
-    default:
-      return 'min-w-[160px] min-h-[64px]'
-  }
-})
-
 // Background-shape modifier classes (radius / rotation per shape).
 const shapeClass = computed(() => {
   switch (shape.value) {
@@ -85,6 +75,21 @@ const variantBadge = computed(() => {
   return ''
 })
 
+// ---- Resize (mouse-driven, persisted to the store) --------------------------
+function onResizeStart() {
+  store.commit()
+}
+
+function onResize({ params }: OnResize) {
+  store.setNodeRect(props.id, {
+    x: params.x,
+    y: params.y,
+    width: params.width,
+    height: params.height,
+  })
+}
+
+// ---- Inline label editing ---------------------------------------------------
 async function startEditing() {
   draft.value = props.data.label
   editing.value = true
@@ -106,7 +111,16 @@ function cancelEditing() {
 </script>
 
 <template>
-  <div class="relative inline-flex items-center justify-center" :class="containerSize">
+  <div class="relative flex h-full w-full items-center justify-center">
+    <NodeResizer
+      v-if="props.selected"
+      :min-width="80"
+      :min-height="48"
+      :node-id="props.id"
+      @resize-start="onResizeStart"
+      @resize="onResize"
+    />
+
     <Handle v-if="hasTarget" type="target" :position="Position.Top" class="diagram-handle" />
 
     <!-- The drawn shape (border + fill) sits behind the label. -->
@@ -116,7 +130,7 @@ function cancelEditing() {
     />
 
     <!-- Label overlay, always upright (even on a rotated diamond). -->
-    <div class="relative z-10 flex max-w-[200px] flex-col items-center px-4 py-2 text-center">
+    <div class="relative z-10 flex max-w-full flex-col items-center px-4 py-2 text-center">
       <span
         v-if="variantBadge"
         class="mb-0.5 text-[10px] font-semibold uppercase tracking-wider opacity-60"

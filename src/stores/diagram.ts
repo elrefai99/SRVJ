@@ -8,7 +8,6 @@ import {
   type GraphEdge,
   type GraphNode,
   type NodeChange,
-  type XYPosition,
 } from '@vue-flow/core'
 import type {
   DiagramEdge,
@@ -16,6 +15,7 @@ import type {
   DiagramSnapshot,
   NewNodeOptions,
   NodeColor,
+  NodeRect,
   NodeShape,
   NodeVariant,
 } from '@/types/diagram'
@@ -43,8 +43,21 @@ const VARIANTS = new Set<NodeVariant>(['default', 'input', 'output'])
 const SHAPES = new Set<NodeShape>(['rectangle', 'ellipse', 'diamond'])
 const COLORS = new Set<NodeColor>(['slate', 'blue', 'green', 'yellow', 'red', 'violet'])
 
+/** Default rendered size for each shape (the node is resizable from here). */
+function defaultStyle(shape: NodeShape): Record<string, string> {
+  switch (shape) {
+    case 'ellipse':
+      return { width: '184px', height: '112px' }
+    case 'diamond':
+      return { width: '150px', height: '150px' }
+    default:
+      return { width: '176px', height: '72px' }
+  }
+}
+
 function buildNode(options: NewNodeOptions): DiagramNode {
   const variant = options.variant ?? DEFAULT_VARIANT
+  const shape = options.shape ?? DEFAULT_SHAPE
   const fallbackLabel: Record<NodeVariant, string> = {
     input: 'Input',
     output: 'Output',
@@ -57,10 +70,11 @@ function buildNode(options: NewNodeOptions): DiagramNode {
       x: 160 + Math.random() * 220,
       y: 140 + Math.random() * 140,
     },
+    style: defaultStyle(shape),
     data: {
       label: options.label ?? fallbackLabel[variant],
       variant,
-      shape: options.shape ?? DEFAULT_SHAPE,
+      shape,
       color: options.color ?? DEFAULT_COLOR,
     },
   }
@@ -69,13 +83,15 @@ function buildNode(options: NewNodeOptions): DiagramNode {
 /** Backfill defaults so legacy / imported nodes always have a complete shape. */
 function normalizeNode(node: DiagramNode): DiagramNode {
   const data = node.data ?? ({} as DiagramNode['data'])
+  const shape = SHAPES.has(data.shape) ? data.shape : DEFAULT_SHAPE
   return {
     ...node,
     type: 'custom',
+    style: node.style?.width ? node.style : defaultStyle(shape),
     data: {
       label: typeof data.label === 'string' ? data.label : 'Node',
       variant: VARIANTS.has(data.variant) ? data.variant : DEFAULT_VARIANT,
-      shape: SHAPES.has(data.shape) ? data.shape : DEFAULT_SHAPE,
+      shape,
       color: COLORS.has(data.color) ? data.color : DEFAULT_COLOR,
     },
   }
@@ -185,11 +201,24 @@ export const useDiagramStore = defineStore('diagram', {
       node.data = { ...node.data, label }
     },
 
+    /** Apply a new position + size to a node (used while resizing). */
+    setNodeRect(id: string, rect: NodeRect) {
+      const node = this.nodes.find((n) => n.id === id)
+      if (!node) return
+      node.position = { x: rect.x, y: rect.y }
+      node.style = {
+        ...(node.style ?? {}),
+        width: `${Math.round(rect.width)}px`,
+        height: `${Math.round(rect.height)}px`,
+      }
+    },
+
     /** Recolour the given node ids (defaults to the current selection). */
-    updateNodeColor(color: NodeColor, ids: string[] = this.selectedNodeIds) {
-      if (ids.length === 0) return
+    updateNodeColor(color: NodeColor, ids?: string[]) {
+      const targetIds = ids ?? this.selectedNodeIds
+      if (targetIds.length === 0) return
       this.commit()
-      const set = new Set(ids)
+      const set = new Set(targetIds)
       this.nodes = this.nodes.map((n) =>
         set.has(n.id) ? { ...n, data: { ...n.data, color } } : n,
       )
