@@ -8,8 +8,13 @@ import type { XYPosition } from '@vue-flow/core'
  */
 export type NodeVariant = 'default' | 'input' | 'output'
 
-/** Geometric shape of a node (Excalidraw-style). */
-export type NodeShape = 'rectangle' | 'ellipse' | 'diamond'
+/**
+ * Geometric shape of a node — a merge of Excalidraw shapes and Miro objects.
+ *  - `rectangle` / `ellipse` / `diamond` → classic flow shapes
+ *  - `sticky` → a Miro-style sticky note (solid fill, no border)
+ *  - `text`   → a borderless text label (no fill, no handles)
+ */
+export type NodeShape = 'rectangle' | 'ellipse' | 'diamond' | 'sticky' | 'text'
 
 /** Named fill colour drawn from a fixed Excalidraw-like palette. */
 export type NodeColor = 'slate' | 'blue' | 'green' | 'yellow' | 'red' | 'violet'
@@ -65,6 +70,9 @@ export interface NewNodeOptions {
   color?: NodeColor
   label?: string
   position?: XYPosition
+  /** Explicit size (e.g. when drawn by dragging). Falls back to a shape default. */
+  width?: number
+  height?: number
 }
 
 /** Serialisable snapshot of a whole diagram (used for persistence + export). */

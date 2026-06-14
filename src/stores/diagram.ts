@@ -31,8 +31,6 @@ import {
 interface DiagramState {
   nodes: DiagramNode[]
   edges: DiagramEdge[]
-  selectedNodeIds: string[]
-  selectedEdgeIds: string[]
   /** Stack of past snapshots for undo. */
   past: DiagramSnapshot[]
   /** Stack of undone snapshots for redo. */
@@ -40,7 +38,7 @@ interface DiagramState {
 }
 
 const VARIANTS = new Set<NodeVariant>(['default', 'input', 'output'])
-const SHAPES = new Set<NodeShape>(['rectangle', 'ellipse', 'diamond'])
+const SHAPES = new Set<NodeShape>(['rectangle', 'ellipse', 'diamond', 'sticky', 'text'])
 const COLORS = new Set<NodeColor>(['slate', 'blue', 'green', 'yellow', 'red', 'violet'])
 
 /** Default rendered size for each shape (the node is resizable from here). */
@@ -50,6 +48,10 @@ function defaultStyle(shape: NodeShape): Record<string, string> {
       return { width: '184px', height: '112px' }
     case 'diamond':
       return { width: '150px', height: '150px' }
+    case 'sticky':
+      return { width: '160px', height: '160px' }
+    case 'text':
+      return { width: '160px', height: '48px' }
     default:
       return { width: '176px', height: '72px' }
   }
@@ -63,6 +65,10 @@ function buildNode(options: NewNodeOptions): DiagramNode {
     output: 'Output',
     default: 'Node',
   }
+  const style =
+    options.width && options.height
+      ? { width: `${Math.round(options.width)}px`, height: `${Math.round(options.height)}px` }
+      : defaultStyle(shape)
   return {
     id: createId('node'),
     type: 'custom',
@@ -70,7 +76,7 @@ function buildNode(options: NewNodeOptions): DiagramNode {
       x: 160 + Math.random() * 220,
       y: 140 + Math.random() * 140,
     },
-    style: defaultStyle(shape),
+    style,
     data: {
       label: options.label ?? fallbackLabel[variant],
       variant,
@@ -87,6 +93,7 @@ function normalizeNode(node: DiagramNode): DiagramNode {
   return {
     ...node,
     type: 'custom',
+    selected: false,
     style: node.style?.width ? node.style : defaultStyle(shape),
     data: {
       label: typeof data.label === 'string' ? data.label : 'Node',
@@ -106,8 +113,6 @@ export const useDiagramStore = defineStore('diagram', {
   state: (): DiagramState => ({
     nodes: [],
     edges: [],
-    selectedNodeIds: [],
-    selectedEdgeIds: [],
     past: [],
     future: [],
   }),
@@ -124,19 +129,25 @@ export const useDiagramStore = defineStore('diagram', {
     nodeCount: (state): number => state.nodes.length,
     edgeCount: (state): number => state.edges.length,
 
-    selectedCount: (state): number =>
-      state.selectedNodeIds.length + state.selectedEdgeIds.length,
+    // Selection is derived from each element's `selected` flag, which Vue Flow
+    // keeps in sync via `applyNodeChanges` / `applyEdgeChanges`.
+    selectedNodeIds: (state): string[] =>
+      state.nodes.filter((n) => n.selected).map((n) => n.id),
+    selectedEdgeIds: (state): string[] =>
+      state.edges.filter((e) => e.selected).map((e) => e.id),
+
+    selectedCount(): number {
+      return this.selectedNodeIds.length + this.selectedEdgeIds.length
+    },
     hasSelection(): boolean {
       return this.selectedCount > 0
     },
 
     /** Shared colour of the current node selection, or null when mixed/empty. */
     selectionColor(state): NodeColor | null {
-      if (state.selectedNodeIds.length === 0) return null
-      const ids = new Set(state.selectedNodeIds)
-      const colors = new Set(
-        state.nodes.filter((n) => ids.has(n.id)).map((n) => n.data.color),
-      )
+      const selected = state.nodes.filter((n) => n.selected)
+      if (selected.length === 0) return null
+      const colors = new Set(selected.map((n) => n.data.color))
       return colors.size === 1 ? [...colors][0] : null
     },
   },
@@ -156,8 +167,7 @@ export const useDiagramStore = defineStore('diagram', {
     /** Replace the live diagram with the given snapshot (no history push). */
     applySnapshot(snapshot: DiagramSnapshot) {
       this.nodes = clone(snapshot.nodes).map(normalizeNode)
-      this.edges = clone(snapshot.edges)
-      this.clearSelection()
+      this.edges = clone(snapshot.edges).map((e) => ({ ...e, selected: false }))
     },
 
     // ---- Vue Flow change handlers (controlled flow) -----------------------
@@ -226,36 +236,32 @@ export const useDiagramStore = defineStore('diagram', {
 
     // ---- Selection --------------------------------------------------------
 
-    setSelection(nodeIds: string[], edgeIds: string[]) {
-      this.selectedNodeIds = nodeIds
-      this.selectedEdgeIds = edgeIds
-    },
-
     clearSelection() {
-      this.selectedNodeIds = []
-      this.selectedEdgeIds = []
+      this.nodes.forEach((n) => {
+        if (n.selected) n.selected = false
+      })
+      this.edges.forEach((e) => {
+        if (e.selected) e.selected = false
+      })
     },
 
     selectAll() {
       this.nodes = this.nodes.map((n) => ({ ...n, selected: true }))
       this.edges = this.edges.map((e) => ({ ...e, selected: true }))
-      this.selectedNodeIds = this.nodes.map((n) => n.id)
-      this.selectedEdgeIds = this.edges.map((e) => e.id)
     },
 
     // ---- Deletion ---------------------------------------------------------
 
     /** Delete every selected node + edge (and edges touching deleted nodes). */
     deleteSelected() {
-      if (!this.hasSelection) return
+      const selectedNodes = new Set(this.nodes.filter((n) => n.selected).map((n) => n.id))
+      const hasSelectedEdges = this.edges.some((e) => e.selected)
+      if (selectedNodes.size === 0 && !hasSelectedEdges) return
       this.commit()
-      const nodeSet = new Set(this.selectedNodeIds)
-      const edgeSet = new Set(this.selectedEdgeIds)
-      this.nodes = this.nodes.filter((n) => !nodeSet.has(n.id))
+      this.nodes = this.nodes.filter((n) => !n.selected)
       this.edges = this.edges.filter(
-        (e) => !edgeSet.has(e.id) && !nodeSet.has(e.source) && !nodeSet.has(e.target),
+        (e) => !e.selected && !selectedNodes.has(e.source) && !selectedNodes.has(e.target),
       )
-      this.clearSelection()
     },
 
     // ---- History ----------------------------------------------------------
@@ -270,7 +276,6 @@ export const useDiagramStore = defineStore('diagram', {
       })
       this.nodes = clone(previous.nodes)
       this.edges = clone(previous.edges)
-      this.clearSelection()
     },
 
     redo() {
@@ -283,7 +288,6 @@ export const useDiagramStore = defineStore('diagram', {
       })
       this.nodes = clone(next.nodes)
       this.edges = clone(next.edges)
-      this.clearSelection()
     },
 
     // ---- Bulk operations --------------------------------------------------
@@ -293,7 +297,6 @@ export const useDiagramStore = defineStore('diagram', {
       this.commit()
       this.nodes = []
       this.edges = []
-      this.clearSelection()
     },
 
     loadSnapshot(snapshot: DiagramSnapshot, recordHistory = true) {

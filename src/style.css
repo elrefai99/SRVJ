@@ -43,6 +43,14 @@ body,
     0 8px 22px -8px rgba(129, 140, 248, 0.5);
 }
 
+/* Text nodes are borderless: show a light dashed selection box, not a solid one. */
+.diagram-shape.shape-text.is-selected {
+  box-shadow: none;
+  outline: 1.5px dashed #6366f1;
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
 /* Connection handles. */
 .diagram-handle {
   width: 11px;
@@ -88,6 +96,11 @@ body,
 /* The classic CSS "hand-drawn box" — asymmetric corner radii. */
 .sketch-mode .shape-rectangle {
   border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px !important;
+}
+
+/* Sticky notes get a playful tilt in sketch mode. */
+.sketch-mode .shape-sticky {
+  transform: rotate(-1.5deg);
 }
 
 .sketch-mode .vue-flow__node .vue-flow__node-label,

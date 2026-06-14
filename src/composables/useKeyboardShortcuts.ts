@@ -1,5 +1,6 @@
 import { onBeforeUnmount, onMounted } from 'vue'
 import { useDiagramStore } from '@/stores/diagram'
+import { useEditorTool } from '@/composables/useEditorTool'
 
 /** Returns true when the event originated from an editable field. */
 function isEditableTarget(target: EventTarget | null): boolean {
@@ -18,6 +19,7 @@ function isEditableTarget(target: EventTarget | null): boolean {
  */
 export function useKeyboardShortcuts() {
   const store = useDiagramStore()
+  const { resetTool } = useEditorTool()
 
   function onKeyDown(event: KeyboardEvent) {
     if (isEditableTarget(event.target)) return
@@ -28,6 +30,12 @@ export function useKeyboardShortcuts() {
     if (ctrl && key === 'a') {
       event.preventDefault()
       store.selectAll()
+      return
+    }
+
+    // `V` → select/cursor tool (Excalidraw shortcut).
+    if (!ctrl && key === 'v') {
+      resetTool()
       return
     }
 
@@ -45,6 +53,7 @@ export function useKeyboardShortcuts() {
     }
 
     if (event.key === 'Escape') {
+      resetTool()
       store.clearSelection()
       return
     }

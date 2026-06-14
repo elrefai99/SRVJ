@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { markRaw } from 'vue'
+import { computed, markRaw, ref } from 'vue'
 import { storeToRefs } from 'pinia'
 import {
   VueFlow,
@@ -8,19 +8,18 @@ import {
   SelectionMode,
   type Connection,
   type EdgeChange,
-  type GraphEdge,
-  type GraphNode,
   type NodeChange,
 } from '@vue-flow/core'
 import { Background } from '@vue-flow/background'
-import { Controls } from '@vue-flow/controls'
-import { MiniMap } from '@vue-flow/minimap'
 import { useDiagramStore } from '@/stores/diagram'
+import { useEditorTool } from '@/composables/useEditorTool'
 import type { NewNodeOptions } from '@/types/diagram'
 import CustomNode from './CustomNode.vue'
+import ZoomBar from './ZoomBar.vue'
 
 const store = useDiagramStore()
 const { nodes, edges } = storeToRefs(store)
+const { activeTool, activeColor, isSelectTool, resetTool } = useEditorTool()
 
 // Register the single custom node implementation. `markRaw` prevents Vue from
 // making the component definition itself reactive.
@@ -45,19 +44,65 @@ function handleNodeDragStart() {
   store.commit()
 }
 
-// Vue Flow owns selection state (clicks, shift-click, marquee). We mirror the
-// authoritative selection into the store on every change.
-function handleSelectionChange({
-  nodes: selNodes,
-  edges: selEdges,
-}: {
-  nodes: GraphNode[]
-  edges: GraphEdge[]
-}) {
-  store.setSelection(
-    selNodes.map((n) => n.id),
-    selEdges.map((e) => e.id),
-  )
+// ---- Draw-to-create (Excalidraw-style) --------------------------------------
+const wrapperRef = ref<HTMLElement | null>(null)
+const isDrawing = ref(false)
+const startPt = ref({ x: 0, y: 0 })
+const currPt = ref({ x: 0, y: 0 })
+
+const previewStyle = computed(() => {
+  const el = wrapperRef.value
+  if (!isDrawing.value || !el) return { display: 'none' }
+  const rect = el.getBoundingClientRect()
+  return {
+    left: `${Math.min(startPt.value.x, currPt.value.x) - rect.left}px`,
+    top: `${Math.min(startPt.value.y, currPt.value.y) - rect.top}px`,
+    width: `${Math.abs(currPt.value.x - startPt.value.x)}px`,
+    height: `${Math.abs(currPt.value.y - startPt.value.y)}px`,
+  }
+})
+
+function onPointerDown(event: PointerEvent) {
+  // Only draw when a shape tool is active and the press starts on the canvas.
+  if (isSelectTool.value || event.button !== 0) return
+  if (!(event.target as HTMLElement).closest('.vue-flow__pane')) return
+  event.preventDefault()
+  event.stopPropagation()
+  startPt.value = { x: event.clientX, y: event.clientY }
+  currPt.value = { x: event.clientX, y: event.clientY }
+  isDrawing.value = true
+  ;(event.currentTarget as HTMLElement).setPointerCapture(event.pointerId)
+}
+
+function onPointerMove(event: PointerEvent) {
+  if (!isDrawing.value) return
+  currPt.value = { x: event.clientX, y: event.clientY }
+}
+
+function onPointerUp() {
+  if (!isDrawing.value) return
+  isDrawing.value = false
+  const tool = activeTool.value
+  if (tool === 'select') return
+
+  const start = screenToFlowCoordinate({ x: startPt.value.x, y: startPt.value.y })
+  const end = screenToFlowCoordinate({ x: currPt.value.x, y: currPt.value.y })
+  const width = Math.abs(end.x - start.x)
+  const height = Math.abs(end.y - start.y)
+
+  const base = { shape: tool.shape, variant: tool.variant, color: activeColor.value }
+  if (width < 12 || height < 12) {
+    // Treated as a click → drop a default-sized node at the point.
+    store.addNode({ ...base, position: { x: start.x, y: start.y } })
+  } else {
+    store.addNode({
+      ...base,
+      position: { x: Math.min(start.x, end.x), y: Math.min(start.y, end.y) },
+      width,
+      height,
+    })
+  }
+  resetTool() // back to the select cursor, like Excalidraw
 }
 
 // ---- Drag & drop from the palette -------------------------------------------
@@ -81,7 +126,16 @@ function handleDrop(event: DragEvent) {
 </script>
 
 <template>
-  <div class="relative h-full w-full" @dragover="handleDragOver" @drop="handleDrop">
+  <div
+    ref="wrapperRef"
+    class="relative h-full w-full"
+    :class="isSelectTool ? '' : 'cursor-crosshair'"
+    @dragover="handleDragOver"
+    @drop="handleDrop"
+    @pointerdown.capture="onPointerDown"
+    @pointermove.capture="onPointerMove"
+    @pointerup.capture="onPointerUp"
+  >
     <VueFlow
       :nodes="nodes"
       :edges="edges"
@@ -90,19 +144,19 @@ function handleDrop(event: DragEvent) {
       :min-zoom="0.2"
       :max-zoom="4"
       :delete-key-code="null"
-      :selection-on-drag="true"
+      :selection-key-code="isSelectTool ? true : null"
       :selection-mode="SelectionMode.Partial"
-      :pan-on-drag="[1, 2]"
+      :pan-on-drag="isSelectTool ? [1, 2] : false"
+      :nodes-draggable="isSelectTool"
+      :elements-selectable="isSelectTool"
       fit-view-on-init
       class="diagram-flow"
       @nodes-change="handleNodesChange"
       @edges-change="handleEdgesChange"
       @node-drag-start="handleNodeDragStart"
-      @selection-change="handleSelectionChange"
     >
       <Background :gap="22" :size="1.2" pattern-color="#cbd5e1" />
-      <Controls position="bottom-left" />
-      <MiniMap pannable zoomable class="!bottom-4 !right-4" />
+      <ZoomBar />
 
       <template v-if="nodes.length === 0">
         <div class="pointer-events-none absolute inset-0 flex items-center justify-center">
@@ -110,11 +164,18 @@ function handleDrop(event: DragEvent) {
             <span class="i-carbon-flow mx-auto mb-2 block text-4xl" aria-hidden="true" />
             <p class="text-base font-medium">Your canvas is empty</p>
             <p class="mt-1 text-sm">
-              Drag a shape from the toolbox, or click one to drop it in.
+              Pick a shape from the toolbox, then drag on the canvas to draw it.
             </p>
           </div>
         </div>
       </template>
     </VueFlow>
+
+    <!-- Live preview while drawing a new shape -->
+    <div
+      v-show="isDrawing"
+      class="pointer-events-none absolute z-20 rounded-md border-2 border-indigo-500 bg-indigo-500/10"
+      :style="previewStyle"
+    />
   </div>
 </template>
