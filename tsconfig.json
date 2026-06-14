@@ -1,0 +1,24 @@
+{
+  "extends": "@mohamed-elrefai/tsconfigs",
+  "compilerOptions": {
+    "rootDir": "./",
+    "outDir": "dist",
+    "typeRoots": [
+      "./src/types",
+      "./node_modules/@types"
+    ],
+    "types": [
+      "node",
+      "express"
+    ],
+    "baseUrl": ".",
+    "paths": {
+      "@/*": [
+        "src/*"
+      ],
+      "@src/*": [
+        "src/*"
+      ]
+    }
+  }
+}
