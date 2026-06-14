@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, nextTick, ref } from 'vue'
+import { computed, nextTick, onMounted, ref } from 'vue'
 import { Handle, Position, type NodeProps } from '@vue-flow/core'
 import { NodeResizer, type OnResize } from '@vue-flow/node-resizer'
 import type { DiagramNodeData, NodeColor } from '@/types/diagram'
@@ -112,6 +112,7 @@ function onResize({ params }: OnResize) {
 
 // ---- Inline label editing ---------------------------------------------------
 async function startEditing() {
+  if (editing.value) return // already editing — don't discard the in-progress draft
   draft.value = props.data.label
   editing.value = true
   await nextTick()
@@ -121,18 +122,27 @@ async function startEditing() {
 
 function commitEditing() {
   if (!editing.value) return
-  const next = draft.value.trim()
-  if (next) store.updateNodeLabel(props.id, next)
+  // Allow clearing to empty — a node isn't forced to carry a word.
+  store.updateNodeLabel(props.id, draft.value.trim())
   editing.value = false
 }
 
 function cancelEditing() {
   editing.value = false
 }
+
+// A just-created node opens straight into editing so you can type its name.
+onMounted(() => {
+  if (store.takeEditNode(props.id)) startEditing()
+})
 </script>
 
 <template>
-  <div class="relative flex h-full w-full items-center justify-center">
+  <div
+    class="relative flex h-full w-full items-center justify-center"
+    title="Double-click to edit"
+    @dblclick.stop="startEditing"
+  >
     <NodeResizer
       v-if="props.selected"
       :min-width="60"
@@ -172,10 +182,8 @@ function cancelEditing() {
       />
       <div
         v-else
-        class="cursor-text select-none break-words text-sm font-semibold leading-snug"
+        class="min-h-[1.25rem] cursor-text select-none break-words text-sm font-semibold leading-snug"
         :class="labelClasses"
-        title="Double-click to edit"
-        @dblclick.stop="startEditing"
       >
         {{ props.data.label }}
       </div>

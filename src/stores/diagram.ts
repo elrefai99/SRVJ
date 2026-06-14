@@ -35,6 +35,8 @@ interface DiagramState {
   past: DiagramSnapshot[]
   /** Stack of undone snapshots for redo. */
   future: DiagramSnapshot[]
+  /** Id of a freshly-created node that should open in label-edit mode. */
+  editNodeId: string | null
 }
 
 const VARIANTS = new Set<NodeVariant>(['default', 'input', 'output'])
@@ -60,11 +62,6 @@ function defaultStyle(shape: NodeShape): Record<string, string> {
 function buildNode(options: NewNodeOptions): DiagramNode {
   const variant = options.variant ?? DEFAULT_VARIANT
   const shape = options.shape ?? DEFAULT_SHAPE
-  const fallbackLabel: Record<NodeVariant, string> = {
-    input: 'Input',
-    output: 'Output',
-    default: 'Node',
-  }
   const style =
     options.width && options.height
       ? { width: `${Math.round(options.width)}px`, height: `${Math.round(options.height)}px` }
@@ -78,7 +75,9 @@ function buildNode(options: NewNodeOptions): DiagramNode {
     },
     style,
     data: {
-      label: options.label ?? fallbackLabel[variant],
+      // Start blank — the node opens straight into label editing so you can
+      // type its name. No placeholder "Node" / "Input" / "Output" word.
+      label: options.label ?? '',
       variant,
       shape,
       color: options.color ?? DEFAULT_COLOR,
@@ -96,7 +95,7 @@ function normalizeNode(node: DiagramNode): DiagramNode {
     selected: false,
     style: node.style?.width ? node.style : defaultStyle(shape),
     data: {
-      label: typeof data.label === 'string' ? data.label : 'Node',
+      label: typeof data.label === 'string' ? data.label : '',
       variant: VARIANTS.has(data.variant) ? data.variant : DEFAULT_VARIANT,
       shape,
       color: COLORS.has(data.color) ? data.color : DEFAULT_COLOR,
@@ -115,6 +114,7 @@ export const useDiagramStore = defineStore('diagram', {
     edges: [],
     past: [],
     future: [],
+    editNodeId: null,
   }),
 
   getters: {
@@ -201,14 +201,28 @@ export const useDiagramStore = defineStore('diagram', {
 
     addNode(options: NewNodeOptions = {}) {
       this.commit()
-      this.nodes.push(buildNode(options))
+      const node = buildNode(options)
+      this.nodes.push(node)
+      // Flag it so its component opens straight into label editing on mount.
+      this.editNodeId = node.id
+    },
+
+    /** One-shot claim of the pending auto-edit node id (clears it). */
+    takeEditNode(id: string): boolean {
+      if (this.editNodeId !== id) return false
+      this.editNodeId = null
+      return true
     },
 
     updateNodeLabel(id: string, label: string) {
       const node = this.nodes.find((n) => n.id === id)
       if (!node || node.data.label === label) return
       this.commit()
-      node.data = { ...node.data, label }
+      // Replace the node object (not an in-place mutation) so Vue Flow's
+      // controlled render picks up the new label — same pattern as recolour.
+      this.nodes = this.nodes.map((n) =>
+        n.id === id ? { ...n, data: { ...n.data, label } } : n,
+      )
     },
 
     /** Apply a new position + size to a node (used while resizing). */
