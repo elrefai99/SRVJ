@@ -1,13 +1,140 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Get a free hosted Postgres database in seconds: `npx create-db`
-
 generator client {
-  provider = "prisma-client"
-  output   = "../generated/prisma"
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
 }
 
 datasource db {
   provider = "postgresql"
+}
+
+enum ProjectRole {
+  OWNER
+  EDITOR
+  VIEWER
+}
+
+enum ProjectVisibility {
+  PRIVATE
+  PUBLIC
+  UNLISTED
+}
+
+model User {
+  id       String  @id @default(uuid())
+  fullname String
+  email    String  @unique
+  username String? @unique
+  password String
+  avatar   String?
+
+  projects       Project[]       @relation("ProjectOwner")
+  collaborations ProjectMember[]
+
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  diagramVersions DiagramVersion[]
+
+  @@map("users")
+}
+
+model Project {
+  id String @id @default(uuid())
+
+  title       String
+  description String?
+
+  visibility ProjectVisibility @default(PRIVATE)
+
+  ownerId String
+  owner   User   @relation("ProjectOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+
+  diagram Diagram?
+
+  members ProjectMember[]
+
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+  shareLinks ShareLink[]
+
+  @@index([ownerId])
+  @@map("projects")
+}
+
+model ProjectMember {
+  id String @id @default(uuid())
+
+  projectId String
+  userId    String
+
+  role ProjectRole @default(VIEWER)
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@unique([projectId, userId])
+  @@index([projectId])
+  @@index([userId])
+  @@map("project_members")
+}
+
+model Diagram {
+  id String @id @default(uuid())
+
+  projectId String  @unique
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  version Int @default(1)
+
+  nodes    Json
+  edges    Json
+  metadata Json?
+
+  versions DiagramVersion[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("diagrams")
+}
+
+model DiagramVersion {
+  id String @id @default(uuid())
+
+  diagramId String
+  diagram   Diagram @relation(fields: [diagramId], references: [id], onDelete: Cascade)
+
+  version Int
+
+  nodes    Json
+  edges    Json
+  metadata Json?
+
+  createdById String?
+  createdBy   User?   @relation(fields: [createdById], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@index([diagramId])
+  @@index([version])
+  @@map("diagram_versions")
+}
+
+model ShareLink {
+  id String @id @default(uuid())
+
+  projectId String
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  token String @unique
+
+  role ProjectRole @default(VIEWER)
+
+  expiresAt DateTime?
+
+  createdAt DateTime @default(now())
+
+  @@index([projectId])
+  @@map("share_links")
 }
