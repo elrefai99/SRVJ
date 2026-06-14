@@ -1,0 +1,67 @@
+import type { XYPosition } from '@vue-flow/core'
+
+/**
+ * Connection role of a node — controls which handles are rendered.
+ *  - `input`   → only a source handle (a starting point of a flow)
+ *  - `output`  → only a target handle (an end point of a flow)
+ *  - `default` → both handles
+ */
+export type NodeVariant = 'default' | 'input' | 'output'
+
+/** Geometric shape of a node (Excalidraw-style). */
+export type NodeShape = 'rectangle' | 'ellipse' | 'diamond'
+
+/** Named fill colour drawn from a fixed Excalidraw-like palette. */
+export type NodeColor = 'slate' | 'blue' | 'green' | 'yellow' | 'red' | 'violet'
+
+/** Data payload carried by every diagram node. */
+export interface DiagramNodeData {
+  label: string
+  variant: NodeVariant
+  shape: NodeShape
+  color: NodeColor
+}
+
+/**
+ * A diagram node. Intentionally a *plain* shape (decoupled from Vue Flow's
+ * heavy `GraphNode` type) so it stays serialisable and cheap to type-check.
+ * Vue Flow accepts these objects directly as its `:nodes` input.
+ */
+export interface DiagramNode {
+  id: string
+  type: 'custom'
+  position: XYPosition
+  data: DiagramNodeData
+  selected?: boolean
+}
+
+/** A diagram edge (plain, serialisable shape). */
+export interface DiagramEdge {
+  id: string
+  source: string
+  target: string
+  sourceHandle?: string | null
+  targetHandle?: string | null
+  type?: string
+  animated?: boolean
+  selected?: boolean
+  label?: string
+}
+
+/** Options accepted when creating a new node. */
+export interface NewNodeOptions {
+  variant?: NodeVariant
+  shape?: NodeShape
+  color?: NodeColor
+  label?: string
+  position?: XYPosition
+}
+
+/** Serialisable snapshot of a whole diagram (used for persistence + export). */
+export interface DiagramSnapshot {
+  version: number
+  nodes: DiagramNode[]
+  edges: DiagramEdge[]
+}
+
+export type { XYPosition }

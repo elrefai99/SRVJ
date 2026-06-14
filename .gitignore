@@ -1,0 +1,12 @@
+node_modules
+dist
+dist-ssr
+*.local
+.vscode/*
+!.vscode/extensions.json
+.DS_Store
+*.log
+
+# Auto-generated typings (unplugin-auto-import / unplugin-vue-components)
+src/auto-imports.d.ts
+src/components.d.ts

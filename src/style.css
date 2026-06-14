@@ -1,0 +1,56 @@
+html,
+body,
+#app {
+  height: 100%;
+  margin: 0;
+  font-family: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+}
+
+#app {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Let Vue Flow fill its parent. */
+.diagram-flow {
+  width: 100%;
+  height: 100%;
+}
+
+/* Dark-mode polish for Vue Flow's built-in controls & minimap. */
+.dark .vue-flow__controls {
+  --vf-controls-bg: #1e293b;
+  --vf-controls-bg-hover: #334155;
+  --vf-controls-color: #e2e8f0;
+  --vf-controls-border: #334155;
+}
+
+.dark .vue-flow__controls-button {
+  background: #1e293b;
+  border-color: #334155;
+  fill: #e2e8f0;
+}
+
+.dark .vue-flow__controls-button:hover {
+  background: #334155;
+}
+
+.dark .vue-flow__minimap {
+  background-color: #1e293b;
+}
+
+/* Smooth, slightly thicker edges with a clear selected state. */
+.vue-flow__edge-path {
+  stroke-width: 2;
+}
+
+.vue-flow__edge.selected .vue-flow__edge-path,
+.vue-flow__edge:focus .vue-flow__edge-path {
+  stroke: #6366f1;
+  stroke-width: 3;
+}
+
+.vue-flow__edge:hover .vue-flow__edge-path {
+  cursor: pointer;
+  stroke: #818cf8;
+}
