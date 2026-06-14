@@ -20,7 +20,7 @@ enum ProjectVisibility {
 }
 
 model User {
-  id       String  @id @default(uuid())
+  id       Int     @id @default(autoincrement())
   fullname String
   email    String  @unique
   username String? @unique
@@ -38,15 +38,15 @@ model User {
 }
 
 model Project {
-  id String @id @default(uuid())
+  id Int @id @default(autoincrement())
 
   title       String
   description String?
 
   visibility ProjectVisibility @default(PRIVATE)
 
-  ownerId String
-  owner   User   @relation("ProjectOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  ownerId Int
+  owner   User @relation("ProjectOwner", fields: [ownerId], references: [id], onDelete: Cascade)
 
   diagram Diagram?
 
@@ -61,10 +61,10 @@ model Project {
 }
 
 model ProjectMember {
-  id String @id @default(uuid())
+  id Int @id @default(autoincrement())
 
-  projectId String
-  userId    String
+  projectId Int
+  userId    Int
 
   role ProjectRole @default(VIEWER)
 
@@ -80,9 +80,9 @@ model ProjectMember {
 }
 
 model Diagram {
-  id String @id @default(uuid())
+  id Int @id @default(autoincrement())
 
-  projectId String  @unique
+  projectId Int     @unique
   project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
 
   version Int @default(1)
@@ -100,9 +100,9 @@ model Diagram {
 }
 
 model DiagramVersion {
-  id String @id @default(uuid())
+  id Int @id @default(autoincrement())
 
-  diagramId String
+  diagramId Int
   diagram   Diagram @relation(fields: [diagramId], references: [id], onDelete: Cascade)
 
   version Int
@@ -111,8 +111,8 @@ model DiagramVersion {
   edges    Json
   metadata Json?
 
-  createdById String?
-  createdBy   User?   @relation(fields: [createdById], references: [id])
+  createdById Int?
+  createdBy   User? @relation(fields: [createdById], references: [id])
 
   createdAt DateTime @default(now())
 
@@ -122,9 +122,9 @@ model DiagramVersion {
 }
 
 model ShareLink {
-  id String @id @default(uuid())
+  id Int @id @default(autoincrement())
 
-  projectId String
+  projectId Int
   project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
 
   token String @unique
