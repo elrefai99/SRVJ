@@ -7,9 +7,8 @@ export const updateProfileController: RequestHandler = asyncHandler(
      async (req: Request, res: Response, _next: NextFunction) => {
           const data = req.body as updateProfileDTO
 
-          console.log(req.body);
-          if (req.files) {
-               data.image = req.files
+          if (req.file) {
+               data.image = req.file.filename
           }
           const based_user = new BaseUser()
 

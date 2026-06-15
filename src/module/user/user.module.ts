@@ -7,6 +7,6 @@ import { uploadAvatar } from "../../middleware/multer";
 const router: Router = Router()
 
 router.get('/me', meMiddleware, profileController)
-router.put('/update', uploadAvatar, userMiddleware, updateProfileController)
+router.put('/update', userMiddleware, uploadAvatar, updateProfileController)
 
 export default router
