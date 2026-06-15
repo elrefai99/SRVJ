@@ -11,10 +11,11 @@ export const refreshController: RequestHandler = asyncHandler(
                next(AppError.badRequest("Refresh token not found"))
                return
           }
-          const result = new BaseAuth().refresh_service({ token: reftoken })
-          const { token, tokenRefresh, remainingMs } = await result
-          res.cookie("access_token", token, { httpOnly: true, secure: true, sameSite: "strict", maxAge: remainingMs })
-          res.cookie("refresh_token", tokenRefresh, { httpOnly: true, secure: true, sameSite: "strict", maxAge: remainingMs })
+          const based_auth = new BaseAuth()
+          const result = await based_auth.refresh_service({ token: reftoken })
+
+          res.cookie("access_token", result?.token, { httpOnly: true, secure: true, sameSite: "strict", maxAge: result?.remainingMs })
+          res.cookie("refresh_token", result?.tokenRefresh, { httpOnly: true, secure: true, sameSite: "strict", maxAge: result?.remainingMs })
           res.status(200).json({ code: 200, status: "OK", message: "Refresh token successful" })
      }
 )
