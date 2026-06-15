@@ -1,7 +1,7 @@
-import { createApp } from 'vue'
+import { ViteSSG } from 'vite-ssg'
 import { createPinia } from 'pinia'
 import App from './App.vue'
-import router from './router'
+import { routes } from './router'
 
 // Vue Flow core + addon styles
 import '@vue-flow/core/dist/style.css'
@@ -17,4 +17,14 @@ import 'virtual:uno.css'
 // App-level custom styles (kept minimal)
 import './style.css'
 
-createApp(App).use(createPinia()).use(router).mount('#app')
+// `ViteSSG` owns the app + router and pre-renders every static route to HTML at
+// build time (`vite-ssg build`), then hydrates in the browser. The returned
+// `createApp` is the SSG entry; it is invoked once per route during the build
+// and once on the client.
+export const createApp = ViteSSG(
+  App,
+  { routes },
+  ({ app }) => {
+    app.use(createPinia())
+  },
+)
