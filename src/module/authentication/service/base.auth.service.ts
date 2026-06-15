@@ -1,6 +1,10 @@
+import { createPublicKey } from "node:crypto";
 import prisma from "../../../config/prisma";
 import { LoginDTO, RegisterDTO } from "../DTO/index.dto";
 import bcrypt from "bcryptjs"
+import { V4 } from "paseto";
+import { AppError } from "../../../utils/errors/app-error";
+import { token_PASETO } from "../utils/paseto.utils";
 
 export class BaseAuth {
      private API_KEY_SALT: number
@@ -66,6 +70,32 @@ export class BaseAuth {
           }
 
           return { success: true, error: false, message: "Success fetch user account, success login", data: user }
+     }
+     public async refresh_service(payload: { token: string }): Promise<any> {
+          const publicKey = createPublicKey(process.env.REFRESH_PUBLIC_KEY as string)
+          await V4.verify(payload.token, publicKey).then(async (payload: any) => {
+               const user = await prisma.user.findFirst({
+                    where: {
+                         id: payload.data.user_id,
+                    },
+                    select: {
+                         id: true,
+                    }
+               })
+               if (!user) {
+                    throw AppError.notFound("User not found")
+               }
 
+               // calculate remaining time for the refresh token
+               const expireDate: Date = new Date(payload.exp)
+               const remainingMs: number = expireDate.getTime() - Date.now()
+               const remainingDays: number = Math.floor(remainingMs / (1000 * 60 * 60 * 24))
+
+               const token: string = await token_PASETO({ data: { user_id: user.id } }, "access")
+               const tokenRefresh: string = await token_PASETO({ data: { user_id: user.id } }, "refresh", `${remainingDays}d`)
+               return { success: true, token, tokenRefresh, remainingMs }
+          }).catch((err) => {
+               throw AppError.unauthorized(`Invalid refresh token: ${err}`)
+          })
      }
 }

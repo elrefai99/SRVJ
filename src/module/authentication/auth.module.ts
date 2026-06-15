@@ -1,9 +1,13 @@
 import { Router } from "express";
-import { loginController, registerController } from "./auth.controller";
+import { loginController, logoutConrtoller, refreshController, registerController } from "./auth.controller";
+import { LoginDTO, RegisterDTO } from "./DTO/index.dto";
+import { validateDTO } from "../../middleware/validateDTO";
 
 const router: Router = Router()
 
-router.post('/register', registerController)
-router.post('/login', loginController)
+router.post('/register', validateDTO(RegisterDTO), registerController)
+router.post('/login', validateDTO(LoginDTO), loginController)
+router.get('/logout', logoutConrtoller)
+router.post('/refresh', refreshController)
 
 export default router
