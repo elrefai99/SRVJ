@@ -42,14 +42,14 @@ export async function imagesUpload(payload: any, ImagesID: any) {
 
 export async function avatarProcess(imgName: any, userID: any): Promise<string> {
      const buffer = await sharp(
-          await readFile(path.join(__dirname, '../../../../', `cdn/user/${imgName}`))
+          await readFile(path.join(__dirname, '../../../', `cdn/user/${imgName}`))
      ).resize({ width: 450, height: 450 })
           .webp({ quality: 100 })
           .toBuffer();
 
      const url = await uploadBuffer(buffer, `user/avatars/${userID}`);
 
-     fs.unlink(path.join(__dirname, '../../../../', `cdn/user/${imgName}`), (err) => {
+     fs.unlink(path.join(__dirname, '../../../', `cdn/user/${imgName}`), (err) => {
           if (err) console.log(err);
      });
 
@@ -58,7 +58,7 @@ export async function avatarProcess(imgName: any, userID: any): Promise<string> 
 
 export async function imageProcess(imgName: any, userID: any): Promise<string> {
      const buffer = await sharp(
-          await readFile(path.join(__dirname, '../../../../', `cdn/user/${imgName}`))
+          await readFile(path.join(__dirname, '../../../', `cdn/user/${imgName}`))
      ).withMetadata()
           .webp({ quality: 100 })
           .toBuffer();
@@ -66,7 +66,7 @@ export async function imageProcess(imgName: any, userID: any): Promise<string> {
      const url = await uploadBuffer(buffer, `/${userID}`);
 
      fs.unlink(
-          path.join(__dirname, '../../../../', `cdn/user/${imgName}`),
+          path.join(__dirname, '../../../', `cdn/user/${imgName}`),
           (err) => {
                if (err) console.log(err);
           }

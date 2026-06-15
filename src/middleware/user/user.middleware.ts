@@ -5,7 +5,7 @@ import { loadPubliceKey } from "../../utils/loadKey";
 import prisma from "../../config/prisma";
 import { AppError } from "../../utils/errors/app-error";
 
-export const meMiddleware: RequestHandler = asyncHandler(
+export const userMiddleware: RequestHandler = asyncHandler(
      async (req: Request, res: Response, next: NextFunction) => {
           const authHeader = req.headers.authorization;
           const token = authHeader && authHeader.startsWith("Bearer ") ? authHeader.split(" ")[1] : null;
