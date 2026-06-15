@@ -2,6 +2,7 @@
   "name": "srvj-backend",
   "version": "1.0.0",
   "main": "index.js",
+  "packageManager": "pnpm@11.6.0",
   "scripts": {
     "lint": "eslint .",
     "dev": "concurrently \"NODE_ENV=development nodemon -L\" \"NODE_ENV=development npx ts-node ./src/MessageQueue/index.ts\"",

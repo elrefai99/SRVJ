@@ -1,7 +1,8 @@
 
-export class BaseUser {
-     constructor() {
+// export class BaseUser {
+//      constructor() {
 
-     }
+//      }
 
-}
+//      public async update_profile
+// }
