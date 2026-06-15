@@ -7,6 +7,113 @@ datasource db {
   provider = "postgresql"
 }
 
+model User {
+  fullname        String
+  site_id         String           @unique @default(uuid())
+  email           String           @unique
+  username        String?          @unique
+  password        String
+  avatar          String?
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  id              Int              @id @default(autoincrement())
+  diagramVersions DiagramVersion[]
+  collaborations  ProjectMember[]
+  projects        Project[]        @relation("ProjectOwner")
+
+  @@index([email])
+  @@index([username])
+  @@index([createdAt])
+  @@map("users")
+}
+
+model Project {
+  title       String
+  description String?
+  visibility  ProjectVisibility @default(PRIVATE)
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+  id          Int               @id @default(autoincrement())
+  site_id     String            @unique @default(uuid())
+  ownerId     Int
+  diagram     Diagram?
+  members     ProjectMember[]
+  owner       User              @relation("ProjectOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  shareLinks  ShareLink[]
+
+  @@index([ownerId])
+  @@index([createdAt])
+  @@map("projects")
+}
+
+model ProjectMember {
+  role      ProjectRole @default(VIEWER)
+  createdAt DateTime    @default(now())
+  site_id   String      @unique @default(uuid())
+  id        Int         @id @default(autoincrement())
+  projectId Int
+  userId    Int
+  project   Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, userId])
+  @@index([projectId])
+  @@index([userId])
+  @@index([createdAt])
+  @@map("project_members")
+}
+
+model Diagram {
+  version   Int              @default(1)
+  nodes     Json
+  site_id   String           @unique @default(uuid())
+  edges     Json
+  metadata  Json?
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+  id        Int              @id @default(autoincrement())
+  projectId Int              @unique
+  versions  DiagramVersion[]
+  project   Project          @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([createdAt])
+  @@map("diagrams")
+}
+
+model DiagramVersion {
+  version     Int
+  nodes       Json
+  site_id     String   @unique @default(uuid())
+  edges       Json
+  metadata    Json?
+  createdAt   DateTime @default(now())
+  id          Int      @id @default(autoincrement())
+  diagramId   Int
+  createdById Int?
+  createdBy   User?    @relation(fields: [createdById], references: [id])
+  diagram     Diagram  @relation(fields: [diagramId], references: [id], onDelete: Cascade)
+
+  @@index([diagramId])
+  @@index([version])
+  @@index([createdAt])
+  @@map("diagram_versions")
+}
+
+model ShareLink {
+  token     String      @unique
+  role      ProjectRole @default(VIEWER)
+  site_id   String      @unique @default(uuid())
+  expiresAt DateTime?
+  createdAt DateTime    @default(now())
+  id        Int         @id @default(autoincrement())
+  projectId Int
+  project   Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+  @@index([createdAt])
+  @@map("share_links")
+}
+
 enum ProjectRole {
   OWNER
   EDITOR
@@ -17,132 +124,4 @@ enum ProjectVisibility {
   PRIVATE
   PUBLIC
   UNLISTED
-}
-
-model User {
-  id       Int     @id @default(autoincrement())
-  fullname String
-  email    String  @unique
-  username String? @unique
-  password String
-  avatar   String?
-
-  projects       Project[]       @relation("ProjectOwner")
-  collaborations ProjectMember[]
-
-  createdAt       DateTime         @default(now())
-  updatedAt       DateTime         @updatedAt
-  diagramVersions DiagramVersion[]
-
-  @@index([email])
-  @@index([username])
-  @@index([createdAt])
-  @@map("users")
-}
-
-model Project {
-  id Int @id @default(autoincrement())
-
-  title       String
-  description String?
-
-  visibility ProjectVisibility @default(PRIVATE)
-
-  ownerId Int
-  owner   User @relation("ProjectOwner", fields: [ownerId], references: [id], onDelete: Cascade)
-
-  diagram Diagram?
-
-  members ProjectMember[]
-
-  createdAt  DateTime    @default(now())
-  updatedAt  DateTime    @updatedAt
-  shareLinks ShareLink[]
-
-  @@index([ownerId])
-  @@index([createdAt])
-  @@map("projects")
-}
-
-model ProjectMember {
-  id Int @id @default(autoincrement())
-
-  projectId Int
-  userId    Int
-
-  role ProjectRole @default(VIEWER)
-
-  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  createdAt DateTime @default(now())
-
-  @@unique([projectId, userId])
-  @@index([projectId])
-  @@index([userId])
-  @@index([createdAt])
-  @@map("project_members")
-}
-
-model Diagram {
-  id Int @id @default(autoincrement())
-
-  projectId Int     @unique
-  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
-
-  version Int @default(1)
-
-  nodes    Json
-  edges    Json
-  metadata Json?
-
-  versions DiagramVersion[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([createdAt])
-  @@map("diagrams")
-}
-
-model DiagramVersion {
-  id Int @id @default(autoincrement())
-
-  diagramId Int
-  diagram   Diagram @relation(fields: [diagramId], references: [id], onDelete: Cascade)
-
-  version Int
-
-  nodes    Json
-  edges    Json
-  metadata Json?
-
-  createdById Int?
-  createdBy   User? @relation(fields: [createdById], references: [id])
-
-  createdAt DateTime @default(now())
-
-  @@index([diagramId])
-  @@index([version])
-  @@index([createdAt])
-  @@map("diagram_versions")
-}
-
-model ShareLink {
-  id Int @id @default(autoincrement())
-
-  projectId Int
-  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
-
-  token String @unique
-
-  role ProjectRole @default(VIEWER)
-
-  expiresAt DateTime?
-
-  createdAt DateTime @default(now())
-
-  @@index([projectId])
-  @@index([createdAt])
-  @@map("share_links")
 }
