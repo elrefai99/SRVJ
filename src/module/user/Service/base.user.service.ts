@@ -9,16 +9,17 @@ export class BaseUser {
      }
 
      public async update_profile(userId: number, payload: updateProfileDTO) {
-          const data: Prisma.UserUpdateInput = { fullname: payload.fullname }
+          const data: Prisma.UserUpdateInput = { fullname: payload?.fullname }
 
-          if (payload.image) {
-               data.avatar = await avatarProcess(payload.image, userId)
+          if (payload?.image) {
+               data.avatar = await avatarProcess(payload?.image, userId)
           }
 
-          return prisma.user.update({
+          await prisma.user.update({
                where: { id: userId },
                data,
                select: { id: true, fullname: true, avatar: true },
           })
+          return true
      }
 }
