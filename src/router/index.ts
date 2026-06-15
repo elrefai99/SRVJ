@@ -1,6 +1,12 @@
-import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router'
+import type { RouteRecordRaw } from 'vue-router'
 
-const routes: RouteRecordRaw[] = [
+/**
+ * Route table consumed by `vite-ssg` (see `src/main.ts`), which owns the
+ * router instance — creating a memory history during static generation and a
+ * web history in the browser. Exported as plain records so it can be crawled
+ * for pre-rendering.
+ */
+export const routes: RouteRecordRaw[] = [
   {
     path: '/',
     name: 'editor',
@@ -12,10 +18,3 @@ const routes: RouteRecordRaw[] = [
     component: () => import('@/views/NotFoundView.vue'),
   },
 ]
-
-export const router = createRouter({
-  history: createWebHistory(),
-  routes,
-})
-
-export default router

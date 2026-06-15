@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" fill="none" role="img" aria-label="SRVJ — Free Online Diagram Editor and Whiteboard">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1200" y2="630" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0f172a" />
+      <stop offset="1" stop-color="#1e1b4b" />
+    </linearGradient>
+    <pattern id="dots" width="32" height="32" patternUnits="userSpaceOnUse">
+      <circle cx="2" cy="2" r="2" fill="#ffffff" fill-opacity="0.06" />
+    </pattern>
+  </defs>
+
+  <rect width="1200" height="630" fill="url(#bg)" />
+  <rect width="1200" height="630" fill="url(#dots)" />
+
+  <!-- diagram motif -->
+  <g transform="translate(760, 150)" stroke="#6366f1" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="0" y="0" width="120" height="80" rx="10" fill="#6366f1" fill-opacity="0.15" />
+    <rect x="180" y="180" width="120" height="80" rx="10" fill="#22d3ee" fill-opacity="0.15" stroke="#22d3ee" />
+    <path d="M120 40 H300 a20 20 0 0 1 20 20 V180" stroke="#a5b4fc" />
+    <circle cx="320" cy="40" r="34" fill="#f472b6" fill-opacity="0.15" stroke="#f472b6" />
+  </g>
+
+  <!-- wordmark -->
+  <text x="96" y="300" font-family="Inter, Arial, sans-serif" font-size="120" font-weight="700" fill="#ffffff">SRVJ</text>
+  <text x="100" y="370" font-family="Inter, Arial, sans-serif" font-size="34" font-weight="600" fill="#a5b4fc">Free online diagram editor &amp; whiteboard</text>
+  <text x="100" y="430" font-family="Inter, Arial, sans-serif" font-size="26" fill="#cbd5e1">Draw.io-style flows · Excalidraw look · Miro sticky notes</text>
+</svg>

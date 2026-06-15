@@ -1,0 +1,18 @@
+{
+  "name": "SRVJ — Diagram Editor & Whiteboard",
+  "short_name": "SRVJ",
+  "description": "A free, browser-based diagram editor and whiteboard with a Draw.io-style flow editor, Excalidraw hand-drawn look, and Miro-style sticky notes.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#f8fafc",
+  "theme_color": "#6366f1",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "type": "image/svg+xml",
+      "sizes": "any",
+      "purpose": "any"
+    }
+  ]
+}

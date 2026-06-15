@@ -3,9 +3,68 @@
 
 <head>
   <meta charset="UTF-8" />
-  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SRVJ — Mohammed Mostafa</title>
+
+  <!-- Primary meta -->
+  <title>SRVJ — Free Online Diagram Editor &amp; Whiteboard</title>
+  <meta name="description"
+    content="SRVJ is a free, browser-based diagram editor and whiteboard — a Draw.io-style flow editor with an Excalidraw hand-drawn look and Miro-style sticky notes. No sign-up, works offline, elrefai." />
+  <meta name="keywords"
+    content="diagram editor, online whiteboard, flowchart maker, draw.io alternative, excalidraw, miro, flow diagram, sticky notes, mind map, free diagram tool, elrefai" />
+  <meta name="author" content="Mohammed Mostafa" />
+  <meta name="theme-color" content="#6366f1" />
+  <meta name="color-scheme" content="light dark" />
+  <link rel="canonical" href="https://srvj.elrefai.me/" />
+
+  <!-- Icons & manifest -->
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="apple-touch-icon" href="/favicon.svg" />
+  <link rel="manifest" href="/site.webmanifest" />
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="SRVJ" />
+  <meta property="og:title" content="SRVJ — Free Online Diagram Editor &amp; Whiteboard" />
+  <meta property="og:description"
+    content="A free, browser-based diagram editor and whiteboard. Draw.io-style flows, an Excalidraw hand-drawn look, and Miro-style sticky notes — no sign-up." />
+  <meta property="og:url" content="https://srvj.elrefai.me/" />
+  <meta property="og:image" content="https://srvj.elrefai.me/og-image.svg" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="SRVJ diagram editor canvas with connected shapes and sticky notes." />
+  <meta property="og:locale" content="en_US" />
+
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="SRVJ — Free Online Diagram Editor &amp; Whiteboard" />
+  <meta name="twitter:description"
+    content="A free, browser-based diagram editor and whiteboard. Draw.io-style flows, an Excalidraw hand-drawn look, and Miro-style sticky notes — no sign-up." />
+  <meta name="twitter:image" content="https://srvj.elrefai.me/og-image.svg" />
+  <meta name="twitter:image:alt" content="SRVJ diagram editor canvas with connected shapes and sticky notes." />
+
+  <!-- Structured data -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "SRVJ",
+    "url": "https://srvj.elrefai.me/",
+    "description": "A free, browser-based diagram editor and whiteboard — a Draw.io-style flow editor with an Excalidraw hand-drawn look and Miro-style sticky notes.",
+    "applicationCategory": "DesignApplication",
+    "operatingSystem": "Any (web browser)",
+    "browserRequirements": "Requires JavaScript and a modern web browser.",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD"
+    },
+    "author": {
+      "@type": "Person",
+      "name": "Mohammed Mostafa"
+    }
+  }
+  </script>
+
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link
@@ -14,7 +73,17 @@
 </head>
 
 <body>
-  <div id="app"></div>
+  <div id="app">
+    <!-- Crawler-visible fallback: shown before the SPA mounts and for no-JS clients. -->
+    <noscript>
+      <h1>SRVJ — Free Online Diagram Editor &amp; Whiteboard</h1>
+      <p>
+        SRVJ is a free, browser-based diagram editor and whiteboard. It blends a Draw.io-style
+        flow editor with an Excalidraw hand-drawn look and Miro-style sticky notes.
+        JavaScript is required to use the editor.
+      </p>
+    </noscript>
+  </div>
   <script type="module" src="/src/main.ts"></script>
 </body>
 
