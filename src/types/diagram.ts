@@ -9,12 +9,43 @@ import type { XYPosition } from '@vue-flow/core'
 export type NodeVariant = 'default' | 'input' | 'output'
 
 /**
- * Geometric shape of a node — a merge of Excalidraw shapes and Miro objects.
- *  - `rectangle` / `ellipse` / `diamond` → classic flow shapes
+ * Geometric shape of a node — a merge of Excalidraw shapes, Miro objects and
+ * ERD notation.
+ *  - `rectangle` / `ellipse` / `diamond` → classic flow shapes (also serve as
+ *    ERD entity / attribute / relationship)
  *  - `sticky` → a Miro-style sticky note (solid fill, no border)
  *  - `text`   → a borderless text label (no fill, no handles)
+ *  - ERD (Chen notation): `weak-entity` (double-border rectangle),
+ *    `weak-relationship` (double-border diamond), `key-attribute` (ellipse,
+ *    underlined label), `multivalued-attribute` (double-border ellipse),
+ *    `derived-attribute` (dashed-border ellipse)
+ *  - ERD (relational): `table` → a crow's-foot entity table with field rows
  */
-export type NodeShape = 'rectangle' | 'ellipse' | 'diamond' | 'sticky' | 'text'
+export type NodeShape =
+  | 'rectangle'
+  | 'ellipse'
+  | 'diamond'
+  | 'sticky'
+  | 'text'
+  | 'entity'
+  | 'relationship'
+  | 'attribute'
+  | 'weak-entity'
+  | 'weak-relationship'
+  | 'key-attribute'
+  | 'multivalued-attribute'
+  | 'derived-attribute'
+  | 'table'
+
+/** Key role of a crow's-foot table field. */
+export type ErdFieldKey = '' | 'PK' | 'FK'
+
+/** A single row in a crow's-foot ERD `table` node. */
+export interface ErdField {
+  id: string
+  name: string
+  key: ErdFieldKey
+}
 
 /** Named fill colour drawn from a fixed Excalidraw-like palette. */
 export type NodeColor = 'slate' | 'blue' | 'green' | 'yellow' | 'red' | 'violet'
@@ -39,6 +70,8 @@ export interface DiagramNodeData {
   strokeWidth: StrokeWidth
   /** Whole-node opacity, 0-100. */
   opacity: number
+  /** Field rows — only used by the crow's-foot `table` shape. */
+  fields?: ErdField[]
 }
 
 /**
@@ -87,6 +120,7 @@ export interface NewNodeOptions {
   strokeWidth?: StrokeWidth
   opacity?: number
   label?: string
+  fields?: ErdField[]
   position?: XYPosition
   /** Explicit size (e.g. when drawn by dragging). Falls back to a shape default. */
   width?: number

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, markRaw, onBeforeUnmount, onMounted, ref } from 'vue'
+import { computed, markRaw, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { storeToRefs } from 'pinia'
 import {
   VueFlow,
@@ -38,6 +38,7 @@ const {
   activeStrokeWidth,
   activeOpacity,
   isSelectTool,
+  isConnectTool,
   resetTool,
 } = useEditorTool()
 
@@ -64,7 +65,27 @@ const edgeTypes = {
   custom: markRaw(CustomEdge),
 }
 
-const { screenToFlowCoordinate, onConnect } = useVueFlow()
+const { screenToFlowCoordinate, onConnect, onNodeClick } = useVueFlow()
+
+// ---- Arrow / connector tool -------------------------------------------------
+// With the arrow tool active, click a source node then a target node to draw an
+// arrow between them. The pending source is cleared on a blank-canvas click, on
+// Escape, or when the tool is switched off.
+const connectSource = ref<string | null>(null)
+
+onNodeClick(({ node }) => {
+  if (!isConnectTool.value) return
+  if (!connectSource.value) {
+    connectSource.value = node.id
+    return
+  }
+  store.connectNodes(connectSource.value, node.id)
+  connectSource.value = null
+})
+
+watch(isConnectTool, (on) => {
+  if (!on) connectSource.value = null
+})
 
 // Only fit-view on init when we actually loaded a saved diagram. Otherwise
 // Vue Flow fires fitView the moment the user creates their first node and
@@ -109,6 +130,12 @@ function isInteractiveTarget(target: EventTarget | null): boolean {
 }
 
 function onKeyDown(event: KeyboardEvent) {
+  // Escape leaves the arrow tool (and drops any pending source).
+  if (event.code === 'Escape' && isConnectTool.value) {
+    connectSource.value = null
+    resetTool()
+    return
+  }
   if (event.code !== 'Space' || event.repeat) return
   if (isInteractiveTarget(event.target)) return
   // Stop the page from scrolling while space is used to pan.
@@ -152,6 +179,15 @@ const previewStyle = computed(() => {
 function onPointerDown(event: PointerEvent) {
   // Space-pan takes over the drag entirely — never start drawing.
   if (isSpacePanning.value) return
+  // Arrow tool: a click on blank canvas cancels a pending source; never draw.
+  // (Clicks that land on a node are left for `onNodeClick` to handle — don't
+  // clear the source here or the second click would never complete the arrow.)
+  if (isConnectTool.value) {
+    if (event.button === 0 && !(event.target as HTMLElement).closest('.vue-flow__node')) {
+      connectSource.value = null
+    }
+    return
+  }
   // Only draw when a shape tool is active and the press starts on the canvas.
   if (isSelectTool.value || event.button !== 0) return
   if (!(event.target as HTMLElement).closest('.vue-flow__pane')) return
@@ -172,7 +208,8 @@ function onPointerUp() {
   if (!isDrawing.value) return
   isDrawing.value = false
   const tool = activeTool.value
-  if (tool === 'select') return
+  // Only shape tools draw — `select` / `connect` are string modes.
+  if (typeof tool === 'string') return
 
   const start = screenToFlowCoordinate({ x: startPt.value.x, y: startPt.value.y })
   const end = screenToFlowCoordinate({ x: currPt.value.x, y: currPt.value.y })
@@ -252,7 +289,7 @@ function handleDrop(event: DragEvent) {
       :delete-key-code="null"
       :selection-key-code="isSelectTool && !isSpacePanning ? true : null"
       :selection-mode="SelectionMode.Partial"
-      :pan-on-drag="isSpacePanning ? [0, 1, 2] : isSelectTool ? [1, 2] : false"
+      :pan-on-drag="isSpacePanning ? [0, 1, 2] : isSelectTool || isConnectTool ? [1, 2] : false"
       :nodes-draggable="isSelectTool && !isSpacePanning"
       :elements-selectable="isSelectTool && !isSpacePanning"
       :fit-view-on-init="fitViewOnInit"
@@ -283,5 +320,16 @@ function handleDrop(event: DragEvent) {
       class="pointer-events-none absolute z-20 rounded-md border-[1.5px] border-dashed border-indigo-400 bg-indigo-400/5"
       :style="previewStyle"
     />
+
+    <!-- Arrow-tool guidance pill (top-centre) while the connector tool is on. -->
+     
+    <div
+      v-if="isConnectTool"
+      class="pointer-events-none absolute left-1/2 top-4 z-20 flex -translate-x-1/2 items-center gap-1.5 rounded-full border border-indigo-200 bg-white/90 px-3 py-1.5 text-xs font-medium text-indigo-700 shadow-md backdrop-blur dark:border-indigo-500/40 dark:bg-slate-800/90 dark:text-indigo-300"
+    >
+      <span class="i-mdi-ray-start-arrow" aria-hidden="true" />
+      {{ connectSource ? 'Click the target shape to connect' : 'Click a shape to start the arrow' }}
+      <span class="opacity-60">· Esc to exit</span>
+    </div>
   </div>
 </template>

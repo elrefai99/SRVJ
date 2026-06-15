@@ -20,8 +20,13 @@ export interface ShapeTool {
   variant: NodeVariant
 }
 
-/** The active tool: either the selection cursor or a shape to draw. */
-export type ActiveTool = 'select' | ShapeTool
+/**
+ * The active tool:
+ *  - `select`  → the selection cursor
+ *  - `connect` → the arrow/connector tool (click a source node, then a target)
+ *  - `ShapeTool` → a shape to draw
+ */
+export type ActiveTool = 'select' | 'connect' | ShapeTool
 
 // Shared module-level state so the palette and canvas agree on the tool.
 const activeTool = ref<ActiveTool>('select')
@@ -33,6 +38,7 @@ const activeOpacity = ref<number>(DEFAULT_OPACITY)
 
 export function useEditorTool() {
   const isSelectTool = computed(() => activeTool.value === 'select')
+  const isConnectTool = computed(() => activeTool.value === 'connect')
 
   function setTool(tool: ActiveTool) {
     activeTool.value = tool
@@ -40,6 +46,11 @@ export function useEditorTool() {
 
   function resetTool() {
     activeTool.value = 'select'
+  }
+
+  /** Toggle the arrow/connector tool on/off (off falls back to select). */
+  function toggleConnect() {
+    activeTool.value = activeTool.value === 'connect' ? 'select' : 'connect'
   }
 
   function setColor(color: NodeColor) {
@@ -65,7 +76,12 @@ export function useEditorTool() {
   /** True when `tool` is the currently active shape tool. */
   function isActive(tool: ShapeTool): boolean {
     const current = activeTool.value
-    return current !== 'select' && current.shape === tool.shape && current.variant === tool.variant
+    // `select` / `connect` are string modes — only object tools carry a shape.
+    return (
+      typeof current !== 'string' &&
+      current.shape === tool.shape &&
+      current.variant === tool.variant
+    )
   }
 
   return {
@@ -76,8 +92,10 @@ export function useEditorTool() {
     activeStrokeWidth,
     activeOpacity,
     isSelectTool,
+    isConnectTool,
     setTool,
     resetTool,
+    toggleConnect,
     setColor,
     setFillStyle,
     setStrokeStyle,

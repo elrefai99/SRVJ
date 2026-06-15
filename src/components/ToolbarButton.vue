@@ -5,12 +5,15 @@ interface Props {
   icon?: string
   disabled?: boolean
   variant?: 'default' | 'primary' | 'danger'
+  /** Toggle-style buttons render a highlighted "on" appearance when true. */
+  active?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
   icon: '',
   disabled: false,
   variant: 'default',
+  active: false,
 })
 
 const variantClasses: Record<NonNullable<Props['variant']>, string> = {
@@ -21,6 +24,10 @@ const variantClasses: Record<NonNullable<Props['variant']>, string> = {
   danger:
     'border-rose-300 bg-white text-rose-600 hover:bg-rose-50 dark:border-rose-500/60 dark:bg-slate-800 dark:text-rose-400 dark:hover:bg-rose-900/30',
 }
+
+// Pressed/toggled appearance, shared by any toggle button (e.g. the arrow tool).
+const ACTIVE_CLASS =
+  'border-indigo-500 bg-indigo-500 text-white hover:bg-indigo-600 dark:border-indigo-500 dark:bg-indigo-500 dark:hover:bg-indigo-400'
 </script>
 
 <template>
@@ -28,8 +35,9 @@ const variantClasses: Record<NonNullable<Props['variant']>, string> = {
     type="button"
     :disabled="props.disabled"
     :title="props.label"
+    :aria-pressed="props.active ? 'true' : undefined"
     class="inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-sm font-medium shadow-sm transition-colors disabled:cursor-not-allowed disabled:opacity-40"
-    :class="variantClasses[props.variant]"
+    :class="props.active ? ACTIVE_CLASS : variantClasses[props.variant]"
   >
     <span v-if="props.icon" :class="props.icon" aria-hidden="true" />
     <span>{{ props.label }}</span>

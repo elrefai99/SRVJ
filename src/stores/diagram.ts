@@ -13,6 +13,8 @@ import type {
   DiagramEdge,
   DiagramNode,
   DiagramSnapshot,
+  ErdField,
+  ErdFieldKey,
   FillStyle,
   NewNodeOptions,
   NodeColor,
@@ -23,6 +25,7 @@ import type {
   StrokeWidth,
 } from '@/types/diagram'
 import { createId } from '@/utils/id'
+import { ANCHORS_PER_SIDE, anchorId, handleSide, type HandleSide } from '@/utils/handles'
 import {
   DEFAULT_COLOR,
   DEFAULT_FILL_STYLE,
@@ -47,7 +50,44 @@ interface DiagramState {
 }
 
 const VARIANTS = new Set<NodeVariant>(['default', 'input', 'output'])
-const SHAPES = new Set<NodeShape>(['rectangle', 'ellipse', 'diamond', 'sticky', 'text'])
+const SHAPES = new Set<NodeShape>([
+  'rectangle',
+  'ellipse',
+  'diamond',
+  'sticky',
+  'text',
+  'entity',
+  'relationship',
+  'attribute',
+  'weak-entity',
+  'weak-relationship',
+  'key-attribute',
+  'multivalued-attribute',
+  'derived-attribute',
+  'table',
+])
+const FIELD_KEYS = new Set<ErdFieldKey>(['', 'PK', 'FK'])
+
+/** A fresh crow's-foot table starts with an id primary key + a name field. */
+function defaultFields(): ErdField[] {
+  return [
+    { id: createId('field'), name: 'id', key: 'PK' },
+    { id: createId('field'), name: 'name', key: '' },
+  ]
+}
+
+/** Sanitise an arbitrary value into a valid field-row list. */
+function normalizeFields(value: unknown): ErdField[] {
+  if (!Array.isArray(value)) return defaultFields()
+  const fields = value
+    .filter((f): f is Record<string, unknown> => !!f && typeof f === 'object')
+    .map((f) => ({
+      id: typeof f.id === 'string' ? f.id : createId('field'),
+      name: typeof f.name === 'string' ? f.name : '',
+      key: FIELD_KEYS.has(f.key as ErdFieldKey) ? (f.key as ErdFieldKey) : '',
+    }))
+  return fields.length > 0 ? fields : defaultFields()
+}
 const COLORS = new Set<NodeColor>(['slate', 'blue', 'green', 'yellow', 'red', 'violet'])
 const FILL_STYLES = new Set<FillStyle>(['solid', 'transparent'])
 const STROKE_STYLES = new Set<StrokeStyle>(['solid', 'dashed', 'dotted'])
@@ -62,16 +102,26 @@ function clampOpacity(value: unknown): number {
 function defaultStyle(shape: NodeShape): Record<string, string> {
   switch (shape) {
     case 'ellipse':
+    case 'attribute':
+    case 'key-attribute':
+    case 'multivalued-attribute':
+    case 'derived-attribute':
       return { width: '184px', height: '112px' }
     case 'diamond':
+    case 'relationship':
+    case 'weak-relationship':
       return { width: '150px', height: '150px' }
     case 'sticky':
       return { width: '160px', height: '160px' }
+    case 'table':
+      // Fixed width; height grows with the field rows.
+      return { width: '220px', height: 'auto', minWidth: '160px' }
     case 'text':
       // Auto-size to the typed content (Excalidraw-style) — the node footprint
       // grows with the text instead of sitting inside a fixed-size rectangle.
       return { width: 'auto', height: 'auto', minWidth: '24px', minHeight: '24px' }
     default:
+      // rectangle + weak-entity
       return { width: '176px', height: '72px' }
   }
 }
@@ -80,7 +130,9 @@ function buildNode(options: NewNodeOptions): DiagramNode {
   const variant = options.variant ?? DEFAULT_VARIANT
   const shape = options.shape ?? DEFAULT_SHAPE
   const style =
-    options.width && options.height
+    // Tables always auto-size their height to the field rows — never lock a
+    // dragged pixel height (it would clip the lower rows + the "+ field" button).
+    options.width && options.height && shape !== 'table'
       ? { width: `${Math.round(options.width)}px`, height: `${Math.round(options.height)}px` }
       : defaultStyle(shape)
   return {
@@ -102,6 +154,8 @@ function buildNode(options: NewNodeOptions): DiagramNode {
       strokeStyle: options.strokeStyle ?? DEFAULT_STROKE_STYLE,
       strokeWidth: options.strokeWidth ?? DEFAULT_STROKE_WIDTH,
       opacity: clampOpacity(options.opacity ?? DEFAULT_OPACITY),
+      // Crow's-foot tables carry editable field rows; other shapes don't.
+      ...(shape === 'table' ? { fields: options.fields ?? defaultFields() } : {}),
     },
   }
 }
@@ -114,7 +168,14 @@ function normalizeNode(node: DiagramNode): DiagramNode {
     ...node,
     type: 'custom',
     selected: false,
-    style: node.style?.width ? node.style : defaultStyle(shape),
+    // Tables must keep an auto height (so every row + the add button show);
+    // keep any custom width but never a locked pixel height for them.
+    style:
+      shape === 'table'
+        ? { ...defaultStyle('table'), ...(node.style?.width ? { width: node.style.width } : {}) }
+        : node.style?.width
+          ? node.style
+          : defaultStyle(shape),
     data: {
       label: typeof data.label === 'string' ? data.label : '',
       variant: VARIANTS.has(data.variant) ? data.variant : DEFAULT_VARIANT,
@@ -124,6 +185,9 @@ function normalizeNode(node: DiagramNode): DiagramNode {
       strokeStyle: STROKE_STYLES.has(data.strokeStyle) ? data.strokeStyle : DEFAULT_STROKE_STYLE,
       strokeWidth: STROKE_WIDTHS.has(data.strokeWidth) ? data.strokeWidth : DEFAULT_STROKE_WIDTH,
       opacity: clampOpacity(data.opacity),
+      // Only tables keep a `fields` array; backfill it so legacy/imported
+      // tables stay valid, and strip it from non-table shapes.
+      ...(shape === 'table' ? { fields: normalizeFields(data.fields) } : {}),
     },
   }
 }
@@ -131,6 +195,49 @@ function normalizeNode(node: DiagramNode): DiagramNode {
 /** Deep clone helper that keeps snapshots independent of live reactive state. */
 function clone<T>(value: T): T {
   return JSON.parse(JSON.stringify(value)) as T
+}
+
+/** Centre point of a node, from its position + (best-effort) rendered size. */
+function nodeCenter(node: DiagramNode): { x: number; y: number } {
+  const w = parseFloat(node.style?.width ?? '') || 160
+  const h = parseFloat(node.style?.height ?? '') || 80
+  return { x: node.position.x + w / 2, y: node.position.y + h / 2 }
+}
+
+/**
+ * Choose the source/target sides that face each other, so an arrow drawn by the
+ * connector tool runs between the two shapes rather than from a fixed corner.
+ */
+function facingSides(source: DiagramNode, target: DiagramNode): {
+  sourceSide: HandleSide
+  targetSide: HandleSide
+} {
+  const a = nodeCenter(source)
+  const b = nodeCenter(target)
+  const dx = b.x - a.x
+  const dy = b.y - a.y
+  if (Math.abs(dx) >= Math.abs(dy)) {
+    return dx >= 0
+      ? { sourceSide: 'right', targetSide: 'left' }
+      : { sourceSide: 'left', targetSide: 'right' }
+  }
+  return dy >= 0
+    ? { sourceSide: 'bottom', targetSide: 'top' }
+    : { sourceSide: 'top', targetSide: 'bottom' }
+}
+
+/**
+ * Pick the next free anchor on a node's side so multiple arrows spread across
+ * the side instead of stacking on its centre. Counts edges already touching the
+ * node on that side (either end) and steps round-robin through the anchors.
+ */
+function nextAnchorOnSide(edges: DiagramEdge[], nodeId: string, side: HandleSide): string {
+  const used = edges.filter(
+    (e) =>
+      (e.source === nodeId && handleSide(e.sourceHandle) === side) ||
+      (e.target === nodeId && handleSide(e.targetHandle) === side),
+  ).length
+  return anchorId(side, used % ANCHORS_PER_SIDE)
 }
 
 export const useDiagramStore = defineStore('diagram', {
@@ -264,6 +371,85 @@ export const useDiagramStore = defineStore('diagram', {
         { ...connection, animated: false, type: 'custom', label: '' },
         this.edges as unknown as GraphEdge[],
       ) as unknown as DiagramEdge[]
+    },
+
+    /**
+     * Draw an arrow (edge) from one node to another — used by the toolbar
+     * arrow/connector tool. Mirrors `onConnect` but is driven by two node ids
+     * instead of a dragged handle connection. Picks the handles on the facing
+     * sides (now that the draggable connection dots are gone) so the straight
+     * edge runs cleanly between the two shapes.
+     */
+    connectNodes(source: string, target: string) {
+      if (source === target) return
+      // Don't stack a duplicate arrow in the same direction.
+      if (this.edges.some((e) => e.source === source && e.target === target)) return
+      const a = this.nodes.find((n) => n.id === source)
+      const b = this.nodes.find((n) => n.id === target)
+      if (!a || !b) return
+      const { sourceSide, targetSide } = facingSides(a, b)
+      const sourceHandle = nextAnchorOnSide(this.edges, source, sourceSide)
+      const targetHandle = nextAnchorOnSide(this.edges, target, targetSide)
+      this.commit()
+      this.edges = addEdge(
+        { source, target, sourceHandle, targetHandle, animated: false, type: 'custom', label: '' },
+        this.edges as unknown as GraphEdge[],
+      ) as unknown as DiagramEdge[]
+    },
+
+    // ---- Crow's-foot table fields ----------------------------------------
+    // All follow the replace-don't-mutate + commit pattern so Vue Flow
+    // re-renders the table node and each change is a single undo step.
+
+    addTableField(nodeId: string) {
+      const node = this.nodes.find((n) => n.id === nodeId)
+      if (!node || node.data.shape !== 'table') return
+      this.commit()
+      const field: ErdField = { id: createId('field'), name: '', key: '' }
+      this.nodes = this.nodes.map((n) =>
+        n.id === nodeId
+          ? { ...n, data: { ...n.data, fields: [...(n.data.fields ?? []), field] } }
+          : n,
+      )
+    },
+
+    updateTableField(nodeId: string, fieldId: string, patch: Partial<Omit<ErdField, 'id'>>) {
+      const node = this.nodes.find((n) => n.id === nodeId)
+      if (!node || node.data.shape !== 'table') return
+      this.commit()
+      this.nodes = this.nodes.map((n) =>
+        n.id === nodeId
+          ? {
+              ...n,
+              data: {
+                ...n.data,
+                fields: (n.data.fields ?? []).map((f) =>
+                  f.id === fieldId ? { ...f, ...patch } : f,
+                ),
+              },
+            }
+          : n,
+      )
+    },
+
+    /** Cycle a field's key role: none → PK → FK → none. */
+    cycleTableFieldKey(nodeId: string, fieldId: string) {
+      const node = this.nodes.find((n) => n.id === nodeId)
+      const field = node?.data.fields?.find((f) => f.id === fieldId)
+      if (!field) return
+      const next: ErdFieldKey = field.key === '' ? 'PK' : field.key === 'PK' ? 'FK' : ''
+      this.updateTableField(nodeId, fieldId, { key: next })
+    },
+
+    removeTableField(nodeId: string, fieldId: string) {
+      const node = this.nodes.find((n) => n.id === nodeId)
+      if (!node || node.data.shape !== 'table') return
+      this.commit()
+      this.nodes = this.nodes.map((n) =>
+        n.id === nodeId
+          ? { ...n, data: { ...n.data, fields: (n.data.fields ?? []).filter((f) => f.id !== fieldId) } }
+          : n,
+      )
     },
 
     /** Set (or clear) the text label on an edge — used by CustomEdge editing. */

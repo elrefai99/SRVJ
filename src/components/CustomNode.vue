@@ -2,7 +2,14 @@
 import { computed, nextTick, onMounted, ref } from 'vue'
 import { Handle, Position, type NodeProps } from '@vue-flow/core'
 import { NodeResizer, type OnResize } from '@vue-flow/node-resizer'
-import type { DiagramNodeData, NodeColor, StrokeStyle, StrokeWidth } from '@/types/diagram'
+import type {
+  DiagramNodeData,
+  ErdField,
+  NodeColor,
+  StrokeStyle,
+  StrokeWidth,
+} from '@/types/diagram'
+import { nodeHandleDescriptors, type HandleSide } from '@/utils/handles'
 import { useDiagramStore } from '@/stores/diagram'
 
 const props = defineProps<NodeProps<DiagramNodeData>>()
@@ -69,15 +76,17 @@ const palette = computed(() => colorStyles[props.data.color])
 // Text nodes are pure labels — no fill, no border, no handles.
 const connectable = computed(() => shape.value !== 'text')
 
-// Four handles, one per side. In ConnectionMode.Loose any handle can act as
-// source OR target, so the user can drag an edge from any side of any node
-// and drop it on any side of any other node — Excalidraw/Miro style.
-const sideHandles = [
-  { id: 'top', position: Position.Top, cls: 'handle-top' },
-  { id: 'right', position: Position.Right, cls: 'handle-right' },
-  { id: 'bottom', position: Position.Bottom, cls: 'handle-bottom' },
-  { id: 'left', position: Position.Left, cls: 'handle-left' },
-] as const
+// Multiple invisible anchor handles per side (centre + two offset points) so
+// arrows drawn by the toolbar Arrow tool fan out across a side instead of all
+// stacking on its midpoint. The handles are hidden (see `.handle-side` in CSS);
+// the store distributes new edges across these ids via `nextAnchorOnSide`.
+const POSITION_BY_SIDE: Record<HandleSide, Position> = {
+  top: Position.Top,
+  right: Position.Right,
+  bottom: Position.Bottom,
+  left: Position.Left,
+}
+const handleDescriptors = nodeHandleDescriptors()
 
 // Literal lookup maps (UnoCSS only generates classes it can scan as static
 // strings — building these via template interpolation wouldn't work).
@@ -101,16 +110,33 @@ const shapeClasses = computed(() => {
   const ss = STROKE_STYLE_CLASS[props.data.strokeStyle]
   switch (shape.value) {
     case 'ellipse':
+    case 'attribute': // ERD attribute = plain ellipse
       return ['shape-ellipse', 'rounded-[50%]', sw, ss, transparent ? '' : c.fill, c.border]
     case 'diamond':
-      return ['shape-diamond', 'rotate-45 rounded-lg', sw, ss, transparent ? '' : c.fill, c.border]
+    case 'relationship': // ERD relationship = plain diamond
+      return ['shape-diamond', 'rotate-45 rounded-xl', sw, ss, transparent ? '' : c.fill, c.border]
     case 'sticky':
       // Sticky has no border in its solid look; "transparent" hides the fill.
-      return ['shape-sticky', 'rounded-md shadow-lg', transparent ? '' : c.sticky]
+      return ['shape-sticky', 'rounded-lg shadow-xl', transparent ? '' : c.sticky]
     case 'text':
       return ['shape-text', 'border-0 bg-transparent']
+    // ----- ERD (Chen notation) -----
+    // Weak entity / weak (identifying) relationship → a double border. Key /
+    // multivalued / derived attributes are ellipse variants. The double + dashed
+    // ERD borders are fixed (not driven by the stroke controls) so the notation
+    // stays recognisable.
+    case 'weak-entity':
+      return ['shape-weak-entity', 'rounded-2xl border-4 border-double', transparent ? '' : c.fill, c.border]
+    case 'weak-relationship':
+      return ['shape-weak-relationship', 'rotate-45 rounded-lg border-4 border-double', transparent ? '' : c.fill, c.border]
+    case 'key-attribute':
+      return ['shape-key-attribute', 'rounded-[50%]', sw, ss, transparent ? '' : c.fill, c.border]
+    case 'multivalued-attribute':
+      return ['shape-multivalued-attribute', 'rounded-[50%] border-4 border-double', transparent ? '' : c.fill, c.border]
+    case 'derived-attribute':
+      return ['shape-derived-attribute', 'rounded-[50%] border-2 border-dashed', transparent ? '' : c.fill, c.border]
     default:
-      return ['shape-rectangle', 'rounded-2xl', sw, ss, transparent ? '' : c.fill, c.border]
+      return ['shape-rectangle', 'rounded-3xl', sw, ss, transparent ? '' : c.fill, c.border]
   }
 })
 
@@ -119,8 +145,13 @@ const opacityValue = computed(() => props.data.opacity / 100)
 const labelClasses = computed(() => {
   if (shape.value === 'sticky') return `${palette.value.sticky} bg-transparent dark:bg-transparent`
   if (shape.value === 'text') return `${palette.value.text} text-base`
+  // ERD key attribute → underlined label (the classic key-attribute notation).
+  if (shape.value === 'key-attribute') return `${palette.value.text} underline underline-offset-4`
   return palette.value.text
 })
+
+// Crow's-foot table rows (only meaningful for the `table` shape).
+const fields = computed<ErdField[]>(() => props.data.fields ?? [])
 
 const variantBadge = computed(() => {
   if (props.data.variant === 'input') return 'Input'
@@ -163,6 +194,52 @@ function cancelEditing() {
   editing.value = false
 }
 
+// ---- Crow's-foot table field editing ----------------------------------------
+const editingFieldId = ref<string | null>(null)
+const fieldDraft = ref('')
+const fieldInputRef = ref<HTMLInputElement | null>(null)
+
+// Function ref (the editing input lives inside a v-for, so a string ref would
+// become an array — this captures just the one that's currently rendered).
+function setFieldInput(el: Element | null) {
+  if (el) fieldInputRef.value = el as HTMLInputElement
+}
+
+async function startFieldEdit(field: ErdField) {
+  editingFieldId.value = field.id
+  fieldDraft.value = field.name
+  await nextTick()
+  fieldInputRef.value?.focus()
+  fieldInputRef.value?.select()
+}
+
+function commitFieldEdit() {
+  const id = editingFieldId.value
+  if (!id) return
+  store.updateTableField(props.id, id, { name: fieldDraft.value.trim() })
+  editingFieldId.value = null
+}
+
+function cancelFieldEdit() {
+  editingFieldId.value = null
+}
+
+async function addField() {
+  store.addTableField(props.id)
+  await nextTick()
+  const last = fields.value[fields.value.length - 1]
+  if (last) startFieldEdit(last)
+}
+
+function cycleKey(field: ErdField) {
+  store.cycleTableFieldKey(props.id, field.id)
+}
+
+function removeField(field: ErdField) {
+  if (editingFieldId.value === field.id) editingFieldId.value = null
+  store.removeTableField(props.id, field.id)
+}
+
 // A just-created node opens straight into editing so you can type its name,
 // and plays a brief scale-in animation.
 onMounted(() => {
@@ -193,75 +270,172 @@ onMounted(() => {
 
     <template v-if="connectable">
       <Handle
-        v-for="h in sideHandles"
+        v-for="h in handleDescriptors"
         :key="h.id"
         :id="h.id"
         type="source"
-        :position="h.position"
-        :class="['handle-side', h.cls]"
+        :position="POSITION_BY_SIDE[h.side]"
+        class="handle-side"
+        :style="{ [h.axis]: `${h.offset}%` }"
       />
     </template>
 
-    <!-- The drawn shape (fill / border) sits behind the label. The dashed
-         text-selection outline is suppressed while editing so typing feels
-         box-less. -->
-    <div
-      class="diagram-shape absolute inset-0 transition-shadow duration-150"
-      :class="[
-        ...shapeClasses,
-        props.selected && !(shape === 'text' && editing) ? 'is-selected' : '',
-      ]"
-      :style="{ opacity: opacityValue }"
-    />
+    <!-- ===== Non-table shapes: drawn shape (fill / border) + centred label ===== -->
+    <template v-if="shape !== 'table'">
+      <!-- The drawn shape sits behind the label. The dashed text-selection
+           outline is suppressed while editing so typing feels box-less. -->
+      <div
+        class="diagram-shape absolute inset-0 transition-shadow duration-150"
+        :class="[
+          ...shapeClasses,
+          props.selected && !(shape === 'text' && editing) ? 'is-selected' : '',
+        ]"
+        :style="{ opacity: opacityValue }"
+      />
 
-    <!-- Label overlay, always upright (even on a rotated diamond).
-         Text shapes use zero padding + auto-width so the typed content drives
-         the node's footprint (Excalidraw-style); all other shapes get the
-         usual centred padded label. -->
+      <!-- Label overlay, always upright (even on a rotated diamond).
+           Text shapes use zero padding + auto-width so the typed content drives
+           the node's footprint (Excalidraw-style); all other shapes get the
+           usual centred padded label. -->
+      <div
+        class="relative z-10 flex flex-col"
+        :class="
+          shape === 'text'
+            ? 'items-start'
+            : 'max-w-full items-center px-3 py-1.5 text-center'
+        "
+        :style="{ opacity: opacityValue }"
+      >
+        <span
+          v-if="variantBadge"
+          class="mb-0.5 text-[10px] font-semibold uppercase tracking-wider opacity-60"
+          :class="labelClasses"
+        >
+          {{ variantBadge }}
+        </span>
+
+        <input
+          v-if="editing"
+          ref="inputRef"
+          v-model="draft"
+          type="text"
+          :size="shape === 'text' ? Math.max(draft.length || 4, 4) : undefined"
+          class="text-sm font-semibold outline-none"
+          :class="[
+            labelClasses,
+            shape === 'text'
+              // Borderless / transparent so typing a text shape feels like
+              // writing directly on the canvas — no input box around it.
+              // `size` attribute drives width so the input grows with content.
+              ? 'border-0 bg-transparent px-0 py-0 text-left'
+              // Other shapes: also borderless + transparent so the label is typed
+              // directly on the shape fill (no boxed input around it). The palette
+              // text colour (labelClasses) keeps it readable on the fill.
+              : 'w-full border-0 bg-transparent px-1.5 py-0.5 text-center',
+          ]"
+          @keydown.enter.prevent="commitEditing"
+          @keydown.esc.prevent="cancelEditing"
+          @blur="commitEditing"
+        />
+        <div
+          v-else
+          class="cursor-text select-none break-words text-sm font-semibold leading-snug"
+          :class="[labelClasses, shape === 'text' ? '' : 'min-h-[1.25rem]']"
+        >
+          {{ props.data.label }}
+        </div>
+      </div>
+    </template>
+
+    <!-- ===== Crow's-foot ERD entity table ===== -->
+    <!-- In normal flow (not absolute) so the node grows to fit every row and the
+         "+ field" button — otherwise the bottom rows are clipped + unclickable. -->
     <div
-      class="relative z-10 flex flex-col"
-      :class="
-        shape === 'text'
-          ? 'items-start'
-          : 'max-w-full items-center px-3 py-1.5 text-center'
-      "
+      v-else
+      class="erd-table relative flex w-full flex-col overflow-hidden rounded-xl border-2 bg-white text-left dark:bg-slate-800"
+      :class="[palette.border, props.selected ? 'ring-2 ring-indigo-400 dark:ring-indigo-500' : '']"
       :style="{ opacity: opacityValue }"
     >
-      <span
-        v-if="variantBadge"
-        class="mb-0.5 text-[10px] font-semibold uppercase tracking-wider opacity-60"
-        :class="labelClasses"
-      >
-        {{ variantBadge }}
-      </span>
-
-      <input
-        v-if="editing"
-        ref="inputRef"
-        v-model="draft"
-        type="text"
-        :size="shape === 'text' ? Math.max(draft.length || 4, 4) : undefined"
-        class="text-sm font-semibold outline-none"
-        :class="[
-          labelClasses,
-          shape === 'text'
-            // Borderless / transparent so typing a text shape feels like
-            // writing directly on the canvas — no input box around it.
-            // `size` attribute drives width so the input grows with content.
-            ? 'border-0 bg-transparent px-0 py-0 text-left'
-            : 'w-full rounded-md border border-indigo-300 bg-white/90 px-1.5 py-0.5 text-center text-slate-900 focus:border-indigo-500 dark:bg-slate-900/90 dark:text-slate-100',
-        ]"
-        @keydown.enter.prevent="commitEditing"
-        @keydown.esc.prevent="cancelEditing"
-        @blur="commitEditing"
-      />
+      <!-- Entity name (double-click to rename). Drag the table by this header. -->
       <div
-        v-else
-        class="cursor-text select-none break-words text-sm font-semibold leading-snug"
-        :class="[labelClasses, shape === 'text' ? '' : 'min-h-[1.25rem]']"
+        class="erd-table__header border-b-2 px-2 py-1 text-center text-sm font-bold"
+        :class="[palette.border, palette.fill, palette.text]"
+        @dblclick.stop="startEditing"
       >
-        {{ props.data.label }}
+        <input
+          v-if="editing"
+          ref="inputRef"
+          v-model="draft"
+          type="text"
+          class="w-full border-0 bg-transparent text-center font-bold outline-none"
+          :class="palette.text"
+          @keydown.enter.prevent="commitEditing"
+          @keydown.esc.prevent="cancelEditing"
+          @blur="commitEditing"
+        />
+        <span v-else>{{ props.data.label || 'Entity' }}</span>
       </div>
+
+      <!-- Field rows -->
+      <ul class="nodrag divide-y divide-slate-100 text-xs dark:divide-slate-700" :class="palette.text">
+        <li
+          v-for="f in fields"
+          :key="f.id"
+          class="group flex items-center gap-1 px-1.5 py-1"
+        >
+          <button
+            type="button"
+            title="Toggle PK / FK"
+            class="h-4 w-6 shrink-0 rounded text-center text-[9px] font-bold leading-4"
+            :class="
+              f.key === 'PK'
+                ? 'bg-amber-200 text-amber-800 dark:bg-amber-400/30 dark:text-amber-200'
+                : f.key === 'FK'
+                  ? 'bg-sky-200 text-sky-800 dark:bg-sky-400/30 dark:text-sky-200'
+                  : 'text-slate-300 hover:text-slate-500 dark:text-slate-600 dark:hover:text-slate-400'
+            "
+            @click.stop="cycleKey(f)"
+          >
+            {{ f.key || '••' }}
+          </button>
+
+          <input
+            v-if="editingFieldId === f.id"
+            :ref="(el) => setFieldInput(el as Element | null)"
+            v-model="fieldDraft"
+            type="text"
+            class="min-w-0 flex-1 border-0 bg-transparent outline-none"
+            @keydown.enter.prevent="commitFieldEdit"
+            @keydown.esc.prevent="cancelFieldEdit"
+            @blur="commitFieldEdit"
+          />
+          <span
+            v-else
+            class="min-w-0 flex-1 cursor-text truncate"
+            :class="f.name ? '' : 'text-slate-400 dark:text-slate-500'"
+            @click.stop="startFieldEdit(f)"
+          >
+            {{ f.name || 'field' }}
+          </span>
+
+          <button
+            type="button"
+            title="Remove field"
+            aria-label="Remove field"
+            class="i-mdi-close shrink-0 text-sm text-slate-300 opacity-0 transition hover:text-rose-500 group-hover:opacity-100 dark:text-slate-600"
+            @click.stop="removeField(f)"
+          />
+        </li>
+      </ul>
+
+      <!-- Add field -->
+      <button
+        type="button"
+        class="nodrag flex items-center justify-center gap-0.5 border-t border-slate-100 py-1 text-[11px] font-medium text-slate-400 transition hover:bg-slate-50 hover:text-indigo-500 dark:border-slate-700 dark:hover:bg-slate-700/40"
+        @click.stop="addField"
+      >
+        <span class="i-mdi-plus" aria-hidden="true" /> field
+      </button>
     </div>
 
   </div>

@@ -45,7 +45,8 @@ body,
 
 .diagram-shape {
   background-clip: padding-box;
-  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
+  /* Soft, padded ambient shadow for a friendlier Miro/Excalidraw feel. */
+  box-shadow: 0 4px 14px -4px rgba(15, 23, 42, 0.12);
 }
 
 .diagram-shape.is-selected {
@@ -70,62 +71,21 @@ body,
   border-radius: 4px;
 }
 
-/* Connection handles — one small dot per side. Hidden until the node is
-   hovered or selected, and pointer events only fire when the cursor is on
-   the dot itself, so clicks on the node body (and on the resize handles
-   near the edge) don't accidentally start a connection drag. */
+/* Connection handles — one per side. The visible "connection dots" were
+   removed: handles stay in the DOM purely as anchor points so the toolbar
+   Arrow tool can attach edges to a node's sides, but they're never shown and
+   never accept pointer input (you connect shapes with the Arrow tool, not by
+   dragging a dot). */
 .handle-side {
-  width: 12px !important;
-  height: 12px !important;
-  background: #6366f1 !important;
-  border: 2px solid #fff !important;
-  border-radius: 9999px !important;
-  opacity: 0;
-  pointer-events: none;
-  transition:
-    opacity 0.12s ease,
-    transform 0.12s ease,
-    background 0.12s ease;
+  width: 1px !important;
+  height: 1px !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  background: transparent !important;
+  border: 0 !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
   z-index: 6;
-}
-
-.dark .handle-side {
-  border-color: #0f172a !important;
-}
-
-/* Reveal on hover / selection — and only then accept pointer input. */
-.vue-flow__node:hover .handle-side,
-.vue-flow__node.selected .handle-side {
-  opacity: 1;
-  pointer-events: all;
-}
-
-.handle-side:hover {
-  background: #4f46e5 !important;
-  transform: translate(-50%, -50%) scale(1.35);
-}
-
-/* Vue Flow positions handles with transform: translate(-50%, ...) per side;
-   preserve those translations when the hover scale is applied. */
-.handle-side.vue-flow__handle-top:hover {
-  transform: translate(-50%, -50%) scale(1.35);
-}
-.handle-side.vue-flow__handle-bottom:hover {
-  transform: translate(-50%, 50%) scale(1.35);
-}
-.handle-side.vue-flow__handle-left:hover {
-  transform: translate(-50%, -50%) scale(1.35);
-}
-.handle-side.vue-flow__handle-right:hover {
-  transform: translate(50%, -50%) scale(1.35);
-}
-
-/* Keep the active connection start handle visible mid-drag. */
-.handle-side.connecting,
-.handle-side.connectionindicator {
-  opacity: 1 !important;
-  pointer-events: all !important;
-  background: #4f46e5 !important;
 }
 
 /* ----------------------------------------------------------- Sketch mode --- */

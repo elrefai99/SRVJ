@@ -47,6 +47,19 @@ const tools: Tool[] = [
   { key: 'output', label: 'Output node', icon: 'i-mdi-export', shape: 'rectangle', variant: 'output' },
 ]
 
+// ERD shapes — Chen notation stamps + a crow's-foot relational table.
+const erdTools: Tool[] = [
+  { key: 'entity', label: 'Entity', icon: 'i-mdi-rectangle-outline', shape: 'entity', variant: 'default' },
+  { key: 'weak-entity', label: 'Weak entity', icon: 'i-mdi-checkbox-multiple-blank-outline', shape: 'weak-entity', variant: 'default' },
+  { key: 'relationship', label: 'Relationship', icon: 'i-mdi-rhombus-outline', shape: 'relationship', variant: 'default' },
+  { key: 'weak-relationship', label: 'Weak relationship', icon: 'i-mdi-cards-outline', shape: 'weak-relationship', variant: 'default' },
+  { key: 'attribute', label: 'Attribute', icon: 'i-mdi-ellipse-outline', shape: 'attribute', variant: 'default' },
+  { key: 'key-attribute', label: 'Key attribute', icon: 'i-mdi-key-outline', shape: 'key-attribute', variant: 'default' },
+  { key: 'multivalued-attribute', label: 'Multivalued attribute', icon: 'i-mdi-checkbox-multiple-blank-circle-outline', shape: 'multivalued-attribute', variant: 'default' },
+  { key: 'derived-attribute', label: 'Derived attribute', icon: 'i-mdi-circle-double', shape: 'derived-attribute', variant: 'default' },
+  { key: 'table', label: 'ERD table (crow’s-foot)', icon: 'i-mdi-table', shape: 'table', variant: 'default' },
+]
+
 const swatches: { key: NodeColor; class: string }[] = [
   { key: 'slate', class: 'bg-white border border-slate-300' },
   { key: 'blue', class: 'bg-sky-300' },
@@ -137,14 +150,14 @@ function onOpacityInput(event: Event) {
 
 <template>
   <aside
-    class="pointer-events-auto absolute left-4 top-4 z-10 flex max-h-[calc(100vh-6rem)] w-[96px] flex-col items-center gap-1.5 overflow-y-auto rounded-2xl border border-slate-200/80 bg-white/85 p-2 shadow-xl backdrop-blur-md dark:border-slate-700/80 dark:bg-slate-800/85"
+    class="pointer-events-auto absolute left-4 top-4 z-10 flex max-h-[calc(100vh-6rem)] w-40 flex-col items-center gap-1.5 overflow-y-auto rounded-2xl border border-slate-200/80 bg-white/85 p-2 shadow-xl backdrop-blur-md dark:border-slate-700/80 dark:bg-slate-800/85"
   >
     <!-- Select / cursor tool -->
     <button
       type="button"
       title="Select & move (V)"
       aria-label="Select tool"
-      class="flex h-11 w-11 items-center justify-center rounded-xl border text-xl transition-colors active:scale-95"
+      class="flex h-8 w-8 items-center justify-center rounded-lg border text-lg transition-colors active:scale-95"
       :class="
         isSelectTool
           ? 'border-indigo-300 bg-indigo-50 text-indigo-600 dark:border-indigo-500/40 dark:bg-indigo-500/15 dark:text-indigo-300'
@@ -157,25 +170,55 @@ function onOpacityInput(event: Event) {
 
     <span class="my-0.5 h-px w-9 bg-slate-200 dark:bg-slate-700" />
 
-    <button
-      v-for="tool in tools"
-      :key="tool.key"
-      type="button"
-      draggable="true"
-      :title="`${tool.label} — click to pick, then drag on the canvas to draw`"
-      :aria-label="tool.label"
-      :aria-pressed="isActive(tool)"
-      class="flex h-11 w-11 items-center justify-center rounded-xl border text-xl transition-colors active:scale-95"
-      :class="
-        isActive(tool)
-          ? 'border-indigo-300 bg-indigo-50 text-indigo-600 dark:border-indigo-500/40 dark:bg-indigo-500/15 dark:text-indigo-300'
-          : 'border-transparent text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-700'
-      "
-      @click="pickTool(tool)"
-      @dragstart="onDragStart($event, tool)"
-    >
-      <span :class="tool.icon" aria-hidden="true" />
-    </button>
+    <div class="grid grid-cols-4 justify-items-center gap-1">
+      <button
+        v-for="tool in tools"
+        :key="tool.key"
+        type="button"
+        draggable="true"
+        :title="`${tool.label} — click to pick, then drag on the canvas to draw`"
+        :aria-label="tool.label"
+        :aria-pressed="isActive(tool)"
+        class="flex h-8 w-8 items-center justify-center rounded-lg border text-lg transition-colors active:scale-95"
+        :class="
+          isActive(tool)
+            ? 'border-indigo-300 bg-indigo-50 text-indigo-600 dark:border-indigo-500/40 dark:bg-indigo-500/15 dark:text-indigo-300'
+            : 'border-transparent text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-700'
+        "
+        @click="pickTool(tool)"
+        @dragstart="onDragStart($event, tool)"
+      >
+        <span :class="tool.icon" aria-hidden="true" />
+      </button>
+    </div>
+
+    <!-- ERD shapes (Chen notation + crow's-foot table) -->
+    <span class="my-1 h-px w-9 bg-slate-200 dark:bg-slate-700" />
+    <span class="px-1 pb-0.5 text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+      ERD
+    </span>
+
+    <div class="grid grid-cols-4 justify-items-center gap-1">
+      <button
+        v-for="tool in erdTools"
+        :key="tool.key"
+        type="button"
+        draggable="true"
+        :title="`${tool.label} — click to pick, then drag on the canvas to draw`"
+        :aria-label="tool.label"
+        :aria-pressed="isActive(tool)"
+        class="flex h-8 w-8 items-center justify-center rounded-lg border text-lg transition-colors active:scale-95"
+        :class="
+          isActive(tool)
+            ? 'border-indigo-300 bg-indigo-50 text-indigo-600 dark:border-indigo-500/40 dark:bg-indigo-500/15 dark:text-indigo-300'
+            : 'border-transparent text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-700'
+        "
+        @click="pickTool(tool)"
+        @dragstart="onDragStart($event, tool)"
+      >
+        <span :class="tool.icon" aria-hidden="true" />
+      </button>
+    </div>
 
     <span class="my-1 h-px w-9 bg-slate-200 dark:bg-slate-700" />
 
@@ -183,7 +226,7 @@ function onOpacityInput(event: Event) {
       {{ hasSelection ? 'Fill' : 'Color' }}
     </span>
 
-    <div class="grid grid-cols-2 gap-1.5">
+    <div class="grid grid-cols-3 justify-items-center gap-1.5">
       <button
         v-for="swatch in swatches"
         :key="swatch.key"
@@ -229,7 +272,7 @@ function onOpacityInput(event: Event) {
     <span class="px-1 pb-0.5 text-[10px] font-semibold uppercase tracking-wider text-slate-400">
       Stroke
     </span>
-    <div class="grid grid-cols-1 gap-0.5">
+    <div class="grid grid-cols-3 gap-1">
       <button
         v-for="opt in strokeStyleOptions"
         :key="opt.value"
@@ -253,7 +296,7 @@ function onOpacityInput(event: Event) {
     <span class="px-1 pb-0.5 pt-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400">
       Width
     </span>
-    <div class="grid grid-cols-3 gap-0.5">
+    <div class="grid grid-cols-3 gap-1">
       <button
         v-for="opt in strokeWidthOptions"
         :key="opt.value"
@@ -299,7 +342,7 @@ function onOpacityInput(event: Event) {
     </div>
 
     <span class="my-1 h-px w-9 bg-slate-200 dark:bg-slate-700" />
-    <a
+        <a
       href="https://elrefai.me/"
       target="_blank"
       rel="noopener noreferrer"
