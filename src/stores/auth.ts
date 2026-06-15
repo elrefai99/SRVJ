@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { ApiError, apiFetch, registerTokenRefresher } from '@/utils/api'
 import { storage } from '@/utils/storage'
-import { AUTH_TOKEN_STORAGE_KEY } from '@/utils/constants'
+import { API_BASE_URL, AUTH_TOKEN_STORAGE_KEY } from '@/utils/constants'
 import type {
   AuthData,
   LoginPayload,
@@ -87,6 +87,79 @@ export const useAuthStore = defineStore('auth', {
       } finally {
         this.loading = false
       }
+    },
+
+    /**
+     * Begin the server-side Google OAuth flow by handing the browser off to the
+     * backend's `/auth/google` route. The backend walks the user through
+     * Google's consent screen and redirects back to the app with a `?token=`,
+     * which {@link consumeRedirectToken} adopts on the next load. This navigates
+     * away from the page, so it never returns.
+     */
+    loginWithGoogle() {
+      if (!API_BASE_URL) {
+        this.error = 'Google sign-in is unavailable right now.'
+        return
+      }
+      this.error = null
+      window.location.href = `${API_BASE_URL}/auth/google`
+    },
+
+    /**
+     * Exchange a Google ID token (the `credential` from the Identity Services
+     * popup / One Tap) for an SRVJ session: POST it to `/auth/google`, store the
+     * returned bearer token, then load the profile — same end state as a normal
+     * `login`. The backend is responsible for verifying the credential's
+     * signature and audience before issuing a token.
+     */
+    async loginWithGoogleCredential(credential: string) {
+      this.loading = true
+      this.error = null
+      try {
+        const data = await apiFetch<AuthData>('/auth/google', {
+          method: 'POST',
+          body: { credential },
+        })
+        this.setToken(data.token)
+        await this.fetchProfile()
+      } catch (error) {
+        this.error = messageOf(error)
+        throw error
+      } finally {
+        this.loading = false
+      }
+    },
+
+    /**
+     * Adopt an access token handed back in the URL by the Google OAuth redirect
+     * (`/?token=<jwt>`), then strip it (and any `auth_error`) from the address
+     * bar so it isn't bookmarked, shared, or logged. A `?auth_error=` is
+     * surfaced via `error` instead. Returns `true` when a token was adopted.
+     */
+    consumeRedirectToken(): boolean {
+      if (typeof window === 'undefined') return false
+
+      const params = new URLSearchParams(window.location.search)
+      const token = params.get('token')
+      const authError = params.get('auth_error')
+      if (!token && !authError) return false
+
+      // Scrub the auth params and rewrite the URL without a navigation.
+      params.delete('token')
+      params.delete('auth_error')
+      const query = params.toString()
+      const cleanUrl = `${window.location.pathname}${query ? `?${query}` : ''}${window.location.hash}`
+      window.history.replaceState({}, '', cleanUrl)
+
+      if (authError) {
+        this.error = authError
+        return false
+      }
+      if (token) {
+        this.setToken(token)
+        return true
+      }
+      return false
     },
 
     /** Fetch `/user/me`; clears the session if the token is rejected (401). */
@@ -180,6 +253,9 @@ export const useAuthStore = defineStore('auth', {
     async init() {
       // Let apiFetch transparently renew an expired access token on any 401.
       registerTokenRefresher(() => this.refresh())
+      // Adopt a token returned by the Google OAuth redirect, if we just landed
+      // back from one — this seeds `this.token` before the check below.
+      this.consumeRedirectToken()
       if (!this.token) return
       try {
         await this.fetchProfile()

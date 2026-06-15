@@ -22,6 +22,13 @@ export const AUTH_TOKEN_STORAGE_KEY = 'srvj:auth-token'
  * Override per-environment with a `VITE_API_URL` env var.
  */
 export const API_BASE_URL = import.meta.env.VITE_API_URL as string | undefined
+
+/**
+ * Google OAuth **web** client ID, used to render the Google Identity Services
+ * sign-in popup / One Tap card. Set it via `VITE_GOOGLE_CLIENT_ID`; when absent,
+ * the auth dialog falls back to the server-redirect Google button.
+ */
+export const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID as string | undefined
 export const AUTOSAVE_DELAY = 500
 export const MAX_HISTORY = 50
 export const DEFAULT_VARIANT: NodeVariant = 'default'

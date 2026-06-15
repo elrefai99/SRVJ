@@ -1,32 +1,68 @@
 <script setup lang="ts">
 import { computed, nextTick, reactive, ref, watch } from 'vue'
 import { useAuthStore } from '@/stores/auth'
+import { useGoogleAuth } from '@/composables/useGoogleAuth'
 
 const props = defineProps<{ open: boolean }>()
 const emit = defineEmits<{ (e: 'close'): void }>()
 
 const auth = useAuthStore()
+const google = useGoogleAuth()
 
 type Mode = 'login' | 'register'
 const mode = ref<Mode>('login')
 const form = reactive({ fullname: '', email: '', password: '' })
 const emailInput = ref<HTMLInputElement | null>(null)
+const googleButton = ref<HTMLElement | null>(null)
 
 const isRegister = computed(() => mode.value === 'register')
 const title = computed(() => (isRegister.value ? 'Create your account' : 'Welcome back'))
 const submitLabel = computed(() => (isRegister.value ? 'Sign up' : 'Sign in'))
 
+/** Exchange the Google ID token from the popup for an SRVJ session. */
+async function onGoogleCredential(credential: string) {
+  try {
+    await auth.loginWithGoogleCredential(credential)
+    emit('close')
+  } catch {
+    // Error surfaced via auth.error; keep the dialog open for a retry.
+  }
+}
+
+/**
+ * Boot Google Identity Services once the dialog is open and its button slot has
+ * mounted: render the official button and surface the One Tap account-chooser
+ * popup. Failures (script blocked, misconfigured origin) are swallowed — the
+ * email form and redirect fallback still work.
+ */
+async function mountGoogleSignIn() {
+  if (!google.isConfigured || !googleButton.value) return
+  try {
+    await google.init(onGoogleCredential)
+    google.renderButton(googleButton.value)
+    google.prompt()
+  } catch {
+    // GIS unavailable; the rest of the dialog remains usable.
+  }
+}
+
 // Reset transient state and focus the first field whenever the dialog opens.
 watch(
   () => props.open,
   (open) => {
-    if (!open) return
+    if (!open) {
+      google.cancel() // dismiss the One Tap card when closing
+      return
+    }
     mode.value = 'login'
     form.fullname = ''
     form.email = ''
     form.password = ''
     auth.error = null
-    nextTick(() => emailInput.value?.focus())
+    nextTick(() => {
+      emailInput.value?.focus()
+      void mountGoogleSignIn()
+    })
   },
 )
 
@@ -166,6 +202,28 @@ async function onSubmit() {
             {{ auth.loading ? 'Please wait…' : submitLabel }}
           </button>
         </form>
+
+        <div class="my-4 flex items-center gap-3" aria-hidden="true">
+          <span class="h-px flex-1 bg-slate-200 dark:bg-slate-700" />
+          <span class="text-xs font-medium uppercase tracking-wide text-slate-400">or</span>
+          <span class="h-px flex-1 bg-slate-200 dark:bg-slate-700" />
+        </div>
+
+        <!-- Google Identity Services button (renders the account-chooser popup
+             on click; the One Tap card is also prompted when the dialog opens). -->
+        <div v-show="google.isConfigured" ref="googleButton" class="flex justify-center" />
+
+        <!-- Fallback when no Google client ID is configured: server-redirect flow. -->
+        <button
+          v-if="!google.isConfigured"
+          type="button"
+          :disabled="auth.loading"
+          class="inline-flex w-full items-center justify-center gap-2.5 rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-700 shadow-sm transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+          @click="auth.loginWithGoogle()"
+        >
+          <span class="i-logos-google-icon text-base" aria-hidden="true" />
+          Continue with Google
+        </button>
       </div>
     </div>
   </Teleport>
