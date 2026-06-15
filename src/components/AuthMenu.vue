@@ -1,16 +1,41 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useAuthStore } from '@/stores/auth'
+import { useGoogleAuth } from '@/composables/useGoogleAuth'
 import AuthDialog from './AuthDialog.vue'
 import ProfileDialog from './ProfileDialog.vue'
 
 const auth = useAuthStore()
+const google = useGoogleAuth()
 const { user, isAuthenticated, loading } = storeToRefs(auth)
 
 const dialogOpen = ref(false)
 const profileOpen = ref(false)
 const menuOpen = ref(false)
+
+/** Exchange the Google ID token from the One Tap card for an SRVJ session. */
+async function onGoogleCredential(credential: string) {
+  try {
+    await auth.loginWithGoogleCredential(credential)
+  } catch {
+    // Error surfaced via auth.error; the sign-in button stays available.
+  }
+}
+
+// Surface Google's One Tap account-chooser card automatically on load for
+// signed-out visitors (the floating top-right popup). Skipped when a session
+// token is already persisted, so returning users aren't prompted over a valid
+// session, and a no-op unless a client ID is configured.
+onMounted(async () => {
+  if (!google.isConfigured || auth.token) return
+  try {
+    await google.init(onGoogleCredential)
+    google.prompt()
+  } catch {
+    // GIS blocked/misconfigured; the manual sign-in button still works.
+  }
+})
 
 function openDialog() {
   dialogOpen.value = true
