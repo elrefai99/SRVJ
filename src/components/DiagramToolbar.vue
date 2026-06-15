@@ -51,7 +51,7 @@ function confirmReset() {
     class="flex flex-wrap items-center gap-x-3 gap-y-2 border-b border-slate-200 bg-white/85 px-3 py-2 backdrop-blur dark:border-slate-700 dark:bg-slate-900/85 sm:px-4"
   >
     <div class="mr-1 flex shrink-0 items-center">
-      <img src="/favicon.png" alt="SRVJ" class="h-12 w-12 rounded-lg shadow-sm" />
+      <img src="/favicon.png" alt="SRVJ" class="h-12 w-14 rounded-lg shadow-sm" />
     </div>
 
     <div class="flex flex-wrap items-center gap-2">
