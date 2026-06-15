@@ -5,6 +5,7 @@ import bcrypt from "bcryptjs"
 import { V4 } from "paseto";
 import { AppError } from "../../../utils/errors/app-error";
 import { token_PASETO } from "../utils/paseto.utils";
+import { avatarProfile } from "../../../functions/upload/avatar.image.fun";
 
 export class BaseAuth {
      private API_KEY_SALT: number
@@ -40,10 +41,19 @@ export class BaseAuth {
                     fullname: payload.fullname,
                     username: `${payload.fullname}_${Math.floor(Math.random() * 10001)}`,
                     email: payload.email.toLowerCase(),
-                    password: newPassword
+                    password: newPassword,
                },
                select: {
                     id: true
+               }
+          })
+          const avatar = await avatarProfile(payload.fullname, new_account.id)
+          await prisma.user.update({
+               where: {
+                    id: new_account.id
+               },
+               data: {
+                    avatar
                }
           })
           return { success: true, error: false, message: "Success create new account", data: { id: new_account.id } }
