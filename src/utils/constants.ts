@@ -15,6 +15,13 @@ export const DIAGRAM_VERSION = 3
 export const STORAGE_KEY = 'srvj:diagram'
 export const THEME_STORAGE_KEY = 'srvj:theme'
 export const SKETCH_STORAGE_KEY = 'srvj:sketch'
+export const AUTH_TOKEN_STORAGE_KEY = 'srvj:auth-token'
+
+/**
+ * Base URL of the SRVJ backend (all auth/user endpoints live under it).
+ * Override per-environment with a `VITE_API_URL` env var.
+ */
+export const API_BASE_URL = import.meta.env.VITE_API_URL as string | undefined
 export const AUTOSAVE_DELAY = 500
 export const MAX_HISTORY = 50
 export const DEFAULT_VARIANT: NodeVariant = 'default'

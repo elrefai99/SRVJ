@@ -6,6 +6,7 @@ import { useDarkMode } from '@/composables/useDarkMode'
 import { useSketchMode } from '@/composables/useSketchMode'
 import { downloadDiagram, parseDiagram, readFileAsText } from '@/utils/exportImport'
 import ToolbarButton from './ToolbarButton.vue'
+import AuthMenu from './AuthMenu.vue'
 
 const store = useDiagramStore()
 const { canUndo, canRedo, hasSelection, selectedCount, nodeCount, edgeCount } = storeToRefs(store)
@@ -132,6 +133,10 @@ function confirmReset() {
           aria-hidden="true"
         />
       </button>
+
+      <span class="hidden h-6 w-px bg-slate-200 dark:bg-slate-700 sm:block" />
+
+      <AuthMenu />
     </div>
   </header>
 </template>

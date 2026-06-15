@@ -1,0 +1,40 @@
+/**
+ * Standard response envelope returned by every SRVJ backend endpoint.
+ * Successful calls carry `success: true` and a typed `data` payload; handled
+ * failures carry `success: false`, `error: true`, and a human `message`.
+ */
+export interface ApiEnvelope<T> {
+  code: number
+  status: string
+  timestamp: number | string
+  success: boolean
+  error: boolean
+  message: string
+  data: T
+}
+
+/** Authenticated user profile, as returned by `GET /user/me`. */
+export interface User {
+  id: number
+  fullname: string
+  email: string
+  username: string
+  avatar: string
+}
+
+/** `data` payload of `POST /auth/login` and `POST /auth/refresh`. */
+export interface AuthData {
+  /** Short-lived bearer access token (also mirrored into an httpOnly cookie). */
+  token: string
+}
+
+export interface LoginPayload {
+  email: string
+  password: string
+}
+
+export interface RegisterPayload {
+  fullname: string
+  email: string
+  password: string
+}

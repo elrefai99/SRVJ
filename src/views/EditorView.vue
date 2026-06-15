@@ -9,9 +9,11 @@ import { useKeyboardShortcuts } from '@/composables/useKeyboardShortcuts'
 import { useDarkMode } from '@/composables/useDarkMode'
 import { useSketchMode } from '@/composables/useSketchMode'
 import { useSeo } from '@/composables/useSeo'
+import { useAuthStore } from '@/stores/auth'
 
 useSeo({ title: 'SRVJ — Free Online Diagram Editor & Whiteboard', path: '/' })
 
+const auth = useAuthStore()
 const persistence = useDiagramPersistence()
 const { init: initDarkMode } = useDarkMode()
 const { init: initSketchMode } = useSketchMode()
@@ -30,6 +32,8 @@ onMounted(() => {
   initDarkMode()
   initSketchMode()
   persistence.start() // begin debounced auto-save
+  // Validate any persisted token and load the profile (no-op when signed out).
+  void auth.init()
 })
 </script>
 
