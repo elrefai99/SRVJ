@@ -2,6 +2,7 @@
 import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 import { useHead } from "@unhead/vue";
 import AuthDialog from "@/components/AuthDialog.vue";
+import NavBar from "@/components/navBar.vue";
 import { useSeo } from "@/composables/useSeo";
 import { SITE_DESCRIPTION } from "@/utils/constants";
 
@@ -21,7 +22,6 @@ useHead({
 });
 
 const root = ref<HTMLElement | null>(null);
-const scrolled = ref(false);
 const authOpen = ref(false);
 
 // ---- Features ----------------------------------------------------------
@@ -118,16 +118,10 @@ const current = computed(() => useCases[activeUseCase.value]);
 
 const year = new Date().getFullYear();
 
-// ---- Scroll nav + reveal-on-scroll ------------------------------------
+// ---- Reveal-on-scroll --------------------------------------------------
 let io: IntersectionObserver | undefined;
-function onScroll() {
-  scrolled.value = window.scrollY > 24;
-}
 
 onMounted(() => {
-  onScroll();
-  window.addEventListener("scroll", onScroll, { passive: true });
-
   const els = root.value
     ? Array.from(root.value.querySelectorAll<HTMLElement>(".reveal"))
     : [];
@@ -150,7 +144,6 @@ onMounted(() => {
 });
 
 onBeforeUnmount(() => {
-  window.removeEventListener("scroll", onScroll);
   io?.disconnect();
 });
 </script>
@@ -158,35 +151,7 @@ onBeforeUnmount(() => {
 <template>
   <div ref="root" class="lp" style="overflow-x: hidden; background: #0a0a0f">
     <!-- ============ NAV ============ -->
-    <header
-      class="fixed left-0 right-0 top-0 z-50 border-b border-transparent bg-black/70 backdrop-blur-xl transition-all duration-300"
-      :class="scrolled ? 'border-white/10 shadow-lg shadow-black/40' : ''"
-    >
-      <nav class="mx-auto flex max-w-[1180px] items-center justify-between px-6 py-4">
-        <a href="#top" class="flex items-center gap-2.5 no-underline">
-          <img src="/favicon.png" alt="SRVJ" class="h-9.5 w-11.5 rounded-lg" />
-        </a>
-        <div class="flex items-center gap-6">
-          <a href="#features" class="hidden text-[14.5px] font-medium text-[#c7c7d1] no-underline transition-colors hover:text-white md:inline">Features</a>
-          <a href="#usecases" class="hidden text-[14.5px] font-medium text-[#c7c7d1] no-underline transition-colors hover:text-white md:inline">Use cases</a>
-          <a href="#compare" class="hidden text-[14.5px] font-medium text-[#c7c7d1] no-underline transition-colors hover:text-white md:inline">Compare</a>
-          <button
-            type="button"
-            class="cursor-pointer border-0 bg-transparent text-[14.5px] font-medium text-[#c7c7d1] transition-colors hover:text-white"
-            @click="authOpen = true"
-          >
-            Sign in
-          </button>
-          <button
-            type="button"
-            class="inline-flex cursor-pointer items-center justify-center rounded-[10px] bg-[#6366f1] px-[18px] py-2.5 text-[14.5px] font-semibold text-white shadow-[0_6px_18px_rgba(99,102,241,.4)] transition-all hover:-translate-y-0.5 hover:bg-[#5457e5] hover:shadow-[0_14px_34px_rgba(99,102,241,.6)]"
-            @click="authOpen = true"
-          >
-            Get started
-          </button>
-        </div>
-      </nav>
-    </header>
+    <NavBar variant="landing" @auth="authOpen = true" />
 
     <!-- ============ HERO ============ -->
     <section
@@ -322,7 +287,7 @@ onBeforeUnmount(() => {
 
       <!-- canvas preview window -->
       <div
-        class="reveal"
+        class="reveal lp-hero-preview"
         style="position: relative; max-width: 1000px; margin: 64px auto 0"
       >
         <div
@@ -531,7 +496,7 @@ onBeforeUnmount(() => {
             <div
               style="
                 position: absolute;
-                left: 6%;
+                left: 10%;
                 top: 20%;
                 padding: 13px 20px;
                 border-radius: 12px;
@@ -550,7 +515,7 @@ onBeforeUnmount(() => {
               style="
                 position: absolute;
                 left: 43%;
-                top: 33%;
+                top: 32%;
                 width: 120px;
                 height: 90px;
                 display: flex;
@@ -582,7 +547,7 @@ onBeforeUnmount(() => {
             <div
               style="
                 position: absolute;
-                left: 73%;
+                left: 77%;
                 top: 22%;
                 padding: 13px 20px;
                 border-radius: 12px;
@@ -725,6 +690,7 @@ onBeforeUnmount(() => {
     <!-- ============ FEATURES ============ -->
     <section
       id="features"
+      class="lp-dots"
       style="background: #ffffff; padding: 110px 24px; scroll-margin-top: 80px"
     >
       <div style="max-width: 1180px; margin: 0 auto">
@@ -814,6 +780,7 @@ onBeforeUnmount(() => {
     <!-- ============ USE CASES ============ -->
     <section
       id="usecases"
+      class="lp-dots"
       style="background: #f7f7f9; padding: 110px 24px; scroll-margin-top: 80px"
     >
       <div style="max-width: 1180px; margin: 0 auto">
@@ -883,6 +850,7 @@ onBeforeUnmount(() => {
             "
           >
             <div
+              class="lp-uc-left"
               style="
                 padding: 52px 44px;
                 display: flex;
@@ -934,6 +902,7 @@ onBeforeUnmount(() => {
               </button>
             </div>
             <div
+              class="lp-uc-right"
               style="
                 position: relative;
                 min-height: 380px;
@@ -970,9 +939,9 @@ onBeforeUnmount(() => {
     </section>
 
     <!-- ============ CTA ============ -->
-    <section style="background: #ffffff; padding: 90px 24px">
+    <section class="lp-dots" style="background: #ffffff; padding: 90px 24px">
       <div
-        class="reveal"
+        class="reveal lp-cta"
         style="
           max-width: 1100px;
           margin: 0 auto;
@@ -1032,7 +1001,7 @@ onBeforeUnmount(() => {
     </section>
 
     <!-- ============ FOOTER ============ -->
-    <footer style="background: #0a0a0f; color: #c7c7d1; padding: 70px 24px 40px">
+    <footer class="lp-footer lp-dots-on-dark" style="background: #0a0a0f; color: #c7c7d1; padding: 70px 24px 40px">
       <div style="max-width: 1180px; margin: 0 auto">
         <div
           style="
@@ -1059,11 +1028,6 @@ onBeforeUnmount(() => {
                 alt="SRVJ"
                 style="height: 38px; width: 46px; border-radius: 9px"
               />
-              <span
-                class="lp-display"
-                style="font-weight: 700; font-size: 19px; color: #f4f4f7"
-                >SRVJ</span
-              >
             </a>
             <p
               style="
@@ -1269,10 +1233,66 @@ onBeforeUnmount(() => {
   transform: none;
 }
 
-/* Stack the use-case panel + hide nav links on small screens */
-@media (max-width: 760px) {
+/* Dotted texture layered over a section's background colour (the hero + CTA
+   card carry their own). `!important` beats the inline `background:` shorthand,
+   which otherwise resets background-image to none. */
+.lp-dots {
+  background-image: radial-gradient(rgba(15, 23, 42, 0.06) 1px, transparent 1px) !important;
+  background-size: 24px 24px !important;
+}
+.lp-dots-on-dark {
+  background-image: radial-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px) !important;
+  background-size: 24px 24px !important;
+}
+
+/* ------------------------------------------------------------ Mobile view ---
+   The marketing layout is desktop-tuned with inline styles, so phone overrides
+   live here and use `!important` to win over the inline padding/margins.
+   `clamp()` headings + `auto-fit` grids already scale; this mainly trims the
+   generous vertical rhythm and the roomy use-case panel so it reads on a phone. */
+@media (max-width: 768px) {
+  /* Section spacing — desktop uses 110–150px which wastes the fold on mobile. */
+  #top {
+    padding-top: 116px !important;
+    padding-bottom: 56px !important;
+  }
+  #features,
+  #usecases {
+    padding-top: 64px !important;
+    padding-bottom: 64px !important;
+  }
+  /* The mock-editor preview's floating nodes use fixed px sizes with percentage
+     positions tuned for a ~1000px canvas, so they overlap badly on a phone.
+     Hide the decorative preview here — the headline + CTAs carry the hero. */
+  .lp-hero-preview {
+    display: none !important;
+  }
+
+  /* Stack the use-case panel and shrink its roomy inner padding. */
   .lp-uc-panel {
     grid-template-columns: 1fr !important;
+  }
+  .lp-uc-left {
+    padding: 36px 24px !important;
+  }
+  .lp-uc-right {
+    min-height: 220px !important;
+  }
+
+  .lp-cta {
+    padding: 56px 24px !important;
+  }
+  .lp-footer {
+    padding: 56px 22px 36px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  #top {
+    padding-top: 104px !important;
+  }
+  .lp-uc-left {
+    padding: 30px 20px !important;
   }
 }
 </style>

@@ -32,7 +32,7 @@ html.dark,
   background-color: #010101;
 }
 
-/* Top navbar / toolbar (AppHeader + DiagramToolbar use `dark:bg-slate-900/85`). */
+/* Top navbar / toolbar (navBar + DiagramToolbar use `dark:bg-slate-900/85`). */
 .dark .dark\:bg-slate-900\/85 {
   background-color: #020202;
 }

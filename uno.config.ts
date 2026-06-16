@@ -23,8 +23,24 @@ export default defineConfig({
     }),
   ],
   transformers: [transformerDirectives(), transformerVariantGroup()],
-  // Safelist icons referenced dynamically (so they're always generated).
-  safelist: ['i-solar-moon-bold', 'i-solar-sun-2-bold'],
+  // Safelist icons referenced dynamically via `:class` bindings (so they're
+  // always generated — UnoCSS can't see them as literal class strings).
+  safelist: [
+    // Theme toggle (navBar / DiagramToolbar)
+    'i-solar-moon-bold',
+    'i-solar-sun-2-bold',
+    // Home page feature cards (`:class="f.icon"`)
+    'i-carbon-flow',
+    'i-mdi-draw',
+    'i-mdi-sticky-note-outline',
+    'i-mdi-folder-multiple-outline',
+    'i-mdi-cloud-check-outline',
+    'i-mdi-share-variant-outline',
+    // Dashboard project-visibility badges (`:class="VISIBILITY_ICON[...]"`)
+    'i-mdi-lock-outline',
+    'i-mdi-earth',
+    'i-mdi-link-variant',
+  ],
   theme: {
     colors: {
       canvas: {
