@@ -1,6 +1,3 @@
-import path from "path";
-import fs from "fs-extra";
-import { readFile } from "fs/promises";
 import sharp from "sharp";
 import cloudinary from "../../config/cloudinary";
 
@@ -28,11 +25,11 @@ export async function imagesUpload(payload: any, ImagesID: any) {
 
      const uploadTasks = payload["images"].map(async (file: any) => {
           try {
-               const url = await imageProcess(file.filename, ImagesID);
-               return { image: url, path: file.path };
+               const url = await imageProcess(file.buffer, ImagesID);
+               return { image: url, originalname: file.originalname };
           } catch (error) {
                console.log(`Error uploading image: ${error}`)
-               return { error: "Failed to upload image", path: file.path };
+               return { error: "Failed to upload image", originalname: file.originalname };
           }
      });
 
@@ -40,37 +37,20 @@ export async function imagesUpload(payload: any, ImagesID: any) {
      return results;
 };
 
-export async function avatarProcess(imgName: any, userID: any): Promise<string> {
-     const buffer = await sharp(
-          await readFile(path.join(__dirname, '../../../', `cdn/user/${imgName}`))
-     ).resize({ width: 450, height: 450 })
+export async function avatarProcess(fileBuffer: Buffer, userID: any): Promise<string> {
+     const buffer = await sharp(fileBuffer)
+          .resize({ width: 450, height: 450 })
           .webp({ quality: 100 })
           .toBuffer();
 
-     const url = await uploadBuffer(buffer, `user/avatars/${userID}`);
-
-     fs.unlink(path.join(__dirname, '../../../', `cdn/user/${imgName}`), (err) => {
-          if (err) console.log(err);
-     });
-
-     return url;
+     return uploadBuffer(buffer, `user/avatars/${userID}`);
 };
 
-export async function imageProcess(imgName: any, userID: any): Promise<string> {
-     const buffer = await sharp(
-          await readFile(path.join(__dirname, '../../../', `cdn/user/${imgName}`))
-     ).withMetadata()
+export async function imageProcess(fileBuffer: Buffer, userID: any): Promise<string> {
+     const buffer = await sharp(fileBuffer)
+          .withMetadata()
           .webp({ quality: 100 })
           .toBuffer();
 
-     const url = await uploadBuffer(buffer, `/${userID}`);
-
-     fs.unlink(
-          path.join(__dirname, '../../../', `cdn/user/${imgName}`),
-          (err) => {
-               if (err) console.log(err);
-          }
-     );
-
-     return url;
+     return uploadBuffer(buffer, `/${userID}`);
 };
