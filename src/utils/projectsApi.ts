@@ -36,7 +36,7 @@ export function createProject(payload: ProjectPayload, token: string | null) {
 }
 
 export function updateProject(siteId: string, payload: ProjectPayload, token: string | null) {
-  return apiFetch<Project>(`/project/${siteId}`, { method: 'PATCH', body: payload, token })
+  return apiFetch<Project>(`/project/edit/${siteId}`, { method: 'PUT', body: payload, token })
 }
 
 export function deleteProject(siteId: string, token: string | null) {

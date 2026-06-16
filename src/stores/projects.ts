@@ -52,13 +52,14 @@ export const useProjectsStore = defineStore('projects', {
       }
     },
 
-    /** Create a project and prepend it to the list; returns it on success. */
+    /** Create a project, then re-fetch the list from the server; returns the
+     * created project (for navigating into its editor) on success. */
     async createProject(payload: ProjectPayload): Promise<Project | null> {
       this.loading = true
       this.error = null
       try {
         const project = await projectsApi.createProject(payload, this.token())
-        this.projects.unshift(project)
+        await this.fetchProjects()
         return project
       } catch (error) {
         this.error = messageOf(error)
@@ -68,16 +69,12 @@ export const useProjectsStore = defineStore('projects', {
       }
     },
 
-    /** Rename / re-describe / re-scope a project, updating it in place. */
+    /** Update a project, then re-fetch the list from the server. */
     async updateProject(siteId: string, payload: ProjectPayload): Promise<boolean> {
       this.error = null
       try {
-        const updated = await projectsApi.updateProject(siteId, payload, this.token())
-        // Merge so an update response that omits `diagram`/`members` doesn't drop
-        // them from the card (the open link + avatars rely on them).
-        this.projects = this.projects.map((p) =>
-          p.site_id === siteId ? { ...p, ...updated } : p,
-        )
+        await projectsApi.updateProject(siteId, payload, this.token())
+        await this.fetchProjects()
         return true
       } catch (error) {
         this.error = messageOf(error)
@@ -85,12 +82,12 @@ export const useProjectsStore = defineStore('projects', {
       }
     },
 
-    /** Delete a project (cascades its diagram) and drop it from the list. */
+    /** Delete a project (cascades its diagram), then re-fetch the list. */
     async deleteProject(siteId: string): Promise<boolean> {
       this.error = null
       try {
         await projectsApi.deleteProject(siteId, this.token())
-        this.projects = this.projects.filter((p) => p.site_id !== siteId)
+        await this.fetchProjects()
         return true
       } catch (error) {
         this.error = messageOf(error)
