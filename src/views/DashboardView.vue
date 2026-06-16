@@ -271,7 +271,7 @@ function formatDate(value: string): string {
           role="dialog"
           aria-modal="true"
           aria-label="New project"
-          class="w-full max-w-sm rounded-xl border border-slate-200 bg-white p-6 shadow-xl dark:border-slate-700 dark:bg-slate-800"
+          class="w-full max-w-sm rounded-xl border border-slate-200 bg-white/85 p-6 shadow-xl backdrop-blur-md dark:border-white/10 dark:bg-[#202020]/85"
           @submit.prevent="submitCreate"
           @keydown.esc="creating = false"
         >
@@ -352,7 +352,7 @@ function formatDate(value: string): string {
           role="dialog"
           aria-modal="true"
           aria-label="Edit project"
-          class="w-full max-w-sm rounded-xl border border-slate-200 bg-white p-6 shadow-xl dark:border-slate-700 dark:bg-slate-800"
+          class="w-full max-w-sm rounded-xl border border-slate-200 bg-white/85 p-6 shadow-xl backdrop-blur-md dark:border-white/10 dark:bg-[#202020]/85"
           @submit.prevent="submitEdit"
           @keydown.esc="editingId = null"
         >

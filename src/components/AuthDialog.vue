@@ -41,8 +41,9 @@ async function onGoogleCredential(credential: string) {
 
 /**
  * Boot Google Identity Services once the dialog is open and its button slot has
- * mounted: render the official button and surface the One Tap account-chooser
- * popup. Failures (script blocked, misconfigured origin) are swallowed — the
+ * mounted: render the official button (which opens the account-chooser popup and
+ * hands back an ID token via {@link onGoogleCredential}) and surface the One Tap
+ * card. Failures (script blocked, misconfigured origin) are swallowed — the
  * email form and redirect fallback still work.
  */
 async function mountGoogleSignIn() {
@@ -103,14 +104,14 @@ async function onSubmit() {
   <Teleport to="body">
     <div
       v-if="props.open"
-      class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4 backdrop-blur-sm"
+      class="fixed inset-0 z-50 flex items-center justify-center bg-black/1 p-4 backdrop-blur-xl"
       @click.self="emit('close')"
     >
       <div
         role="dialog"
         aria-modal="true"
         :aria-label="title"
-        class="w-full max-w-sm rounded-xl border border-slate-200 bg-white p-6 shadow-xl dark:border-slate-700 dark:bg-slate-800"
+        class="w-full max-w-sm rounded-2xl border border-slate-200 bg-white/90 p-6 shadow-2xl backdrop-blur-xl dark:border-white/10 dark:bg-[#050505]/85"
         @keydown.esc="emit('close')"
       >
         <div class="mb-5 flex items-start justify-between gap-4">
@@ -136,13 +137,13 @@ async function onSubmit() {
           </button>
         </div>
 
-        <div class="mb-4 flex rounded-lg bg-slate-100 p-1 dark:bg-slate-900">
+        <div class="mb-4 flex rounded-lg bg-slate-100 p-1 dark:bg-white/2">
           <button
             type="button"
             class="flex-1 rounded-md px-3 py-1.5 text-sm font-medium transition-colors"
             :class="
               !isRegister
-                ? 'bg-white text-slate-800 shadow-sm dark:bg-slate-700 dark:text-slate-100'
+                ? 'bg-white text-slate-800 shadow-sm dark:bg-white/10 dark:text-white'
                 : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
             "
             @click="switchMode('login')"
@@ -154,7 +155,7 @@ async function onSubmit() {
             class="flex-1 rounded-md px-3 py-1.5 text-sm font-medium transition-colors"
             :class="
               isRegister
-                ? 'bg-white text-slate-800 shadow-sm dark:bg-slate-700 dark:text-slate-100'
+                ? 'bg-white text-slate-800 shadow-sm dark:bg-white/10 dark:text-white'
                 : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
             "
             @click="switchMode('register')"
@@ -172,7 +173,7 @@ async function onSubmit() {
               required
               autocomplete="name"
               placeholder="Jane Doe"
-              class="rounded-md border border-slate-300 bg-white px-3 py-2 text-slate-800 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-100"
+              class="rounded-md border border-slate-300 bg-white px-3 py-2 text-slate-800 outline-none transition focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-white/10 dark:bg-white/5 dark:text-slate-100 dark:placeholder:text-slate-500"
             />
           </label>
 
@@ -185,7 +186,7 @@ async function onSubmit() {
               required
               autocomplete="email"
               placeholder="you@example.com"
-              class="rounded-md border border-slate-300 bg-white px-3 py-2 text-slate-800 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-100"
+              class="rounded-md border border-slate-300 bg-white px-3 py-2 text-slate-800 outline-none transition focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-white/10 dark:bg-white/5 dark:text-slate-100 dark:placeholder:text-slate-500"
             />
           </label>
 
@@ -197,7 +198,7 @@ async function onSubmit() {
               required
               :autocomplete="isRegister ? 'new-password' : 'current-password'"
               placeholder="••••••••"
-              class="rounded-md border border-slate-300 bg-white px-3 py-2 text-slate-800 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-100"
+              class="rounded-md border border-slate-300 bg-white px-3 py-2 text-slate-800 outline-none transition focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-white/10 dark:bg-white/5 dark:text-slate-100 dark:placeholder:text-slate-500"
             />
           </label>
 
@@ -231,21 +232,32 @@ async function onSubmit() {
           <span class="h-px flex-1 bg-slate-200 dark:bg-slate-700" />
         </div>
 
-        <div
-          v-show="google.isConfigured"
-          ref="googleButton"
-          bg-black
-          class="flex justify-center"
-        />
+        <!-- Google sign-in. When GIS is configured, the styled button below is
+             purely visual and the real (transparent) GIS button is overlaid on
+             top — so the click opens Google's account-chooser popup and returns
+             an ID token via onGoogleCredential. -->
+        <div v-if="google.isConfigured" class="group relative">
+          <div
+            class="inline-flex w-full items-center justify-center gap-2.5 rounded-lg border border-black/10 bg-black px-3 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors group-hover:bg-[#161616] dark:border-white/15 dark:bg-[#1f1f1f] dark:group-hover:bg-[#2a2a2a]"
+          >
+            <span class="i-logos-google-icon text-base" aria-hidden="true" />
+            Google
+          </div>
+          <!-- Real GIS button: covers the visual, made invisible. -->
+          <div
+            ref="googleButton"
+            class="absolute inset-0 z-10 flex cursor-pointer items-center justify-center opacity-0 [color-scheme:light]"
+          />
+        </div>
         <button
-          v-if="!google.isConfigured"
+          v-else
           type="button"
           :disabled="auth.loading"
-          class="inline-flex w-full items-center justify-center gap-2.5 rounded-full border border-slate-800 bg-black px-3 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-slate-900 disabled:cursor-not-allowed disabled:opacity-60"
+          class="inline-flex w-full items-center justify-center gap-2.5 rounded-lg border border-black/10 bg-black px-3 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#161616] disabled:cursor-not-allowed disabled:opacity-60 dark:border-white/15 dark:bg-[#1f1f1f] dark:hover:bg-[#2a2a2a]"
           @click="auth.loginWithGoogle()"
         >
-          <span class="i-logos-google-icon text-base bg-black" aria-hidden="true" />
-          Continue with Google
+          <span class="i-logos-google-icon text-base" aria-hidden="true" />
+          Google
         </button>
       </div>
     </div>
