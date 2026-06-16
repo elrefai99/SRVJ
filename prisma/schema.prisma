@@ -66,9 +66,9 @@ model ProjectMember {
 
 model Diagram {
   version   Int              @default(1)
-  nodes     Json[]
+  nodes     Json
   site_id   String           @unique @default(uuid())
-  edges     Json[]
+  edges     Json
   metadata  Json?
   createdAt DateTime         @default(now())
   updatedAt DateTime         @updatedAt
