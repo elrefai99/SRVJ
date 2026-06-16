@@ -7,7 +7,7 @@ const router: Router = Router()
 
 router.post('/register', validateDTO(RegisterDTO), registerController)
 router.post('/login', validateDTO(LoginDTO), loginController)
-router.get('/logout', logoutConrtoller)
+router.post('/logout', logoutConrtoller)
 router.post('/refresh', refreshController)
 router.post('/google', googleController)
 
