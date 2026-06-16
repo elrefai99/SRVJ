@@ -6,21 +6,31 @@ import type { RouteRecordRaw } from 'vue-router'
  * web history in the browser. Exported as plain records so it can be crawled
  * for pre-rendering.
  */
+/**
+ * Route `meta` drives the navigation guard in `main.ts`:
+ *  - `guestOnly`: signed-in users are bounced to `/dashboard` (the public Home
+ *    is hidden once you have a session).
+ *  - `requiresAuth`: signed-out users are bounced to `/` (Home, where they can
+ *    sign in). Dashboard + Editor are account-scoped.
+ */
 export const routes: RouteRecordRaw[] = [
   {
     path: '/',
     name: 'home',
     component: () => import('@/views/HomeView.vue'),
+    meta: { guestOnly: true },
   },
   {
     path: '/dashboard',
     name: 'dashboard',
     component: () => import('@/views/DashboardView.vue'),
+    meta: { requiresAuth: true },
   },
   {
     path: '/editor/:diagramId',
     name: 'editor',
     component: () => import('@/views/EditorView.vue'),
+    meta: { requiresAuth: true },
   },
   {
     path: '/:pathMatch(.*)*',

@@ -53,6 +53,9 @@ function openProfile() {
 async function onLogout() {
   menuOpen.value = false
   await auth.logout()
+  // Leave the account-scoped page for the public Home (the guard forbids
+  // signed-out users from staying on the dashboard/editor).
+  router.push({ name: 'home' })
 }
 </script>
 

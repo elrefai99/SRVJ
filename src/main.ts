@@ -2,6 +2,7 @@ import { ViteSSG } from 'vite-ssg'
 import { createPinia } from 'pinia'
 import App from './App.vue'
 import { routes } from './router'
+import { useAuthStore } from './stores/auth'
 
 // Vue Flow core + addon styles
 import '@vue-flow/core/dist/style.css'
@@ -24,7 +25,25 @@ import './style.css'
 export const createApp = ViteSSG(
   App,
   { routes },
-  ({ app }) => {
-    app.use(createPinia())
+  ({ app, router, isClient }) => {
+    const pinia = createPinia()
+    app.use(pinia)
+
+    // Auth route guard (client-only — during SSG there's no session, and
+    // pre-render must not redirect away from the static routes). It awaits the
+    // memoised `auth.init()` first, so a token arriving via the Google OAuth
+    // redirect (`/?token=`) is adopted and the profile loaded *before* deciding.
+    // Then: signed-out users can't reach `requiresAuth` routes, and signed-in
+    // users can't reach the `guestOnly` Home.
+    if (isClient) {
+      router.beforeEach(async (to) => {
+        const auth = useAuthStore(pinia)
+        await auth.init()
+        const loggedIn = auth.isAuthenticated
+        if (to.meta.requiresAuth && !loggedIn) return { name: 'home' }
+        if (to.meta.guestOnly && loggedIn) return { name: 'dashboard' }
+        return true
+      })
+    }
   },
 )

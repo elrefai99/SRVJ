@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import { computed, nextTick, ref, watch } from 'vue'
+import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 
 const props = defineProps<{ open: boolean }>()
 const emit = defineEmits<{ (e: 'close'): void }>()
 
 const auth = useAuthStore()
+const router = useRouter()
 
 type Tab = 'account' | 'security'
 const TABS: { id: Tab; label: string }[] = [
@@ -74,6 +76,7 @@ async function onDelete() {
 async function onLogout() {
   await auth.logout()
   emit('close')
+  router.push({ name: 'home' })
 }
 </script>
 

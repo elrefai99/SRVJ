@@ -27,6 +27,10 @@ function messageOf(error: unknown): string {
   return 'Something went wrong. Please try again.'
 }
 
+/** Memoised so `init()` runs exactly once — the route guard and every view can
+ * `await auth.init()` and share the same in-flight startup. */
+let initPromise: Promise<void> | null = null
+
 /**
  * Authentication state for the SRVJ backend. The token is persisted via the
  * `storage` wrapper and replayed on init; the editor itself stays usable while
@@ -246,22 +250,30 @@ export const useAuthStore = defineStore('auth', {
     },
 
     /**
-     * Called once on app startup: if a persisted token exists, validate it by
-     * loading the profile. Failures are swallowed (the session is cleared in
-     * `fetchProfile` on 401), so the editor never blocks on auth.
+     * Called once on app startup (and awaited by the route guard): adopt any
+     * token from the Google OAuth redirect / a refresh cookie, then validate it
+     * by loading the profile. Memoised so concurrent callers (guard + views)
+     * share one run. Failures are swallowed (the session is cleared in
+     * `fetchProfile` on 401), so the app never blocks on auth.
      */
-    async init() {
-      // Let apiFetch transparently renew an expired access token on any 401.
-      registerTokenRefresher(() => this.refresh())
-      // Adopt a token returned by the Google OAuth redirect, if we just landed
-      // back from one — this seeds `this.token` before the check below.
-      this.consumeRedirectToken()
-      if (!this.token) return
-      try {
-        await this.fetchProfile()
-      } catch {
-        // Stale/invalid token already cleared; nothing more to do.
-      }
+    init(): Promise<void> {
+      if (initPromise) return initPromise
+      initPromise = (async () => {
+        // Let apiFetch transparently renew an expired access token on any 401.
+        registerTokenRefresher(() => this.refresh())
+        // Adopt a token returned by the Google OAuth redirect, if we just
+        // landed back from one — this seeds `this.token` before the check.
+        this.consumeRedirectToken()
+        // Guests (no token) finish here with no network call, so the public
+        // Home page stays fast.
+        if (!this.token) return
+        try {
+          await this.fetchProfile()
+        } catch {
+          // Stale/invalid token already cleared; nothing more to do.
+        }
+      })()
+      return initPromise
     },
   },
 })
