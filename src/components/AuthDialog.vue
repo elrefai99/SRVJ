@@ -57,6 +57,33 @@ async function mountGoogleSignIn() {
   }
 }
 
+/** Exchange the Google ID token from the popup for an SRVJ session. */
+async function onGoogleCredential(credential: string) {
+  try {
+    await auth.loginWithGoogleCredential(credential)
+    emit('close')
+  } catch {
+    // Error surfaced via auth.error; keep the dialog open for a retry.
+  }
+}
+
+/**
+ * Boot Google Identity Services once the dialog is open and its button slot has
+ * mounted: render the official button and surface the One Tap account-chooser
+ * popup. Failures (script blocked, misconfigured origin) are swallowed — the
+ * email form and redirect fallback still work.
+ */
+async function mountGoogleSignIn() {
+  if (!google.isConfigured || !googleButton.value) return
+  try {
+    await google.init(onGoogleCredential)
+    google.renderButton(googleButton.value)
+    google.prompt()
+  } catch {
+    // GIS unavailable; the rest of the dialog remains usable.
+  }
+}
+
 // Reset transient state and focus the first field whenever the dialog opens.
 watch(
   () => props.open,
