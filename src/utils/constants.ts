@@ -10,7 +10,7 @@ import type {
 export const SITE_URL = 'https://srvj.elrefai.me'
 export const SITE_NAME = 'SRVJ'
 export const SITE_DESCRIPTION =
-  'SRVJ is a free, browser-based diagram editor and whiteboard — a Draw.io-style flow editor with an Excalidraw hand-drawn look and Miro-style sticky notes. No sign-up, works offline.'
+  'SRVJ is a free, browser-based diagram editor and whiteboard'
 export const DIAGRAM_VERSION = 3
 export const STORAGE_KEY = 'srvj:diagram'
 export const THEME_STORAGE_KEY = 'srvj:theme'
