@@ -19,10 +19,10 @@ export class BasedProject {
           }
      }
 
-     public async getService(paylaod: any) {
+     public async getService(payload: any) {
           const projects = await prisma.project.findMany({
                where: {
-                    ownerId: paylaod.user,
+                    ownerId: payload.user,
                },
                include: {
                     diagram: true,
@@ -34,6 +34,27 @@ export class BasedProject {
                },
           });
           return projects
+     }
+
+     public async editService(payload: IPayloadProject) {
+          await prisma.project.update({
+               where: {
+                    site_id: payload.project,
+               },
+               data: {
+                    ...(payload.title !== undefined && {
+                         title: payload.title,
+                    }),
+                    ...(payload.description !== undefined && {
+                         description: payload.description,
+                    }),
+                    ...(payload.visibility !== undefined && {
+                         visibility: payload.visibility,
+                    }),
+               },
+          });
+
+          return { success: true };
      }
 
      // Private Functions
