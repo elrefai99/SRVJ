@@ -1,29 +1,39 @@
 <script setup lang="ts">
-import { computed, nextTick, reactive, ref, watch } from 'vue'
-import { useAuthStore } from '@/stores/auth'
-import { useGoogleAuth } from '@/composables/useGoogleAuth'
+import { computed, nextTick, reactive, ref, watch } from "vue";
+import { useRoute, useRouter } from "vue-router";
+import { useAuthStore } from "@/stores/auth";
+import { useGoogleAuth } from "@/composables/useGoogleAuth";
 
-const props = defineProps<{ open: boolean }>()
-const emit = defineEmits<{ (e: 'close'): void }>()
+const props = defineProps<{ open: boolean }>();
+const emit = defineEmits<{ (e: "close"): void }>();
 
-const auth = useAuthStore()
-const google = useGoogleAuth()
+const auth = useAuthStore();
+const google = useGoogleAuth();
+const route = useRoute();
+const router = useRouter();
 
-type Mode = 'login' | 'register'
-const mode = ref<Mode>('login')
-const form = reactive({ fullname: '', email: '', password: '' })
-const emailInput = ref<HTMLInputElement | null>(null)
-const googleButton = ref<HTMLElement | null>(null)
+/** After a successful sign-in from the public home page, send the user to
+ * their dashboard; elsewhere (e.g. the editor) stay put. */
+function onAuthSuccess() {
+  emit("close");
+  if (route.name === "home") router.push({ name: "dashboard" });
+}
 
-const isRegister = computed(() => mode.value === 'register')
-const title = computed(() => (isRegister.value ? 'Create your account' : 'Welcome back'))
-const submitLabel = computed(() => (isRegister.value ? 'Sign up' : 'Sign in'))
+type Mode = "login" | "register";
+const mode = ref<Mode>("login");
+const form = reactive({ fullname: "", email: "", password: "" });
+const emailInput = ref<HTMLInputElement | null>(null);
+const googleButton = ref<HTMLElement | null>(null);
+
+const isRegister = computed(() => mode.value === "register");
+const title = computed(() => (isRegister.value ? "Create your account" : "Welcome back"));
+const submitLabel = computed(() => (isRegister.value ? "Sign up" : "Sign in"));
 
 /** Exchange the Google ID token from the popup for an SRVJ session. */
 async function onGoogleCredential(credential: string) {
   try {
-    await auth.loginWithGoogleCredential(credential)
-    emit('close')
+    await auth.loginWithGoogleCredential(credential);
+    onAuthSuccess();
   } catch {
     // Error surfaced via auth.error; keep the dialog open for a retry.
   }
@@ -36,11 +46,11 @@ async function onGoogleCredential(credential: string) {
  * email form and redirect fallback still work.
  */
 async function mountGoogleSignIn() {
-  if (!google.isConfigured || !googleButton.value) return
+  if (!google.isConfigured || !googleButton.value) return;
   try {
-    await google.init(onGoogleCredential)
-    google.renderButton(googleButton.value)
-    google.prompt()
+    await google.init(onGoogleCredential);
+    google.renderButton(googleButton.value);
+    google.prompt();
   } catch {
     // GIS unavailable; the rest of the dialog remains usable.
   }
@@ -51,34 +61,38 @@ watch(
   () => props.open,
   (open) => {
     if (!open) {
-      google.cancel() // dismiss the One Tap card when closing
-      return
+      google.cancel(); // dismiss the One Tap card when closing
+      return;
     }
-    mode.value = 'login'
-    form.fullname = ''
-    form.email = ''
-    form.password = ''
-    auth.error = null
+    mode.value = "login";
+    form.fullname = "";
+    form.email = "";
+    form.password = "";
+    auth.error = null;
     nextTick(() => {
-      emailInput.value?.focus()
-      void mountGoogleSignIn()
-    })
-  },
-)
+      emailInput.value?.focus();
+      void mountGoogleSignIn();
+    });
+  }
+);
 
 function switchMode(next: Mode) {
-  mode.value = next
-  auth.error = null
+  mode.value = next;
+  auth.error = null;
 }
 
 async function onSubmit() {
   try {
     if (isRegister.value) {
-      await auth.register({ fullname: form.fullname, email: form.email, password: form.password })
+      await auth.register({
+        fullname: form.fullname,
+        email: form.email,
+        password: form.password,
+      });
     } else {
-      await auth.login({ email: form.email, password: form.password })
+      await auth.login({ email: form.email, password: form.password });
     }
-    emit('close')
+    onAuthSuccess();
   } catch {
     // Error surfaced via auth.error; keep the dialog open for a retry.
   }
@@ -101,9 +115,15 @@ async function onSubmit() {
       >
         <div class="mb-5 flex items-start justify-between gap-4">
           <div>
-            <h2 class="text-lg font-bold text-slate-800 dark:text-slate-100">{{ title }}</h2>
+            <h2 class="text-lg font-bold text-slate-800 dark:text-slate-100">
+              {{ title }}
+            </h2>
             <p class="mt-0.5 text-sm text-slate-500 dark:text-slate-400">
-              {{ isRegister ? 'Sign up to sync your work.' : 'Sign in to your SRVJ account.' }}
+              {{
+                isRegister
+                  ? "Sign up to sync your work."
+                  : "Sign in to your SRVJ account."
+              }}
             </p>
           </div>
           <button
@@ -199,29 +219,32 @@ async function onSubmit() {
               class="i-mdi-loading animate-spin"
               aria-hidden="true"
             />
-            {{ auth.loading ? 'Please wait…' : submitLabel }}
+            {{ auth.loading ? "Please wait…" : submitLabel }}
           </button>
         </form>
 
         <div class="my-4 flex items-center gap-3" aria-hidden="true">
           <span class="h-px flex-1 bg-slate-200 dark:bg-slate-700" />
-          <span class="text-xs font-medium uppercase tracking-wide text-slate-400">or</span>
+          <span class="text-xs font-medium uppercase tracking-wide text-slate-400"
+            >or</span
+          >
           <span class="h-px flex-1 bg-slate-200 dark:bg-slate-700" />
         </div>
 
-        <!-- Google Identity Services button (renders the account-chooser popup
-             on click; the One Tap card is also prompted when the dialog opens). -->
-        <div v-show="google.isConfigured" ref="googleButton" class="flex justify-center" />
-
-        <!-- Fallback when no Google client ID is configured: server-redirect flow. -->
+        <div
+          v-show="google.isConfigured"
+          ref="googleButton"
+          bg-black
+          class="flex justify-center"
+        />
         <button
           v-if="!google.isConfigured"
           type="button"
           :disabled="auth.loading"
-          class="inline-flex w-full items-center justify-center gap-2.5 rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-700 shadow-sm transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+          class="inline-flex w-full items-center justify-center gap-2.5 rounded-full border border-slate-800 bg-black px-3 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-slate-900 disabled:cursor-not-allowed disabled:opacity-60"
           @click="auth.loginWithGoogle()"
         >
-          <span class="i-logos-google-icon text-base" aria-hidden="true" />
+          <span class="i-logos-google-icon text-base bg-black" aria-hidden="true" />
           Continue with Google
         </button>
       </div>
