@@ -73,7 +73,7 @@ export class BaseAuth {
      }
 
      public async login_service(payload: LoginDTO): Promise<any> {
-          const user = await prisma.user.findFirst({
+          const user: any = await prisma.user.findFirst({
                where: {
                     email: payload.email.toLowerCase(),
                     status: tableStatus.active
