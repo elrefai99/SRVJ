@@ -13,6 +13,7 @@ import type {
   DiagramEdge,
   DiagramNode,
   DiagramSnapshot,
+  EdgeCardinality,
   ErdField,
   ErdFieldKey,
   FillStyle,
@@ -98,6 +99,21 @@ function normalizePoints(value: unknown): Pt[] {
       !!p && typeof p === 'object' && typeof (p as Pt).x === 'number' && typeof (p as Pt).y === 'number',
     )
     .map((p) => ({ x: p.x, y: p.y }))
+}
+
+const CARDINALITIES = new Set<EdgeCardinality>([
+  'none',
+  'one-to-one',
+  'one-to-many',
+  'many-to-many',
+])
+
+/** Backfill an edge's data so its crow's-foot cardinality always resolves. */
+function normalizeEdge(edge: DiagramEdge): DiagramEdge {
+  const cardinality = CARDINALITIES.has(edge.data?.cardinality as EdgeCardinality)
+    ? (edge.data!.cardinality as EdgeCardinality)
+    : 'none'
+  return { ...edge, type: 'custom', selected: false, data: { cardinality } }
 }
 
 const COLORS = new Set<NodeColor>(['slate', 'blue', 'green', 'yellow', 'red', 'violet'])
@@ -209,6 +225,10 @@ function normalizeNode(node: DiagramNode): DiagramNode {
       ...(shape === 'table' ? { fields: normalizeFields(data.fields) } : {}),
       // Only freehand strokes keep a `points` array.
       ...(shape === 'draw' ? { points: normalizePoints(data.points) } : {}),
+      // Carry the optional flip flags + link through unchanged.
+      ...(data.flipX ? { flipX: true } : {}),
+      ...(data.flipY ? { flipY: true } : {}),
+      ...(typeof data.link === 'string' && data.link ? { link: data.link } : {}),
     },
   }
 }
@@ -216,6 +236,33 @@ function normalizeNode(node: DiagramNode): DiagramNode {
 /** Deep clone helper that keeps snapshots independent of live reactive state. */
 function clone<T>(value: T): T {
   return JSON.parse(JSON.stringify(value)) as T
+}
+
+/** Z-order operation on the node array (later in the array = rendered on top). */
+type ZMode = 'front' | 'back' | 'forward' | 'backward'
+function reorderNodes(nodes: DiagramNode[], ids: Set<string>, mode: ZMode): DiagramNode[] {
+  if (mode === 'front') {
+    return [...nodes.filter((n) => !ids.has(n.id)), ...nodes.filter((n) => ids.has(n.id))]
+  }
+  if (mode === 'back') {
+    return [...nodes.filter((n) => ids.has(n.id)), ...nodes.filter((n) => !ids.has(n.id))]
+  }
+  const arr = [...nodes]
+  if (mode === 'forward') {
+    // Walk from the top so a block of selected nodes steps up together.
+    for (let i = arr.length - 2; i >= 0; i--) {
+      if (ids.has(arr[i].id) && !ids.has(arr[i + 1].id)) {
+        ;[arr[i], arr[i + 1]] = [arr[i + 1], arr[i]]
+      }
+    }
+  } else {
+    for (let i = 1; i < arr.length; i++) {
+      if (ids.has(arr[i].id) && !ids.has(arr[i - 1].id)) {
+        ;[arr[i], arr[i - 1]] = [arr[i - 1], arr[i]]
+      }
+    }
+  }
+  return arr
 }
 
 /** Centre point of a node, from its position + (best-effort) rendered size. */
@@ -332,6 +379,14 @@ export const useDiagramStore = defineStore('diagram', {
       const set = new Set(selected.map((n) => n.data.opacity))
       return set.size === 1 ? [...set][0] : null
     },
+
+    /** Shared crow's-foot cardinality of the selected edges, or null when mixed/empty. */
+    selectionCardinality(state): EdgeCardinality | null {
+      const selected = state.edges.filter((e) => e.selected)
+      if (selected.length === 0) return null
+      const set = new Set(selected.map((e) => e.data?.cardinality ?? 'none'))
+      return set.size === 1 ? [...set][0] : null
+    },
   },
 
   actions: {
@@ -349,8 +404,9 @@ export const useDiagramStore = defineStore('diagram', {
     /** Replace the live diagram with the given snapshot (no history push). */
     applySnapshot(snapshot: DiagramSnapshot) {
       this.nodes = clone(snapshot.nodes).map(normalizeNode)
-      // Every edge renders through CustomEdge (straight line + editable label).
-      this.edges = clone(snapshot.edges).map((e) => ({ ...e, type: 'custom', selected: false }))
+      // Every edge renders through CustomEdge (straight line + editable label +
+      // optional crow's-foot cardinality markers).
+      this.edges = clone(snapshot.edges).map(normalizeEdge)
     },
 
     // ---- Vue Flow change handlers (controlled flow) -----------------------
@@ -401,7 +457,7 @@ export const useDiagramStore = defineStore('diagram', {
      * sides (now that the draggable connection dots are gone) so the straight
      * edge runs cleanly between the two shapes.
      */
-    connectNodes(source: string, target: string) {
+    connectNodes(source: string, target: string, cardinality: EdgeCardinality = 'none') {
       if (source === target) return
       // Don't stack a duplicate arrow in the same direction.
       if (this.edges.some((e) => e.source === source && e.target === target)) return
@@ -413,9 +469,33 @@ export const useDiagramStore = defineStore('diagram', {
       const targetHandle = nextAnchorOnSide(this.edges, target, targetSide)
       this.commit()
       this.edges = addEdge(
-        { source, target, sourceHandle, targetHandle, animated: false, type: 'custom', label: '' },
+        {
+          source,
+          target,
+          sourceHandle,
+          targetHandle,
+          animated: false,
+          type: 'custom',
+          label: '',
+          data: { cardinality },
+        },
         this.edges as unknown as GraphEdge[],
       ) as unknown as DiagramEdge[]
+    },
+
+    /**
+     * Set the crow's-foot cardinality on the given edge ids (defaults to the
+     * current edge selection). Replaces the edge object so the controlled render
+     * picks up the new markers — same pattern as node restyling.
+     */
+    setEdgeCardinality(cardinality: EdgeCardinality, ids?: string[]) {
+      const targetIds = ids ?? this.selectedEdgeIds
+      if (targetIds.length === 0) return
+      this.commit()
+      const set = new Set(targetIds)
+      this.edges = this.edges.map((e) =>
+        set.has(e.id) ? { ...e, data: { ...(e.data ?? { cardinality: 'none' }), cardinality } } : e,
+      )
     },
 
     // ---- Crow's-foot table fields ----------------------------------------
@@ -441,14 +521,14 @@ export const useDiagramStore = defineStore('diagram', {
       this.nodes = this.nodes.map((n) =>
         n.id === nodeId
           ? {
-              ...n,
-              data: {
-                ...n.data,
-                fields: (n.data.fields ?? []).map((f) =>
-                  f.id === fieldId ? { ...f, ...patch } : f,
-                ),
-              },
-            }
+            ...n,
+            data: {
+              ...n.data,
+              fields: (n.data.fields ?? []).map((f) =>
+                f.id === fieldId ? { ...f, ...patch } : f,
+              ),
+            },
+          }
           : n,
       )
     },
@@ -561,14 +641,14 @@ export const useDiagramStore = defineStore('diagram', {
       this.nodes = this.nodes.map((n) =>
         n.id === id
           ? {
-              ...n,
-              position: { x: rect.x, y: rect.y },
-              style: {
-                ...(n.style ?? {}),
-                width: `${Math.round(rect.width)}px`,
-                height: `${Math.round(rect.height)}px`,
-              },
-            }
+            ...n,
+            position: { x: rect.x, y: rect.y },
+            style: {
+              ...(n.style ?? {}),
+              width: `${Math.round(rect.width)}px`,
+              height: `${Math.round(rect.height)}px`,
+            },
+          }
           : n,
       )
     },
@@ -653,6 +733,86 @@ export const useDiagramStore = defineStore('diagram', {
       this.nodes = this.nodes.filter((n) => !n.selected)
       this.edges = this.edges.filter(
         (e) => !e.selected && !selectedNodes.has(e.source) && !selectedNodes.has(e.target),
+      )
+    },
+
+    // ---- Arrange / transform (context-menu actions) -----------------------
+
+    /** Select only this node (used when right-clicking an unselected node). */
+    selectOnly(id: string) {
+      this.nodes = this.nodes.map((n) => ({ ...n, selected: n.id === id }))
+      this.edges = this.edges.map((e) => (e.selected ? { ...e, selected: false } : e))
+    },
+
+    /** Re-stack the given nodes (defaults to the selection) in z-order. */
+    arrangeNodes(mode: ZMode, ids?: string[]) {
+      const targetIds = ids ?? this.selectedNodeIds
+      if (targetIds.length === 0) return
+      this.commit()
+      this.nodes = reorderNodes(this.nodes, new Set(targetIds), mode)
+    },
+
+    /** Mirror the given nodes (defaults to the selection) along an axis. */
+    flipNodes(axis: 'horizontal' | 'vertical', ids?: string[]) {
+      const targetIds = ids ?? this.selectedNodeIds
+      if (targetIds.length === 0) return
+      this.commit()
+      const set = new Set(targetIds)
+      const key = axis === 'horizontal' ? 'flipX' : 'flipY'
+      this.nodes = this.nodes.map((n) =>
+        set.has(n.id) ? { ...n, data: { ...n.data, [key]: !n.data[key] } } : n,
+      )
+    },
+
+    /** Clone the given nodes (defaults to the selection) with a small offset. */
+    duplicateSelected(ids?: string[]) {
+      const targetIds = ids ?? this.selectedNodeIds
+      if (targetIds.length === 0) return
+      this.commit()
+      const set = new Set(targetIds)
+      const clones = this.nodes
+        .filter((n) => set.has(n.id))
+        .map((n) => ({
+          ...clone(n),
+          id: createId('node'),
+          position: { x: n.position.x + 24, y: n.position.y + 24 },
+          selected: true,
+        }))
+      if (clones.length === 0) return
+      // Deselect the originals so only the new copies are selected.
+      this.nodes = this.nodes.map((n) => (n.selected ? { ...n, selected: false } : n))
+      this.nodes.push(...clones)
+    },
+
+    /**
+     * Lock / unlock the given nodes (defaults to the selection). Locked nodes
+     * carry per-node `draggable: false` + `selectable: false` so they stay put
+     * under any tool; unlocking strips those so they follow the global tool again.
+     */
+    toggleLock(ids?: string[]) {
+      const targetIds = ids ?? this.selectedNodeIds
+      if (targetIds.length === 0) return
+      this.commit()
+      const set = new Set(targetIds)
+      // If any target is currently unlocked, lock the whole group; else unlock.
+      const lock = this.nodes.some((n) => set.has(n.id) && !n.locked)
+      this.nodes = this.nodes.map((n) => {
+        if (!set.has(n.id)) return n
+        if (lock) {
+          return { ...n, locked: true, draggable: false, selectable: false, selected: false }
+        }
+        const { draggable: _d, selectable: _s, ...rest } = n
+        return { ...rest, locked: false }
+      })
+    },
+
+    /** Attach (or clear, with an empty string) a hyperlink on a node. */
+    setNodeLink(id: string, link: string) {
+      const node = this.nodes.find((n) => n.id === id)
+      if (!node) return
+      this.commit()
+      this.nodes = this.nodes.map((n) =>
+        n.id === id ? { ...n, data: { ...n.data, link: link || undefined } } : n,
       )
     },
 

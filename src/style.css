@@ -164,6 +164,14 @@ html.dark,
   box-shadow: 0 4px 14px -4px rgba(15, 23, 42, 0.12);
 }
 
+/* Text nodes are pure labels — never give them a CSS border box (the preflight
+   sets `border-style: solid`, and sketch mode bumps `.diagram-shape` border-width,
+   which would otherwise draw a rectangle around the text). */
+.diagram-shape.shape-text,
+.sketch-mode .diagram-shape.shape-text {
+  border: 0 !important;
+}
+
 /* Text nodes are borderless: show a light dashed selection box, not a solid one. */
 .diagram-shape.shape-text.is-selected {
   box-shadow: none;
@@ -179,6 +187,10 @@ html.dark,
 svg.diagram-shape,
 .sketch-mode svg.diagram-shape {
   box-shadow: none !important;
+  /* The preflight sets `border-style: solid`, and sketch mode bumps
+     `.diagram-shape` border-width to 2.5px — that would draw a rectangle around
+     a freehand stroke / rough shape. These carry their own outline, so kill it. */
+  border: 0 !important;
 }
 
 /* Freehand strokes are pure ink: no shape box. On selection the stroke itself
@@ -293,6 +305,19 @@ svg.diagram-shape,
 .dark .vue-flow__edge .vue-flow__arrowhead polyline,
 .dark .vue-flow__edge .vue-flow__arrowhead path {
   fill: #94a3b8;
+  stroke: #94a3b8;
+}
+
+/* ---- Crow's-foot ERD relationship markers (bar / crow's foot) ------------- */
+.erd-marker path {
+  fill: none;
+  stroke: #64748b;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.dark .erd-marker path {
   stroke: #94a3b8;
 }
 

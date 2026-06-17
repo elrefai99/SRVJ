@@ -3,7 +3,13 @@ import { computed } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useDiagramStore } from '@/stores/diagram'
 import { useEditorTool, type ShapeTool } from '@/composables/useEditorTool'
-import type { FillStyle, NodeColor, StrokeStyle, StrokeWidth } from '@/types/diagram'
+import type {
+  EdgeCardinality,
+  FillStyle,
+  NodeColor,
+  StrokeStyle,
+  StrokeWidth,
+} from '@/types/diagram'
 
 const store = useDiagramStore()
 const {
@@ -13,6 +19,7 @@ const {
   selectionStrokeStyle,
   selectionStrokeWidth,
   selectionOpacity,
+  selectionCardinality,
 } = storeToRefs(store)
 const {
   activeColor,
@@ -20,7 +27,10 @@ const {
   activeStrokeStyle,
   activeStrokeWidth,
   activeOpacity,
+  activeCardinality,
   isSelectTool,
+  isDrawTool,
+  isConnectTool,
   setTool,
   resetTool,
   setColor,
@@ -28,6 +38,7 @@ const {
   setStrokeStyle,
   setStrokeWidth,
   setOpacity,
+  setCardinality,
   isActive,
 } = useEditorTool()
 
@@ -146,27 +157,90 @@ function onOpacityInput(event: Event) {
   setOpacity(value)
   if (store.selectedNodeIds.length > 0) store.updateNodeOpacity(value)
 }
+
+// ----- ERD relationship connectors (crow's-foot cardinality) -------------
+// These are connector *tools*: picking one arms the Arrow tool with that
+// cardinality, so the next two shapes you click are joined by that relationship.
+// If edges are already selected, it restyles them instead (Excalidraw behaviour).
+const relationshipTools: { value: EdgeCardinality; label: string; text: string }[] = [
+  { value: 'none', label: 'Plain connector', text: '→' },
+  { value: 'one-to-one', label: 'One-to-one (1:1)', text: '1:1' },
+  { value: 'one-to-many', label: 'One-to-many (1:N)', text: '1:N' },
+  { value: 'many-to-many', label: 'Many-to-many (N:M)', text: 'N:M' },
+]
+
+// Highlight the active relationship: the selected edges' shared cardinality, or
+// (while the Arrow tool is armed) the active cardinality default.
+const activeRelationship = computed<EdgeCardinality | null>(() => {
+  if (selectionCardinality.value) return selectionCardinality.value
+  return isConnectTool.value ? activeCardinality.value : null
+})
+
+function pickRelationship(value: EdgeCardinality) {
+  setCardinality(value)
+  if (store.selectedEdgeIds.length > 0) {
+    // Apply to the edges that are already selected.
+    store.setEdgeCardinality(value)
+  } else {
+    // Arm the Arrow tool so the guidance pill appears and you can draw it.
+    setTool('connect')
+  }
+}
 </script>
 
 <template>
   <aside
     class="pointer-events-auto absolute left-4 top-4 z-10 flex max-h-[calc(100vh-6rem)] w-40 flex-col items-center gap-1.5 overflow-y-auto rounded-2xl border border-slate-200/80 bg-white/85 p-2 shadow-xl backdrop-blur-md dark:border-slate-700/80 dark:bg-slate-800/85"
   >
-    <!-- Select / cursor tool -->
-    <button
-      type="button"
-      title="Select & move (V)"
-      aria-label="Select tool"
-      class="flex h-8 w-8 items-center justify-center rounded-lg border text-lg transition-colors active:scale-95"
-      :class="
-        isSelectTool
-          ? 'border-indigo-300 bg-indigo-50 text-indigo-600 dark:border-indigo-500/40 dark:bg-indigo-500/15 dark:text-indigo-300'
-          : 'border-transparent text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-700'
-      "
-      @click="resetTool"
-    >
-      <span class="i-mdi-cursor-default-outline" aria-hidden="true" />
-    </button>
+    <!-- Select / cursor + freehand pen tools -->
+    <div class="flex gap-1">
+      <button
+        type="button"
+        title="Select & move (V)"
+        aria-label="Select tool"
+        class="flex h-8 w-8 items-center justify-center rounded-lg border text-lg transition-colors active:scale-95"
+        :class="
+          isSelectTool
+            ? 'border-indigo-300 bg-indigo-50 text-indigo-600 dark:border-indigo-500/40 dark:bg-indigo-500/15 dark:text-indigo-300'
+            : 'border-transparent text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-700'
+        "
+        @click="resetTool"
+      >
+        <span class="i-mdi-cursor-default-outline" aria-hidden="true" />
+      </button>
+
+      <button
+        type="button"
+        title="Pen — draw freehand (P)"
+        aria-label="Pen tool"
+        :aria-pressed="isDrawTool"
+        class="flex h-8 w-8 items-center justify-center rounded-lg border text-lg transition-colors active:scale-95"
+        :class="
+          isDrawTool
+            ? 'border-indigo-300 bg-indigo-50 text-indigo-600 dark:border-indigo-500/40 dark:bg-indigo-500/15 dark:text-indigo-300'
+            : 'border-transparent text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-700'
+        "
+        @click="setTool('draw')"
+      >
+        <span class="i-mdi-pencil-outline" aria-hidden="true" />
+      </button>
+
+      <button
+        type="button"
+        title="Arrow — click a shape, then another to connect them"
+        aria-label="Arrow / connector tool"
+        :aria-pressed="isConnectTool"
+        class="flex h-8 w-8 items-center justify-center rounded-lg border text-lg transition-colors active:scale-95"
+        :class="
+          isConnectTool
+            ? 'border-indigo-300 bg-indigo-50 text-indigo-600 dark:border-indigo-500/40 dark:bg-indigo-500/15 dark:text-indigo-300'
+            : 'border-transparent text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-700'
+        "
+        @click="pickRelationship('none')"
+      >
+        <span class="i-mdi-ray-start-arrow" aria-hidden="true" />
+      </button>
+    </div>
 
     <span class="my-0.5 h-px w-9 bg-slate-200 dark:bg-slate-700" />
 
@@ -217,6 +291,31 @@ function onOpacityInput(event: Event) {
         @dragstart="onDragStart($event, tool)"
       >
         <span :class="tool.icon" aria-hidden="true" />
+      </button>
+    </div>
+
+    <!-- ERD relationship connectors (crow's-foot cardinality). Pick one, then
+         click the two entities to join them; or select an edge to restyle it. -->
+    <span class="px-1 pb-0.5 pt-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+      Relationship
+    </span>
+    <div class="grid grid-cols-4 gap-1">
+      <button
+        v-for="rel in relationshipTools"
+        :key="rel.value"
+        type="button"
+        :title="`${rel.label} — click two shapes to connect`"
+        :aria-label="rel.label"
+        :aria-pressed="activeRelationship === rel.value"
+        class="flex h-7 items-center justify-center rounded-md border text-[11px] font-semibold tabular-nums transition-colors"
+        :class="
+          activeRelationship === rel.value
+            ? 'border-indigo-300 bg-indigo-50 text-indigo-600 dark:border-indigo-500/40 dark:bg-indigo-500/15 dark:text-indigo-300'
+            : 'border-transparent text-slate-500 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-700'
+        "
+        @click="pickRelationship(rel.value)"
+      >
+        {{ rel.text }}
       </button>
     </div>
 

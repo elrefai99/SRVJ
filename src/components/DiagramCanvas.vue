@@ -20,10 +20,12 @@ import { Background } from '@vue-flow/background'
 import { useDiagramStore } from '@/stores/diagram'
 import { useDarkMode } from '@/composables/useDarkMode'
 import { useEditorTool } from '@/composables/useEditorTool'
+import { PEN_SIZE, strokeGeometry } from '@/utils/freehand'
 import type { NewNodeOptions } from '@/types/diagram'
 import CustomNode from './CustomNode.vue'
 import CustomEdge from './CustomEdge.vue'
 import ZoomBar from './ZoomBar.vue'
+import ContextMenu, { type MenuItem } from './ContextMenu.vue'
 
 const store = useDiagramStore()
 const { nodes, edges } = storeToRefs(store)
@@ -37,8 +39,10 @@ const {
   activeStrokeStyle,
   activeStrokeWidth,
   activeOpacity,
+  activeCardinality,
   isSelectTool,
   isConnectTool,
+  isDrawTool,
   resetTool,
 } = useEditorTool()
 
@@ -65,7 +69,7 @@ const edgeTypes = {
   custom: markRaw(CustomEdge),
 }
 
-const { screenToFlowCoordinate, onConnect, onNodeClick } = useVueFlow()
+const { screenToFlowCoordinate, viewport, onConnect, onNodeClick } = useVueFlow()
 
 // ---- Arrow / connector tool -------------------------------------------------
 // With the arrow tool active, click a source node then a target node to draw an
@@ -79,7 +83,7 @@ onNodeClick(({ node }) => {
     connectSource.value = node.id
     return
   }
-  store.connectNodes(connectSource.value, node.id)
+  store.connectNodes(connectSource.value, node.id, activeCardinality.value)
   connectSource.value = null
 })
 
@@ -176,6 +180,35 @@ const previewStyle = computed(() => {
   }
 })
 
+// ---- Freehand pen (draw tool) -----------------------------------------------
+// While inking, raw pointer positions are collected as client coordinates. The
+// live preview is rendered in wrapper-relative pixels (scaled by the current
+// zoom so the ink thickness matches the committed stroke); on release the same
+// points are converted to flow coordinates and handed to `store.addDrawNode`.
+const isInking = ref(false)
+const inkClient = ref<{ x: number; y: number }[]>([])
+
+// SVG `d` for the in-progress stroke (empty until at least one point exists).
+const inkPath = computed(() => {
+  const el = wrapperRef.value
+  if (!isInking.value || !el || inkClient.value.length === 0) return ''
+  const rect = el.getBoundingClientRect()
+  const rel = inkClient.value.map((p) => ({ x: p.x - rect.left, y: p.y - rect.top }))
+  const size = PEN_SIZE[activeStrokeWidth.value] * (viewport.value?.zoom ?? 1)
+  return strokeGeometry(rel, size).d
+})
+
+// CSS colour for the ink preview, mirroring CustomNode's per-colour ink.
+const INK_COLOR: Record<string, string> = {
+  slate: '#334155',
+  blue: '#0ea5e9',
+  green: '#10b981',
+  yellow: '#f59e0b',
+  red: '#f43f5e',
+  violet: '#8b5cf6',
+}
+const inkColor = computed(() => INK_COLOR[activeColor.value] ?? INK_COLOR.slate)
+
 function onPointerDown(event: PointerEvent) {
   // Space-pan takes over the drag entirely — never start drawing.
   if (isSpacePanning.value) return
@@ -188,23 +221,52 @@ function onPointerDown(event: PointerEvent) {
     }
     return
   }
-  // Only draw when a shape tool is active and the press starts on the canvas.
+  // Only draw when a shape/pen tool is active and the press starts on the canvas.
   if (isSelectTool.value || event.button !== 0) return
   if (!(event.target as HTMLElement).closest('.vue-flow__pane')) return
   event.preventDefault()
   event.stopPropagation()
+  ;(event.currentTarget as HTMLElement).setPointerCapture(event.pointerId)
+
+  // Freehand pen: start a fresh stroke and collect points as the pointer moves.
+  if (isDrawTool.value) {
+    isInking.value = true
+    inkClient.value = [{ x: event.clientX, y: event.clientY }]
+    return
+  }
+
   startPt.value = { x: event.clientX, y: event.clientY }
   currPt.value = { x: event.clientX, y: event.clientY }
   isDrawing.value = true
-  ;(event.currentTarget as HTMLElement).setPointerCapture(event.pointerId)
 }
 
 function onPointerMove(event: PointerEvent) {
+  if (isInking.value) {
+    inkClient.value = [...inkClient.value, { x: event.clientX, y: event.clientY }]
+    return
+  }
   if (!isDrawing.value) return
   currPt.value = { x: event.clientX, y: event.clientY }
 }
 
 function onPointerUp() {
+  // Freehand pen: commit the collected stroke as a draw node. The pen tool
+  // stays active so you can keep sketching stroke after stroke (Excalidraw-style).
+  if (isInking.value) {
+    isInking.value = false
+    const points = inkClient.value.map((p) =>
+      screenToFlowCoordinate({ x: p.x, y: p.y }),
+    )
+    inkClient.value = []
+    store.addDrawNode({
+      points,
+      color: activeColor.value,
+      strokeWidth: activeStrokeWidth.value,
+      opacity: activeOpacity.value,
+    })
+    return
+  }
+
   if (!isDrawing.value) return
   isDrawing.value = false
   const tool = activeTool.value
@@ -251,6 +313,107 @@ function handleDrop(event: DragEvent) {
   // defaults (fill, stroke, opacity) come from the editor tool refs.
   store.addNode({ ...currentStyleDefaults(), ...payload, position })
 }
+
+// ---- Right-click context menu (Excalidraw-style) ----------------------------
+const menu = ref<{ x: number; y: number; nodeId: string } | null>(null)
+
+function closeMenu() {
+  menu.value = null
+}
+
+function onNodeContextMenu({ event, node }: { event: MouseEvent | TouchEvent; node: { id: string } }) {
+  if (!(event instanceof MouseEvent)) return
+  event.preventDefault()
+  // Right-clicking an unselected node selects just it; clicking inside an
+  // existing multi-selection keeps the selection so the menu acts on all of it.
+  if (!store.nodes.find((n) => n.id === node.id)?.selected) store.selectOnly(node.id)
+  menu.value = { x: event.clientX, y: event.clientY, nodeId: node.id }
+}
+
+function onSelectionContextMenu({ event }: { event: MouseEvent | TouchEvent }) {
+  if (!(event instanceof MouseEvent)) return
+  event.preventDefault()
+  const id = store.selectedNodeIds[0]
+  if (id) menu.value = { x: event.clientX, y: event.clientY, nodeId: id }
+}
+
+function onPaneContextMenu(event: MouseEvent | TouchEvent) {
+  event.preventDefault()
+  closeMenu()
+}
+
+const menuGroups = computed<MenuItem[][]>(() => {
+  const node = menu.value && store.nodes.find((n) => n.id === menu.value!.nodeId)
+  const locked = node?.locked ?? false
+  const hasLink = !!node?.data.link
+  return [
+    [
+      { key: 'send-backward', label: 'Send backward', shortcut: '⌘[' },
+      { key: 'bring-forward', label: 'Bring forward', shortcut: '⌘]' },
+      { key: 'send-to-back', label: 'Send to back', shortcut: '⌘⌥[' },
+      { key: 'bring-to-front', label: 'Bring to front', shortcut: '⌘⌥]' },
+    ],
+    [
+      { key: 'flip-h', label: 'Flip horizontal', shortcut: 'Shift+H' },
+      { key: 'flip-v', label: 'Flip vertical', shortcut: 'Shift+V' },
+    ],
+    [
+      { key: 'add-link', label: hasLink ? 'Edit link' : 'Add link', shortcut: '⌘K' },
+      ...(hasLink ? [{ key: 'copy-link', label: 'Copy link to object' }] : []),
+    ],
+    [
+      { key: 'duplicate', label: 'Duplicate', shortcut: '⌘D' },
+      { key: 'lock', label: locked ? 'Unlock' : 'Lock', shortcut: '⌘⇧L' },
+    ],
+    [{ key: 'delete', label: 'Delete', shortcut: 'Del', danger: true }],
+  ]
+})
+
+function onMenuSelect(key: string) {
+  const id = menu.value?.nodeId
+  switch (key) {
+    case 'send-backward':
+      store.arrangeNodes('backward')
+      break
+    case 'bring-forward':
+      store.arrangeNodes('forward')
+      break
+    case 'send-to-back':
+      store.arrangeNodes('back')
+      break
+    case 'bring-to-front':
+      store.arrangeNodes('front')
+      break
+    case 'flip-h':
+      store.flipNodes('horizontal')
+      break
+    case 'flip-v':
+      store.flipNodes('vertical')
+      break
+    case 'duplicate':
+      store.duplicateSelected()
+      break
+    case 'lock':
+      store.toggleLock()
+      break
+    case 'delete':
+      store.deleteSelected()
+      break
+    case 'add-link': {
+      if (!id) break
+      const node = store.nodes.find((n) => n.id === id)
+      const url = window.prompt('Link URL', node?.data.link ?? 'https://')
+      if (url !== null) store.setNodeLink(id, url.trim())
+      break
+    }
+    case 'copy-link': {
+      const node = id ? store.nodes.find((n) => n.id === id) : null
+      if (node?.data.link) navigator.clipboard?.writeText(node.data.link).catch(() => {})
+      break
+    }
+  }
+  closeMenu()
+}
 </script>
 
 <template>
@@ -272,6 +435,36 @@ function handleDrop(event: DragEvent) {
           <feTurbulence type="fractalNoise" baseFrequency="0.018" numOctaves="2" result="noise" />
           <feDisplacementMap in="SourceGraphic" in2="noise" scale="3.5" />
         </filter>
+
+        <!-- Crow's-foot ERD relationship markers. `auto-start-reverse` lets the
+             same marker mirror correctly whether it sits at an edge's start or
+             end, so one def serves both ends of a relationship. -->
+        <marker
+          id="erd-one"
+          class="erd-marker"
+          viewBox="0 0 14 14"
+          refX="13"
+          refY="7"
+          markerWidth="16"
+          markerHeight="16"
+          markerUnits="userSpaceOnUse"
+          orient="auto-start-reverse"
+        >
+          <path d="M 8 2 L 8 12" />
+        </marker>
+        <marker
+          id="erd-many"
+          class="erd-marker"
+          viewBox="0 0 14 14"
+          refX="13"
+          refY="7"
+          markerWidth="18"
+          markerHeight="18"
+          markerUnits="userSpaceOnUse"
+          orient="auto-start-reverse"
+        >
+          <path d="M 1 7 L 13 2 M 1 7 L 13 7 M 1 7 L 13 12" />
+        </marker>
       </defs>
     </svg>
 
@@ -289,7 +482,7 @@ function handleDrop(event: DragEvent) {
       :delete-key-code="null"
       :selection-key-code="isSelectTool && !isSpacePanning ? true : null"
       :selection-mode="SelectionMode.Partial"
-      :pan-on-drag="isSpacePanning ? [0, 1, 2] : isSelectTool || isConnectTool ? [1, 2] : false"
+      :pan-on-drag="isSpacePanning ? [0, 1, 2] : isSelectTool || isConnectTool ? [1] : false"
       :nodes-draggable="isSelectTool && !isSpacePanning"
       :elements-selectable="isSelectTool && !isSpacePanning"
       :fit-view-on-init="fitViewOnInit"
@@ -297,6 +490,9 @@ function handleDrop(event: DragEvent) {
       @nodes-change="handleNodesChange"
       @edges-change="handleEdgesChange"
       @node-drag-start="handleNodeDragStart"
+      @node-context-menu="onNodeContextMenu"
+      @selection-context-menu="onSelectionContextMenu"
+      @pane-context-menu="onPaneContextMenu"
     >
       <Background :gap="22" :size="1.2" :pattern-color="dotColor" />
       <ZoomBar />
@@ -321,6 +517,16 @@ function handleDrop(event: DragEvent) {
       :style="previewStyle"
     />
 
+    <!-- Live freehand ink preview, rendered in wrapper-relative pixels while the
+         pen tool is dragging (committed to a node on release). -->
+    <svg
+      v-show="isInking"
+      class="pointer-events-none absolute inset-0 z-20 h-full w-full overflow-visible"
+      aria-hidden="true"
+    >
+      <path :d="inkPath" :fill="inkColor" />
+    </svg>
+
     <!-- Arrow-tool guidance pill (top-centre) while the connector tool is on. -->
      
     <div
@@ -331,5 +537,15 @@ function handleDrop(event: DragEvent) {
       {{ connectSource ? 'Click the target shape to connect' : 'Click a shape to start the arrow' }}
       <span class="opacity-60">· Esc to exit</span>
     </div>
+
+    <!-- Right-click context menu (z-order / flip / link / duplicate / lock). -->
+    <ContextMenu
+      v-if="menu"
+      :x="menu.x"
+      :y="menu.y"
+      :groups="menuGroups"
+      @select="onMenuSelect"
+      @close="closeMenu"
+    />
   </div>
 </template>
