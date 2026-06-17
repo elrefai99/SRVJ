@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { onMounted, reactive, ref, watch } from 'vue'
+import { onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { storeToRefs } from 'pinia'
-import AppHeader from '@/components/AppHeader.vue'
+import NavBar from '@/components/navBar.vue'
 import AuthDialog from '@/components/AuthDialog.vue'
 import { useAuthStore } from '@/stores/auth'
 import { useProjectsStore } from '@/stores/projects'
@@ -22,7 +22,7 @@ const auth = useAuthStore()
 const projects = useProjectsStore()
 const { isAuthenticated, user } = storeToRefs(auth)
 const { projects: list, loading, error } = storeToRefs(projects)
-const { init: initDarkMode } = useDarkMode()
+const { init: initDarkMode, setForcedTheme } = useDarkMode()
 
 const authDialogOpen = ref(false)
 const creating = ref(false)
@@ -50,9 +50,14 @@ async function loadIfReady() {
 
 onMounted(async () => {
   initDarkMode()
+  // The dashboard is locked to dark mode; the editor keeps the light/dark
+  // toggle. Released on unmount so the user's preference resumes elsewhere.
+  setForcedTheme('dark')
   await auth.init()
   await loadIfReady()
 })
+
+onBeforeUnmount(() => setForcedTheme(null))
 
 // Refetch when the user signs in/out without leaving the page.
 watch(isAuthenticated, loadIfReady)
@@ -123,7 +128,7 @@ function formatDate(value: string): string {
 
 <template>
   <div class="bg-dots min-h-screen bg-slate-50 text-slate-800 dark:bg-slate-900 dark:text-slate-100">
-    <AppHeader />
+    <NavBar variant="app" />
 
     <main class="mx-auto max-w-5xl px-6 py-10">
       <!-- Signed out -->
