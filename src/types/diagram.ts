@@ -80,6 +80,12 @@ export interface DiagramNodeData {
    * relative to the node's top-left, so the stroke moves/resizes with the node.
    */
   points?: { x: number; y: number }[]
+  /** Mirror the node's content horizontally (Flip horizontal). */
+  flipX?: boolean
+  /** Mirror the node's content vertically (Flip vertical). */
+  flipY?: boolean
+  /** Optional hyperlink attached to the node (opened on click, copied via menu). */
+  link?: string
 }
 
 /**
@@ -97,6 +103,11 @@ export interface DiagramNode {
   style?: Record<string, string>
   /** Extra class on the Vue Flow node element (e.g. `vf-draw-node` for pen strokes). */
   class?: string
+  /** When locked the node can't be dragged or selected (toggled from the menu). */
+  locked?: boolean
+  /** Per-node Vue Flow overrides — set when locked so a lock survives any tool. */
+  draggable?: boolean
+  selectable?: boolean
 }
 
 /** Rectangle reported by the node resizer (top-left origin + size). */
@@ -105,6 +116,20 @@ export interface NodeRect {
   y: number
   width: number
   height: number
+}
+
+/**
+ * Relationship cardinality drawn with crow's-foot ERD notation:
+ *  - `none`         → a plain directed arrow (default flow connector)
+ *  - `one-to-one`   → a single bar at each end (| —— |)
+ *  - `one-to-many`  → a bar at the source, a crow's foot at the target (| —— ⪪)
+ *  - `many-to-many` → a crow's foot at each end (⪫ —— ⪪)
+ */
+export type EdgeCardinality = 'none' | 'one-to-one' | 'one-to-many' | 'many-to-many'
+
+/** Data payload carried by an edge. */
+export interface DiagramEdgeData {
+  cardinality: EdgeCardinality
 }
 
 /** A diagram edge (plain, serialisable shape). */
@@ -118,6 +143,7 @@ export interface DiagramEdge {
   animated?: boolean
   selected?: boolean
   label?: string
+  data?: DiagramEdgeData
 }
 
 /** Options accepted when creating a new node. */

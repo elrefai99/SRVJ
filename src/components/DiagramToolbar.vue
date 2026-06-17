@@ -78,9 +78,15 @@ function confirmReset() {
   <header
     class="relative z-20 flex flex-wrap items-center gap-x-3 gap-y-2 border-b border-slate-200 bg-white/85 px-3 py-2 backdrop-blur dark:border-slate-700 dark:bg-slate-900/85 sm:px-4"
   >
+      <RouterLink
+      mr-1 flex shrink-0 items-center gap-2
+      to="/dashboard"
+      >
     <div class="mr-1 flex shrink-0 items-center">
       <img src="/favicon.png" alt="SRVJ" class="h-12 w-14 rounded-lg shadow-sm" />
     </div>
+      </RouterLink>
+
 
     <div class="flex flex-wrap items-center gap-2">
       <span class="hidden h-6 w-px bg-slate-200 dark:bg-slate-700 sm:block" />
@@ -147,11 +153,11 @@ function confirmReset() {
         :aria-pressed="isDark"
         aria-label="Toggle dark mode"
         title="Toggle dark mode"
-        class="inline-flex items-center rounded-md border border-slate-300 bg-white px-2.5 py-1.5 text-base shadow-sm hover:bg-slate-100 dark:border-slate-600 dark:bg-slate-800 dark:hover:bg-slate-700"
+        class="inline-flex items-center rounded-md  bg-white px-2.5 py-1.5 text-base shadow-sm hover:bg-slate-100 dark:bg-[#202020] dark:hover:bg-slate-700"
         @click="toggleDark"
       >
         <span
-          :class="isDark ? 'i-solar-moon-bold text-indigo-300' : 'i-solar-sun-2-bold text-amber-500'"
+          :class="isDark ? 'i-solar-moon-bold  text-white' : 'i-solar-sun-2-bold text-amber-500'"
           aria-hidden="true"
         />
       </button>

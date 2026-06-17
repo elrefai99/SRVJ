@@ -10,6 +10,7 @@ import type {
   StrokeWidth,
 } from '@/types/diagram'
 import { nodeHandleDescriptors, type HandleSide } from '@/utils/handles'
+import { PEN_SIZE, strokeGeometry } from '@/utils/freehand'
 import { useDiagramStore } from '@/stores/diagram'
 
 const props = defineProps<NodeProps<DiagramNodeData>>()
@@ -73,8 +74,35 @@ const colorStyles: Record<NodeColor, ColorStyle> = {
 const shape = computed(() => props.data.shape)
 const palette = computed(() => colorStyles[props.data.color])
 
-// Text nodes are pure labels — no fill, no border, no handles.
-const connectable = computed(() => shape.value !== 'text')
+// Text nodes are pure labels and freehand strokes are pure ink — neither takes
+// connection handles.
+const connectable = computed(() => shape.value !== 'text' && shape.value !== 'draw')
+
+// ---- Freehand pen stroke (the `draw` shape) ---------------------------------
+// Per-colour ink (a saturated `currentColor` for the filled stroke path).
+const INK_CLASS: Record<NodeColor, string> = {
+  slate: 'text-slate-700 dark:text-slate-200',
+  blue: 'text-sky-500 dark:text-sky-400',
+  green: 'text-emerald-500 dark:text-emerald-400',
+  yellow: 'text-amber-500 dark:text-amber-400',
+  red: 'text-rose-500 dark:text-rose-400',
+  violet: 'text-violet-500 dark:text-violet-400',
+}
+const inkClass = computed(() => INK_CLASS[props.data.color])
+
+// Rebuild the stroke outline from the saved points. Deterministic, so it matches
+// the node's measured size; the SVG viewBox maps that outline onto the box and
+// `preserveAspectRatio="none"` lets the stroke scale when the node is resized.
+const drawGeo = computed(() =>
+  shape.value === 'draw'
+    ? strokeGeometry(props.data.points ?? [], PEN_SIZE[props.data.strokeWidth])
+    : null,
+)
+const drawPath = computed(() => drawGeo.value?.d ?? '')
+const drawViewBox = computed(() => {
+  const g = drawGeo.value
+  return g ? `${g.minX} ${g.minY} ${g.width} ${g.height}` : '0 0 1 1'
+})
 
 // Multiple invisible anchor handles per side (centre + two offset points) so
 // arrows drawn by the toolbar Arrow tool fan out across a side instead of all
@@ -142,6 +170,23 @@ const shapeClasses = computed(() => {
 
 const opacityValue = computed(() => props.data.opacity / 100)
 
+// Flip (mirror) the node content via a CSS transform set from the menu.
+const flipTransform = computed(() => {
+  const sx = props.data.flipX ? -1 : 1
+  const sy = props.data.flipY ? -1 : 1
+  return sx === 1 && sy === 1 ? undefined : `scale(${sx}, ${sy})`
+})
+
+// Lock state lives on the node (not its data); read it from the store so the
+// component can show the badge + block inline editing.
+const isLocked = computed(() => store.nodes.find((n) => n.id === props.id)?.locked ?? false)
+
+// Optional hyperlink — opened in a new tab when its badge is clicked.
+const link = computed(() => props.data.link ?? '')
+function openLink() {
+  if (link.value) window.open(link.value, '_blank', 'noopener,noreferrer')
+}
+
 const labelClasses = computed(() => {
   if (shape.value === 'sticky') return `${palette.value.sticky} bg-transparent dark:bg-transparent`
   if (shape.value === 'text') return `${palette.value.text} text-base`
@@ -175,6 +220,8 @@ function onResize({ params }: OnResize) {
 
 // ---- Inline label editing ---------------------------------------------------
 async function startEditing() {
+  if (shape.value === 'draw') return // freehand strokes carry no label
+  if (isLocked.value) return // locked nodes can't be edited
   if (editing.value) return // already editing — don't discard the in-progress draft
   draft.value = props.data.label
   editing.value = true
@@ -254,9 +301,27 @@ onMounted(() => {
   <div
     class="relative flex h-full w-full items-center justify-center"
     :class="{ 'node-pop': justCreated }"
+    :style="{ transform: flipTransform }"
     title="Double-click to edit"
     @dblclick.stop="startEditing"
   >
+    <!-- Lock badge (top-left) — right-click → Unlock to release it. -->
+    <span
+      v-if="isLocked"
+      class="i-mdi-lock absolute -left-2 -top-2 z-20 text-sm text-slate-400 dark:text-slate-500"
+      aria-hidden="true"
+    />
+
+    <!-- Hyperlink badge (top-right) — click to open in a new tab. -->
+    <button
+      v-if="link"
+      type="button"
+      title="Open link"
+      aria-label="Open link"
+      class="i-mdi-link-variant absolute -right-2 -top-2 z-20 text-sm text-indigo-400 hover:text-indigo-500 dark:text-indigo-300"
+      @click.stop="openLink"
+      @pointerdown.stop
+    />
     <!-- Suppress the resize frame on text shapes while typing — otherwise its
          line / corner squares look like a box around the text. -->
     <NodeResizer
@@ -280,8 +345,20 @@ onMounted(() => {
       />
     </template>
 
+    <!-- ===== Freehand pen stroke: a filled SVG path, pure ink (no box/label) ===== -->
+    <svg
+      v-if="shape === 'draw'"
+      class="diagram-shape draw-shape absolute inset-0 h-full w-full overflow-visible"
+      :class="[inkClass, props.selected ? 'is-selected' : '']"
+      :viewBox="drawViewBox"
+      preserveAspectRatio="none"
+      :style="{ opacity: opacityValue }"
+    >
+      <path :d="drawPath" fill="currentColor" />
+    </svg>
+
     <!-- ===== Non-table shapes: drawn shape (fill / border) + centred label ===== -->
-    <template v-if="shape !== 'table'">
+    <template v-else-if="shape !== 'table'">
       <!-- The drawn shape sits behind the label. The dashed text-selection
            outline is suppressed while editing so typing feels box-less. -->
       <div

@@ -7,12 +7,46 @@ import {
   type EdgeProps,
 } from '@vue-flow/core'
 import { useDiagramStore } from '@/stores/diagram'
+import type { EdgeCardinality } from '@/types/diagram'
 
 // A single straight-line edge with an inline-editable text label sitting on the
 // midpoint (the "Push work" / "Delegate" labels in the reference diagram).
 // Double-click the line (or the label) to edit; Enter / blur commits, Esc cancels.
 const props = defineProps<EdgeProps>()
 const store = useDiagramStore()
+
+// ---- Crow's-foot cardinality markers ----------------------------------------
+// `none` keeps the plain directed arrow (the default flow connector); the ERD
+// cardinalities swap in bar / crow's-foot end markers (defined in DiagramCanvas)
+// and drop the arrowhead, the way draw.io / dbdiagram render relationships.
+const ONE = 'url(#erd-one)'
+const MANY = 'url(#erd-many)'
+const cardinality = computed<EdgeCardinality>(() => props.data?.cardinality ?? 'none')
+
+const markerStartUrl = computed(() => {
+  switch (cardinality.value) {
+    case 'one-to-one':
+    case 'one-to-many':
+      return ONE
+    case 'many-to-many':
+      return MANY
+    default:
+      return undefined
+  }
+})
+
+const markerEndUrl = computed(() => {
+  switch (cardinality.value) {
+    case 'one-to-one':
+      return ONE
+    case 'one-to-many':
+    case 'many-to-many':
+      return MANY
+    default:
+      // Plain connector: keep Vue Flow's default arrowhead marker.
+      return props.markerEnd
+  }
+})
 
 const geometry = computed(() =>
   getStraightPath({
@@ -53,7 +87,13 @@ function cancelEditing() {
 </script>
 
 <template>
-  <BaseEdge :id="id" :path="path" :marker-end="markerEnd" :style="style" />
+  <BaseEdge
+    :id="id"
+    :path="path"
+    :marker-start="markerStartUrl"
+    :marker-end="markerEndUrl"
+    :style="style"
+  />
 
   <EdgeLabelRenderer>
     <div

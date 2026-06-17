@@ -1,5 +1,6 @@
 import { computed, ref } from 'vue'
 import type {
+  EdgeCardinality,
   FillStyle,
   NodeColor,
   NodeShape,
@@ -36,6 +37,8 @@ const activeFillStyle = ref<FillStyle>(DEFAULT_FILL_STYLE)
 const activeStrokeStyle = ref<StrokeStyle>(DEFAULT_STROKE_STYLE)
 const activeStrokeWidth = ref<StrokeWidth>(DEFAULT_STROKE_WIDTH)
 const activeOpacity = ref<number>(DEFAULT_OPACITY)
+// Crow's-foot cardinality applied to arrows drawn with the connector tool.
+const activeCardinality = ref<EdgeCardinality>('none')
 
 export function useEditorTool() {
   const isSelectTool = computed(() => activeTool.value === 'select')
@@ -80,6 +83,10 @@ export function useEditorTool() {
     activeOpacity.value = Math.max(0, Math.min(100, Math.round(value)))
   }
 
+  function setCardinality(value: EdgeCardinality) {
+    activeCardinality.value = value
+  }
+
   /** True when `tool` is the currently active shape tool. */
   function isActive(tool: ShapeTool): boolean {
     const current = activeTool.value
@@ -98,6 +105,7 @@ export function useEditorTool() {
     activeStrokeStyle,
     activeStrokeWidth,
     activeOpacity,
+    activeCardinality,
     isSelectTool,
     isConnectTool,
     isDrawTool,
@@ -110,6 +118,7 @@ export function useEditorTool() {
     setStrokeStyle,
     setStrokeWidth,
     setOpacity,
+    setCardinality,
     isActive,
   }
 }
