@@ -4,6 +4,7 @@ import { asyncHandler } from "../../utils/api-requesthandler";
 import { loadPubliceKey } from "../../utils/loadKey";
 import prisma from "../../config/prisma";
 import { AppError } from "../../utils/errors/app-error";
+import { tableStatus } from "../../generated/prisma";
 
 export const userMiddleware: RequestHandler = asyncHandler(
      async (req: Request, res: Response, next: NextFunction) => {
@@ -20,6 +21,7 @@ export const userMiddleware: RequestHandler = asyncHandler(
                const user = await prisma.user.findFirst({
                     where: {
                          id: payload.data.user_id,
+                         status: tableStatus.active,
                     },
                     select: {
                          id: true,

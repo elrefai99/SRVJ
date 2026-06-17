@@ -13,6 +13,7 @@ model User {
   email           String           @unique
   username        String?          @unique
   password        String
+  status          tableStatus      @default(active)
   avatar          String?
   googleId        String?
   createdAt       DateTime         @default(now())
@@ -32,6 +33,7 @@ model Project {
   title       String
   description String?
   visibility  ProjectVisibility @default(PRIVATE)
+  status      tableStatus       @default(active)
   createdAt   DateTime          @default(now())
   updatedAt   DateTime          @updatedAt
   id          Int               @id @default(autoincrement())
@@ -49,6 +51,7 @@ model Project {
 
 model ProjectMember {
   role      ProjectRole @default(VIEWER)
+  status    tableStatus @default(active)
   createdAt DateTime    @default(now())
   site_id   String      @unique @default(uuid())
   id        Int         @id @default(autoincrement())
@@ -113,6 +116,13 @@ model ShareLink {
   @@index([projectId])
   @@index([createdAt])
   @@map("share_links")
+}
+
+enum tableStatus {
+  active
+  inactive
+  delete
+  ban
 }
 
 enum ProjectRole {
