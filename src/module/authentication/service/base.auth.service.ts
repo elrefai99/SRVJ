@@ -3,6 +3,7 @@ import { LoginDTO, RegisterDTO } from "../DTO/index.dto";
 import bcrypt from "bcryptjs"
 import { avatarProfile } from "../../../functions/upload/avatar.image.fun";
 import { OAuth2Client } from "google-auth-library";
+import { tableStatus } from "../../../generated/prisma";
 
 export class BaseAuth {
      private API_KEY_SALT: number
@@ -13,11 +14,10 @@ export class BaseAuth {
      }
 
      private async check_user(payload: { email: string }): Promise<any> {
-          console.log(payload);
-
           const user = await prisma.user.findFirst({
                where: {
-                    email: payload.email.toLowerCase()
+                    email: payload.email.toLowerCase(),
+                    status: tableStatus.active
                },
                select: {
                     id: true,
@@ -62,7 +62,8 @@ export class BaseAuth {
           const avatar = await avatarProfile(payload.fullname, new_account.id)
           await prisma.user.update({
                where: {
-                    id: new_account.id
+                    id: new_account.id,
+                    status: tableStatus.active
                },
                data: {
                     avatar
@@ -74,7 +75,8 @@ export class BaseAuth {
      public async login_service(payload: LoginDTO): Promise<any> {
           const user = await prisma.user.findFirst({
                where: {
-                    email: payload.email.toLowerCase()
+                    email: payload.email.toLowerCase(),
+                    status: tableStatus.active
                },
                select: {
                     id: true,
@@ -103,7 +105,8 @@ export class BaseAuth {
           const user = await prisma.user.findFirst({
                where: {
                     email: token.email?.toLowerCase(),
-                    googleId: token.sub
+                    googleId: token.sub,
+                    status: tableStatus.active
                },
                select: {
                     id: true,
@@ -111,8 +114,6 @@ export class BaseAuth {
                     email: true
                }
           })
-          console.log(user);
-
 
           if (user) {
                return { success: true, error: false, message: "Success create new account", data: { id: user?.id, email: user?.email, fullname: user?.fullname } }

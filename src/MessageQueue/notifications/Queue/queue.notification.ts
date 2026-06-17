@@ -1,8 +1,8 @@
 import { Queue, Job } from "bullmq";
 
-export const queue = new Queue("emailQueue", {
+export const queue = new Queue("notificationQueue", {
      connection: {
-          url: process.env.NODE_ENV === "development" ? process.env.REDIS_CACHE_DEV : process.env.REDIS_CACHE_LIVE,
+          url: process.env.REDIS_CACHE_BULLMQ,
      },
 });
 
@@ -15,6 +15,6 @@ const REMOVE_CONFIG = {
      },
 };
 
-export async function addJobToQueue<T>(name: string, data: T): Promise<Job<T>> {
+export async function addNotificationJobToQueue<T>(name: string, data: T): Promise<Job<T>> {
      return await queue.add(name, data, REMOVE_CONFIG);
 }

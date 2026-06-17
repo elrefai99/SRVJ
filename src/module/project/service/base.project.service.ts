@@ -1,4 +1,5 @@
 import prisma from "../../../config/prisma";
+import { tableStatus } from "../../../generated/prisma";
 import { IPayloadProject } from "../@types";
 
 export class BasedProject {
@@ -23,6 +24,7 @@ export class BasedProject {
           const projects = await prisma.project.findMany({
                where: {
                     ownerId: payload.user,
+                    status: tableStatus.active
                },
                include: {
                     diagram: true,
@@ -40,6 +42,7 @@ export class BasedProject {
           await prisma.project.update({
                where: {
                     site_id: payload.project,
+                    status: tableStatus.active
                },
                data: {
                     ...(payload.title !== undefined && {

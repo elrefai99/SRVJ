@@ -4,7 +4,7 @@ import { jobProcessor } from './emails/jobs/job.process.emails';
 
 const worker = new Worker("emailQueue", jobProcessor, {
      connection: {
-          url: process.env.NODE_ENV === "development" ? process.env.REDIS_CACHE_DEV : process.env.REDIS_CACHE_LIVE,
+          url: process.env.REDIS_CACHE_BULLMQ,
      },
 });
 

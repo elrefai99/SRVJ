@@ -8,19 +8,28 @@ datasource db {
 }
 
 model User {
-  fullname        String
-  site_id         String           @unique @default(uuid())
-  email           String           @unique
-  username        String?          @unique
-  password        String
-  avatar          String?
-  googleId        String?
-  createdAt       DateTime         @default(now())
-  updatedAt       DateTime         @updatedAt
-  id              Int              @id @default(autoincrement())
-  diagramVersions DiagramVersion[]
-  collaborations  ProjectMember[]
-  projects        Project[]        @relation("ProjectOwner")
+  id      Int    @id @default(autoincrement())
+  site_id String @unique @default(uuid())
+
+  fullname String
+  email    String  @unique
+  username String? @unique
+
+  password String?
+  googleId String?
+
+  avatar String?
+
+  status tableStatus @default(active)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  projects              Project[]        @relation("ProjectOwner")
+  collaborations        ProjectMember[]
+  diagramVersions       DiagramVersion[]
+  sentNotifications     Notification[]   @relation("NotificationFrom")
+  receivedNotifications Notification[]   @relation("NotificationTo")
 
   @@index([email])
   @@index([username])
@@ -29,18 +38,24 @@ model User {
 }
 
 model Project {
+  id      Int    @id @default(autoincrement())
+  site_id String @unique @default(uuid())
+
   title       String
   description String?
-  visibility  ProjectVisibility @default(PRIVATE)
-  createdAt   DateTime          @default(now())
-  updatedAt   DateTime          @updatedAt
-  id          Int               @id @default(autoincrement())
-  site_id     String            @unique @default(uuid())
-  ownerId     Int
-  diagram     Diagram?
-  members     ProjectMember[]
-  owner       User              @relation("ProjectOwner", fields: [ownerId], references: [id], onDelete: Cascade)
-  shareLinks  ShareLink[]
+
+  visibility ProjectVisibility @default(PRIVATE)
+  status     tableStatus       @default(active)
+
+  ownerId Int
+  owner   User @relation("ProjectOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+
+  diagram    Diagram?
+  members    ProjectMember[]
+  shareLinks ShareLink[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([ownerId])
   @@index([createdAt])
@@ -48,14 +63,19 @@ model Project {
 }
 
 model ProjectMember {
-  role      ProjectRole @default(VIEWER)
-  createdAt DateTime    @default(now())
-  site_id   String      @unique @default(uuid())
-  id        Int         @id @default(autoincrement())
+  id      Int    @id @default(autoincrement())
+  site_id String @unique @default(uuid())
+
   projectId Int
   userId    Int
-  project   Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  role   ProjectRole @default(VIEWER)
+  status tableStatus @default(active)
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
 
   @@unique([projectId, userId])
   @@index([projectId])
@@ -65,54 +85,100 @@ model ProjectMember {
 }
 
 model Diagram {
-  version   Int              @default(1)
-  nodes     Json
-  site_id   String           @unique @default(uuid())
-  edges     Json
-  metadata  Json?
-  createdAt DateTime         @default(now())
-  updatedAt DateTime         @updatedAt
-  id        Int              @id @default(autoincrement())
-  projectId Int              @unique
-  versions  DiagramVersion[]
-  project   Project          @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  id      Int    @id @default(autoincrement())
+  site_id String @unique @default(uuid())
+
+  projectId Int     @unique
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  version Int @default(1)
+
+  nodes    Json
+  edges    Json
+  metadata Json?
+
+  versions DiagramVersion[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([createdAt])
   @@map("diagrams")
 }
 
 model DiagramVersion {
-  version     Int
-  nodes       Json
-  site_id     String   @unique @default(uuid())
-  edges       Json
-  metadata    Json?
-  createdAt   DateTime @default(now())
-  id          Int      @id @default(autoincrement())
-  diagramId   Int
-  createdById Int?
-  createdBy   User?    @relation(fields: [createdById], references: [id])
-  diagram     Diagram  @relation(fields: [diagramId], references: [id], onDelete: Cascade)
+  id      Int    @id @default(autoincrement())
+  site_id String @unique @default(uuid())
 
+  diagramId Int
+  diagram   Diagram @relation(fields: [diagramId], references: [id], onDelete: Cascade)
+
+  version Int
+
+  nodes    Json
+  edges    Json
+  metadata Json?
+
+  createdById Int?
+  createdBy   User? @relation(fields: [createdById], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([diagramId, version])
   @@index([diagramId])
-  @@index([version])
   @@index([createdAt])
   @@map("diagram_versions")
 }
 
 model ShareLink {
-  token     String      @unique
-  role      ProjectRole @default(VIEWER)
-  site_id   String      @unique @default(uuid())
-  expiresAt DateTime?
-  createdAt DateTime    @default(now())
-  id        Int         @id @default(autoincrement())
+  id      Int    @id @default(autoincrement())
+  site_id String @unique @default(uuid())
+
+  token String @unique
+
   projectId Int
-  project   Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  role ProjectRole @default(VIEWER)
+
+  expiresAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([projectId])
   @@index([createdAt])
   @@map("share_links")
+}
+
+model Notification {
+  id         Int    @id @default(autoincrement())
+  site_id    String @unique @default(uuid())
+  fromUserId Int?
+  toUserId   Int?
+
+  title   String
+  message String?
+
+  isRead Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  fromUser User? @relation("NotificationFrom", fields: [fromUserId], references: [id], onDelete: Cascade)
+  toUser   User? @relation("NotificationTo", fields: [toUserId], references: [id], onDelete: Cascade)
+
+  @@index([toUserId, isRead])
+  @@index([createdAt])
+  @@map("notifications")
+}
+
+enum tableStatus {
+  active
+  inactive
+  delete
+  ban
 }
 
 enum ProjectRole {

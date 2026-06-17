@@ -32,6 +32,7 @@ import appConfig from './app.config'
 import appModule from './app.module'
 import prisma from './config/prisma'
 import { redisConfig } from './config/redis'
+import { startSubscriber } from './config/subscriber'
 const app: Express = express()
 
 // Webhooks need raw body — mount BEFORE json parser (app_config applies json)
@@ -87,6 +88,7 @@ async function startServer() {
                     })
                     process.exit(1)
                }),
+               startSubscriber()
           ])
      } catch (error) {
           console.error('❌ Failed to start server:', error)

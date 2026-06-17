@@ -22,6 +22,7 @@ process.on('SIGINT', async () => {
 
 prisma.$connect().then(() => {
      require('./worker.emails');
+     require('./worker.notification');
      console.log('⛁  MongoDB connected for workers');
      console.log('🚀 All workers started successfully!');
 });
