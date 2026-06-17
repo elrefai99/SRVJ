@@ -2,7 +2,8 @@ import type { Request, RequestHandler, Response } from 'express'
 import { v4 as uuidv4 } from 'uuid'
 import { asyncHandler } from '../../../utils/api-requesthandler'
 import { NotificationPayload } from '../@types';
-import { connectRedis, redis } from '../shared/redis';
+import { addNotificationJobToQueue } from '../../../MessageQueue/notifications/Queue/queue.notification';
+// import { connectRedis, redis } from '../shared/redis';
 
 
 export const publishController: RequestHandler = asyncHandler(
@@ -18,12 +19,7 @@ export const publishController: RequestHandler = asyncHandler(
                message,
                createdAt: new Date().toISOString(),
           }
-
-          await connectRedis();
-          await redis.publish(
-               "notifications",
-               JSON.stringify(payload)
-          );
+          await addNotificationJobToQueue("notificationQueue", payload)
           res.json({ success: true, data: payload });
      }
 )
