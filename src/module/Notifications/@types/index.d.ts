@@ -13,6 +13,9 @@ export interface NotificationPayload {
      title: string;
      message: string;
      createdAt: string;
+     sender?: string
+     to?: string
+     userId?: any
 }
 
 export interface INotification extends Document {

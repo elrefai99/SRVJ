@@ -2,7 +2,7 @@ import { Queue, Job } from "bullmq";
 
 export const queue = new Queue("emailQueue", {
      connection: {
-          url: process.env.NODE_ENV === "development" ? process.env.REDIS_CACHE_DEV : process.env.REDIS_CACHE_LIVE,
+          url: process.env.REDIS_CACHE_BULLMQ,
      },
 });
 
