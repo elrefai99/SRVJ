@@ -9,7 +9,7 @@ export const createController: RequestHandler = asyncHandler(
 
           const based_project: BasedProject = new BasedProject()
 
-          const result = await based_project.createService({ title, description, visibility, user: req.user.id })
+          const result = await based_project.createService({ title, description, visibility, user: req.user?.id })
 
           if (!result.success) {
                res.status(400).json({ code: 400, status: "Bad Request", message: "Failed create project" })

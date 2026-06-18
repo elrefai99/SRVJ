@@ -2,7 +2,7 @@ import { z } from 'zod'
 
 export const createProjectDTO = z.object({
      title: z
-          .string({ error: 'title is required' })
+          .string()
           .min(2, 'title must be at least 2 characters')
           .max(50, 'title must not exceed 50 characters'),
      description: z

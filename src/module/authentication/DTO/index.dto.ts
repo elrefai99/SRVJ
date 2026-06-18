@@ -1,7 +1,7 @@
 import { z } from 'zod'
 
 const passwordSchema = z
-     .string({ error: 'Password is required' })
+     .string()
      .min(8, 'Password must be at least 8 characters')
      .max(64, 'Password must not exceed 64 characters')
      .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
@@ -11,11 +11,11 @@ const passwordSchema = z
 
 export const RegisterDTO = z.object({
      fullname: z
-          .string({ error: 'Name is required' })
+          .string()
           .min(2, 'Name must be at least 2 characters')
           .max(50, 'Name must not exceed 50 characters'),
      email: z
-          .string({ error: 'Email is required' })
+          .string()
           .max(100, 'Email must not exceed 100 characters'),
      password: passwordSchema,
 })
@@ -23,7 +23,7 @@ export type RegisterDTO = z.infer<typeof RegisterDTO>
 
 export const LoginDTO = z.object({
      email: z
-          .string({ error: 'Email is required' })
+          .string()
           .email('Email must be a valid email address')
           .max(100, 'Email must not exceed 100 characters'),
      password: passwordSchema,

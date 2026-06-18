@@ -5,8 +5,8 @@ export interface IUser {
      site_id?: string;
      fullname?: string;
      email?: string;
-     username?: string;
-     avatar?: string;
+     username?: string | null;
+     avatar?: string | null;
      status?: tableStatus;
      createdAt?: any;
 }
