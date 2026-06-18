@@ -8,14 +8,17 @@ export const startSubscriber = async () => {
           try {
                const payload = JSON.parse(message);
 
-               const client = clients.get(String(payload.userId));
+               const connections = clients.get(String(payload.userId));
 
-               if (!client) return;
+               if (!connections || connections.size === 0) return;
 
-               client.res.write(
+               const frame =
                     `event: notification\n` +
-                    `data: ${JSON.stringify(payload)}\n\n`
-               );
+                    `data: ${JSON.stringify(payload)}\n\n`;
+
+               for (const client of connections) {
+                    client.res.write(frame);
+               }
           } catch (e) { }
      });
 };

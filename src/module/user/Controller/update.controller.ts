@@ -12,7 +12,7 @@ export const updateProfileController: RequestHandler = asyncHandler(
           }
           const based_user = new BaseUser()
 
-          const result = await based_user.update_profile(req.user.id, data)
+          const result = await based_user.update_profile(req.user?.id as number, data)
           if (!result) {
                res.status(400).json({
                     code: 400, status: "Bad Request", timestamp: new Date(), success: false, error: true, message: "Faild update user data", data: null

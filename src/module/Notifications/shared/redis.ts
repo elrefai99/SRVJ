@@ -1,8 +1,8 @@
 import { createClient } from "redis";
 
-const url = process.env.REDIS_CACHE_BULLMQ as string;
+const url: string = process.env.REDIS_CACHE_BULLMQ as string;
 
-export const redis = createClient({ url });
+export const redis: ReturnType<typeof createClient> = createClient({ url });
 export const subscriber: typeof redis = redis.duplicate();
 
 let connected = false;

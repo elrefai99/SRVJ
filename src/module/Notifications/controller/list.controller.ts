@@ -6,7 +6,7 @@ export const listController: RequestHandler = asyncHandler(
      async (req: Request, res: Response, _next: NextFunction) => {
           const data = await prisma.notification.findMany({
                where: {
-                    toUserId: Number(req.user.id)
+                    toUserId: req.user?.id
                },
                include: {
                     fromUser: true

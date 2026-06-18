@@ -8,7 +8,7 @@ export const editController: RequestHandler = asyncHandler(
           const data = req.body as editProjectDTO
           const based_project: BasedProject = new BasedProject()
 
-          const result = await based_project.editService({ ...data, project: String(req.params.id), user: req.user.id })
+          const result = await based_project.editService({ ...data, project: String(req.params.id), user: req.user?.id })
           if (!result.success) {
                res.status(400).json({ code: 400, status: "Bad Request", message: "Failed create project" })
                return
