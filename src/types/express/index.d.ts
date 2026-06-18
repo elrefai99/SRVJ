@@ -1,10 +1,10 @@
-import type { IUserRequest } from '../../@types'
+import type { IUser } from '../../@types'
 import 'express'
 
 declare global {
      namespace Express {
           export interface Request {
-               user?: any;
+               user?: IUser;
                lang?: string;
                clientIP?: any;
                useragent?: any

@@ -1,3 +1,3 @@
 import { SSEClient } from "../@types";
 
-export const clients = new Map<string, SSEClient>();
+export const clients = new Map<string, Set<SSEClient>>();

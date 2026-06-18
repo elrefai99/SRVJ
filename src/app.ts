@@ -35,8 +35,6 @@ import { redisConfig } from './config/redis'
 import { startSubscriber } from './config/subscriber'
 const app: Express = express()
 
-// Webhooks need raw body — mount BEFORE json parser (app_config applies json)
-
 const server = http.createServer(app)
 export let ioSocket: SocketIOServer = new SocketIOServer(server, {
      cors: {
