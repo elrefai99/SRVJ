@@ -48,6 +48,8 @@ export interface ErdField {
   id: string
   name: string
   key: ErdFieldKey
+  /** Optional data type shown in the right-hand column (e.g. `uuid`, `text`). */
+  type?: string
 }
 
 /** Named fill colour drawn from a fixed Excalidraw-like palette. */

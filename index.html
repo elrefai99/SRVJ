@@ -8,10 +8,12 @@
   <!-- Primary meta -->
   <title>SRVJ — Free Online Diagram Editor &amp; Whiteboard</title>
   <meta name="description"
-    content="SRVJ is a free, browser-based diagram editor and whiteboard — a Draw.io-style flow editor sticky notes. elrefai." />
+    content="SRVJ is a free online diagram editor and whiteboard. Build flowcharts, ERDs, mind maps and sticky notes on an infinite canvas, right in your browser." />
   <meta name="keywords"
-    content="diagram editor, online whiteboard, flowchart maker, draw.io alternative, excalidraw, miro, flow diagram, sticky notes, mind map, free diagram tool, elrefai" />
+    content="SRVJ, srvj diagram editor, srvj whiteboard, diagram editor, online whiteboard, flowchart maker, draw.io alternative, excalidraw, miro, flow diagram, sticky notes, mind map, ERD tool, free diagram tool, elrefai" />
   <meta name="author" content="Mohammed Mostafa" />
+  <meta name="application-name" content="SRVJ" />
+  <meta name="apple-mobile-web-app-title" content="SRVJ" />
   <meta name="theme-color" content="#6366f1" />
   <meta name="color-scheme" content="light dark" />
   <link rel="canonical" href="https://srvj.elrefai.me/" />
@@ -26,9 +28,10 @@
   <meta property="og:site_name" content="SRVJ" />
   <meta property="og:title" content="SRVJ — Free Online Diagram Editor &amp; Whiteboard" />
   <meta property="og:description"
-    content="A free, browser-based diagram editor and whiteboard. Draw.io-style flows — elrefai." />
+    content="SRVJ is a free online diagram editor and whiteboard. Flowcharts, ERDs, mind maps and sticky notes on one infinite canvas — no download." />
   <meta property="og:url" content="https://srvj.elrefai.me/" />
   <meta property="og:image" content="https://srvj.elrefai.me/og-image.svg" />
+  <meta property="og:image:type" content="image/svg+xml" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
   <meta property="og:image:alt" content="SRVJ diagram editor canvas with connected shapes and sticky notes." />
@@ -38,30 +41,58 @@
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="SRVJ — Free Online Diagram Editor &amp; Whiteboard" />
   <meta name="twitter:description"
-    content="A free, browser-based diagram editor and whiteboard. Draw.io-style flows — elrefai." />
+    content="SRVJ is a free online diagram editor and whiteboard. Flowcharts, ERDs, mind maps and sticky notes on one infinite canvas — no download." />
   <meta name="twitter:image" content="https://srvj.elrefai.me/og-image.svg" />
   <meta name="twitter:image:alt" content="SRVJ diagram editor canvas with connected shapes and sticky notes." />
 
-  <!-- Structured data -->
+  <!-- Structured data: a single @graph so Google ties the WebApplication to a
+       named brand (WebSite + Organization). The WebSite `name`/`alternateName`
+       is the primary signal that this site's brand is "SRVJ". -->
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
-    "@type": "WebApplication",
-    "name": "SRVJ",
-    "url": "https://srvj.elrefai.me/",
-    "description": "A free, browser-based diagram editor and whiteboard — a Draw.io-style flow editor sticky notes, elrefai.",
-    "applicationCategory": "DesignApplication",
-    "operatingSystem": "Any (web browser)",
-    "browserRequirements": "Requires JavaScript and a modern web browser.",
-    "offers": {
-      "@type": "Offer",
-      "price": "0",
-      "priceCurrency": "USD"
-    },
-    "author": {
-      "@type": "Person",
-      "name": "Mohammed Mostafa"
-    }
+    "@graph": [
+      {
+        "@type": "WebSite",
+        "@id": "https://srvj.elrefai.me/#website",
+        "url": "https://srvj.elrefai.me/",
+        "name": "SRVJ",
+        "alternateName": ["SRVJ Diagram Editor", "SRVJ Whiteboard"],
+        "description": "Free online diagram editor and whiteboard.",
+        "inLanguage": "en",
+        "publisher": { "@id": "https://srvj.elrefai.me/#organization" }
+      },
+      {
+        "@type": "Organization",
+        "@id": "https://srvj.elrefai.me/#organization",
+        "name": "SRVJ",
+        "url": "https://srvj.elrefai.me/",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://srvj.elrefai.me/favicon.png",
+          "width": 1254,
+          "height": 1254
+        },
+        "sameAs": ["https://github.com/elrefai99"],
+        "founder": { "@type": "Person", "name": "Mohammed Mostafa" }
+      },
+      {
+        "@type": "WebApplication",
+        "@id": "https://srvj.elrefai.me/#app",
+        "name": "SRVJ",
+        "url": "https://srvj.elrefai.me/",
+        "description": "SRVJ is a free online diagram editor and whiteboard — flowcharts, ERDs, mind maps and sticky notes on an infinite canvas.",
+        "applicationCategory": "DesignApplication",
+        "operatingSystem": "Any (web browser)",
+        "browserRequirements": "Requires JavaScript and a modern web browser.",
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "USD"
+        },
+        "publisher": { "@id": "https://srvj.elrefai.me/#organization" }
+      }
+    ]
   }
   </script>
 
