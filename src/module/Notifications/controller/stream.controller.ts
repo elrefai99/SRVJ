@@ -1,6 +1,7 @@
 import { NextFunction, Request, RequestHandler, Response } from "express";
 import { asyncHandler } from "../../../utils/api-requesthandler";
 import { clients } from "../utils/client";
+import { SSEClient } from "../@types";
 
 export const streamController: RequestHandler = asyncHandler(
      async (req: Request, res: Response, _next: NextFunction) => {
@@ -12,18 +13,24 @@ export const streamController: RequestHandler = asyncHandler(
                'Connection': 'keep-alive',
                'X-Accel-Buffering': 'no',
           })
+          res.flushHeaders?.()
 
-          const existing = clients.get(userId);
+          // This tab/device gets its own connection entry.
+          const client: SSEClient = { userId, res };
 
-          if (existing) {
-               existing.res.end();
-               clients.delete(userId);
+          let connections = clients.get(userId);
+          if (!connections) {
+               connections = new Set<SSEClient>();
+               clients.set(userId, connections);
           }
+          connections.add(client);
 
-          clients.set(userId, { userId, res });
+          // open the stream so the client's onopen fires immediately
+          res.write(`: connected\n\n`);
 
           req.on("close", () => {
-               clients.delete(userId);
+               connections!.delete(client);
+               if (connections!.size === 0) clients.delete(userId);
           });
      }
 )
