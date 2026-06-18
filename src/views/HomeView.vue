@@ -265,7 +265,7 @@ onBeforeUnmount(() => {
             margin: 0 0 24px;
           "
         >
-          The diagram editor that<br />works the way
+          SRVJ is the diagram editor<br />that works the way
           <span
             style="
               background: linear-gradient(110deg, #818cf8, #c4b5fd);

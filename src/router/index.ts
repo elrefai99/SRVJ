@@ -21,13 +21,13 @@ export const routes: RouteRecordRaw[] = [
     meta: { guestOnly: true },
   },
   {
-    path: '/dashboard',
+    path: '/app/dashboard',
     name: 'dashboard',
     component: () => import('@/views/DashboardView.vue'),
     meta: { requiresAuth: true },
   },
   {
-    path: '/editor/:diagramId',
+    path: '/app/dashboard/editor/:diagramId',
     name: 'editor',
     component: () => import('@/views/EditorView.vue'),
     meta: { requiresAuth: true },
