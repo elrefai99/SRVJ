@@ -1,0 +1,1761 @@
+{
+  "totalFiles": 67,
+  "totalExports": 252,
+  "totalImportEdges": 96,
+  "files": [
+    {
+      "file": "src/MessageQueue/emails/Queue/queue.email.ts",
+      "exports": [
+        {
+          "name": "addJobToQueue",
+          "kind": "value"
+        },
+        {
+          "name": "queue",
+          "kind": "value"
+        }
+      ],
+      "importedBy": [
+        "src/module/authentication/controller/google.controller.ts",
+        "src/module/authentication/controller/login.controller.ts",
+        "src/module/authentication/controller/register.controller.ts"
+      ],
+      "importsFrom": []
+    },
+    {
+      "file": "src/MessageQueue/emails/jobs/job.process.emails.ts",
+      "exports": [
+        {
+          "name": "sendEmail",
+          "kind": "value"
+        },
+        {
+          "name": "jobProcessor",
+          "kind": "value"
+        }
+      ],
+      "importedBy": [
+        "src/MessageQueue/worker.emails.ts"
+      ],
+      "importsFrom": [
+        "src/MessageQueue/emails/template/login.ts",
+        "src/MessageQueue/emails/template/register.ts",
+        "src/MessageQueue/provider/resend.ts"
+      ]
+    },
+    {
+      "file": "src/MessageQueue/emails/template/login.ts",
+      "exports": [
+        {
+          "name": "loginTemp",
+          "kind": "value"
+        }
+      ],
+      "importedBy": [
+        "src/MessageQueue/emails/jobs/job.process.emails.ts"
+      ],
+      "importsFrom": []
+    },
+    {
+      "file": "src/MessageQueue/emails/template/register.ts",
+      "exports": [
+        {
+          "name": "registerTemp",
+          "kind": "value"
+        }
+      ],
+      "importedBy": [
+        "src/MessageQueue/emails/jobs/job.process.emails.ts"
+      ],
+      "importsFrom": []
+    },
+    {
+      "file": "src/MessageQueue/notifications/Queue/queue.notification.ts",
+      "exports": [
+        {
+          "name": "addNotificationJobToQueue",
+          "kind": "value"
+        },
+        {
+          "name": "queue",
+          "kind": "value"
+        }
+      ],
+      "importedBy": [
+        "src/module/Notifications/controller/publish.controller.ts"
+      ],
+      "importsFrom": []
+    },
+    {
+      "file": "src/MessageQueue/notifications/jobs/job.process.notification.ts",
+      "exports": [
+        {
+          "name": "sendNotification",
+          "kind": "value"
+        },
+        {
+          "name": "jobNotificationProcessor",
+          "kind": "value"
+        }
+      ],
+      "importedBy": [
+        "src/MessageQueue/worker.notification.ts"
+      ],
+      "importsFrom": [
+        "src/module/Notifications/shared/redis.ts",
+        "src/config/prisma.ts"
+      ]
+    },
+    {
+      "file": "src/MessageQueue/provider/resend.ts",
+      "exports": [
+        {
+          "name": "resendFunction",
+          "kind": "value"
+        }
+      ],
+      "importedBy": [
+        "src/MessageQueue/emails/jobs/job.process.emails.ts"
+      ],
+      "importsFrom": []
+    },
+    {
+      "file": "src/app.config.ts",
+      "exports": [
+        {
+          "name": "allowedOrigins",
+          "kind": "value"
+        },
+        {
+          "name": "default",
+          "kind": "default"
+        }
+      ],
+      "importedBy": [
+        "src/app.ts"
+      ],
+      "importsFrom": [
+        "src/utils/limit-request.ts"
+      ]
+    },
+    {
+      "file": "src/app.ts",
+      "exports": [
+        {
+          "name": "ioSocket",
+          "kind": "value"
+        },
+        {
+          "name": "default",
+          "kind": "default"
+        }
+      ],
+      "importedBy": [],
+      "importsFrom": [
+        "src/config/dotenv.ts",
+        "src/utils/logger.ts",
+        "src/app.config.ts",
+        "src/app.module.ts",
+        "src/config/prisma.ts",
+        "src/config/redis.ts",
+        "src/config/subscriber.ts"
+      ]
+    },
+    {
+      "file": "src/config/cloudinary.ts",
+      "exports": [
+        {
+          "name": "default",
+          "kind": "default"
+        }
+      ],
+      "importedBy": [
+        "src/functions/upload/avatar.image.fun.ts",
+        "src/functions/upload/image.process.ts"
+      ],
+      "importsFrom": []
+    },
+    {
+      "file": "src/config/dotenv.ts",
+      "exports": [
+        {
+          "name": "default",
+          "kind": "default"
+        }
+      ],
+      "importedBy": [
+        "src/MessageQueue/index.ts",
+        "src/MessageQueue/worker.emails.ts",
+        "src/MessageQueue/worker.notification.ts",
+        "src/app.ts"
+      ],
+      "importsFrom": []
+    },
+    {
+      "file": "src/config/postgres-url.ts",
+      "exports": [
+        {
+          "name": "getPostgresConnectionString",
+          "kind": "value"
+        }
+      ],
+      "importedBy": [
+        "src/MessageQueue/index.ts",
+        "src/config/prisma.ts"
+      ],
+      "importsFrom": []
+    },
+    {
+      "file": "src/config/prisma.ts",
+      "exports": [
+        {
+          "name": "default",
+          "kind": "default"
+        }
+      ],
+      "importedBy": [
+        "src/MessageQueue/notifications/jobs/job.process.notification.ts",
+        "src/app.ts",
+        "src/middleware/user/user.middleware.ts",
+        "src/module/Notifications/controller/list.controller.ts",
+        "src/module/authentication/controller/refresh.controller.ts",
+        "src/module/authentication/service/base.auth.service.ts",
+        "src/module/project/service/base.project.service.ts",
+        "src/module/user/Middleware/me.middleware.ts",
+        "src/module/user/Service/base.user.service.ts"
+      ],
+      "importsFrom": [
+        "src/config/postgres-url.ts"
+      ]
+    },
+    {
+      "file": "src/config/redis.ts",
+      "exports": [
+        {
+          "name": "redisConfig",
+          "kind": "value"
+        },
+        {
+          "name": "default",
+          "kind": "default"
+        }
+      ],
+      "importedBy": [
+        "src/app.ts",
+        "src/functions/redis/cache.service.fun.ts"
+      ],
+      "importsFrom": []
+    },
+    {
+      "file": "src/config/subscriber.ts",
+      "exports": [
+        {
+          "name": "startSubscriber",
+          "kind": "value"
+        }
+      ],
+      "importedBy": [
+        "src/app.ts"
+      ],
+      "importsFrom": [
+        "src/module/Notifications/shared/redis.ts",
+        "src/module/Notifications/utils/client.ts"
+      ]
+    },
+    {
+      "file": "src/functions/redis/cache.invalidation.ts",
+      "exports": [
+        {
+          "name": "invalidateSearchCache",
+          "kind": "value"
+        }
+      ],
+      "importedBy": [],
+      "importsFrom": [
+        "src/functions/redis/cache.service.fun.ts"
+      ]
+    },
+    {
+      "file": "src/functions/redis/cache.service.fun.ts",
+      "exports": [
+        {
+          "name": "cacheService",
+          "kind": "value"
+        }
+      ],
+      "importedBy": [
+        "src/functions/redis/cache.invalidation.ts"
+      ],
+      "importsFrom": [
+        "src/config/redis.ts"
+      ]
+    },
+    {
+      "file": "src/functions/upload/avatar.image.fun.ts",
+      "exports": [
+        {
+          "name": "avatarProfile",
+          "kind": "value"
+        }
+      ],
+      "importedBy": [
+        "src/module/authentication/service/base.auth.service.ts"
+      ],
+      "importsFrom": [
+        "src/config/cloudinary.ts"
+      ]
+    },
+    {
+      "file": "src/functions/upload/image.contenttype.ts",
+      "exports": [
+        {
+          "name": "getContentType",
+          "kind": "value"
+        }
+      ],
+      "importedBy": [],
+      "importsFrom": []
+    },
+    {
+      "file": "src/functions/upload/image.process.ts",
+      "exports": [
+        {
+          "name": "imagesUpload",
+          "kind": "value"
+        },
+        {
+          "name": "avatarProcess",
+          "kind": "value"
+        },
+        {
+          "name": "imageProcess",
+          "kind": "value"
+        }
+      ],
+      "importedBy": [
+        "src/module/user/Service/base.user.service.ts"
+      ],
+      "importsFrom": [
+        "src/config/cloudinary.ts"
+      ]
+    },
+    {
+      "file": "src/gen-app-config.ts",
+      "exports": [
+        {
+          "name": "TokenType",
+          "kind": "value"
+        },
+        {
+          "name": "addJobToQueue",
+          "kind": "value"
+        },
+        {
+          "name": "queue",
+          "kind": "value"
+        },
+        {
+          "name": "sendEmail",
+          "kind": "value"
+        },
+        {
+          "name": "jobProcessor",
+          "kind": "value"
+        },
+        {
+          "name": "loginTemp",
+          "kind": "value"
+        },
+        {
+          "name": "registerTemp",
+          "kind": "value"
+        },
+        {
+          "name": "addNotificationJobToQueue",
+          "kind": "value"
+        },
+        {
+          "name": "sendNotification",
+          "kind": "value"
+        },
+        {
+          "name": "jobNotificationProcessor",
+          "kind": "value"
+        },
+        {
+          "name": "resendFunction",
+          "kind": "value"
+        },
+        {
+          "name": "allowedOrigins",
+          "kind": "value"
+        },
+        {
+          "name": "app_config",
+          "kind": "value"
+        },
+        {
+          "name": "cloudinary",
+          "kind": "value"
+        },
+        {
+          "name": "dotenv",
+          "kind": "value"
+        },
+        {
+          "name": "getPostgresConnectionString",
+          "kind": "value"
+        },
+        {
+          "name": "prisma",
+          "kind": "value"
+        },
+        {
+          "name": "redisConfig",
+          "kind": "value"
+        },
+        {
+          "name": "redis",
+          "kind": "value"
+        },
+        {
+          "name": "startSubscriber",
+          "kind": "value"
+        },
+        {
+          "name": "invalidateSearchCache",
+          "kind": "value"
+        },
+        {
+          "name": "cacheService",
+          "kind": "value"
+        },
+        {
+          "name": "avatarProfile",
+          "kind": "value"
+        },
+        {
+          "name": "getContentType",
+          "kind": "value"
+        },
+        {
+          "name": "imagesUpload",
+          "kind": "value"
+        },
+        {
+          "name": "avatarProcess",
+          "kind": "value"
+        },
+        {
+          "name": "imageProcess",
+          "kind": "value"
+        },
+        {
+          "name": "uploadAvatar",
+          "kind": "value"
+        },
+        {
+          "name": "medical_historyImage",
+          "kind": "value"
+        },
+        {
+          "name": "uploadMultiImage",
+          "kind": "value"
+        },
+        {
+          "name": "userMiddleware",
+          "kind": "value"
+        },
+        {
+          "name": "validateDTO",
+          "kind": "value"
+        },
+        {
+          "name": "listController",
+          "kind": "value"
+        },
+        {
+          "name": "publishController",
+          "kind": "value"
+        },
+        {
+          "name": "streamController",
+          "kind": "value"
+        },
+        {
+          "name": "subscriber",
+          "kind": "value"
+        },
+        {
+          "name": "connectRedis",
+          "kind": "value"
+        },
+        {
+          "name": "connectSubscriber",
+          "kind": "value"
+        },
+        {
+          "name": "clients",
+          "kind": "value"
+        },
+        {
+          "name": "formatSSEEvent",
+          "kind": "value"
+        },
+        {
+          "name": "formatHeartbeat",
+          "kind": "value"
+        },
+        {
+          "name": "RegisterDTO",
+          "kind": "value"
+        },
+        {
+          "name": "LoginDTO",
+          "kind": "value"
+        },
+        {
+          "name": "googleController",
+          "kind": "value"
+        },
+        {
+          "name": "logoutConrtoller",
+          "kind": "value"
+        },
+        {
+          "name": "refreshController",
+          "kind": "value"
+        },
+        {
+          "name": "loginController",
+          "kind": "value"
+        },
+        {
+          "name": "registerController",
+          "kind": "value"
+        },
+        {
+          "name": "BaseAuth",
+          "kind": "value"
+        },
+        {
+          "name": "formatLoginTime",
+          "kind": "value"
+        },
+        {
+          "name": "token_PASETO",
+          "kind": "value"
+        },
+        {
+          "name": "createProjectDTO",
+          "kind": "value"
+        },
+        {
+          "name": "editProjectDTO",
+          "kind": "value"
+        },
+        {
+          "name": "createController",
+          "kind": "value"
+        },
+        {
+          "name": "editController",
+          "kind": "value"
+        },
+        {
+          "name": "getController",
+          "kind": "value"
+        },
+        {
+          "name": "BasedProject",
+          "kind": "value"
+        },
+        {
+          "name": "deleteController",
+          "kind": "value"
+        },
+        {
+          "name": "profileController",
+          "kind": "value"
+        },
+        {
+          "name": "updateProfileController",
+          "kind": "value"
+        },
+        {
+          "name": "updateProfileDTO",
+          "kind": "value"
+        },
+        {
+          "name": "meMiddleware",
+          "kind": "value"
+        },
+        {
+          "name": "BaseUser",
+          "kind": "value"
+        },
+        {
+          "name": "asyncHandler",
+          "kind": "value"
+        },
+        {
+          "name": "AppError",
+          "kind": "value"
+        },
+        {
+          "name": "errorHandler",
+          "kind": "value"
+        },
+        {
+          "name": "getLocation",
+          "kind": "value"
+        },
+        {
+          "name": "limiter",
+          "kind": "value"
+        },
+        {
+          "name": "authlimiter",
+          "kind": "value"
+        },
+        {
+          "name": "loadPrivateKey",
+          "kind": "value"
+        },
+        {
+          "name": "loadPubliceKey",
+          "kind": "value"
+        },
+        {
+          "name": "logger",
+          "kind": "value"
+        },
+        {
+          "name": "createLogger",
+          "kind": "value"
+        },
+        {
+          "name": "app_module",
+          "kind": "value"
+        },
+        {
+          "name": "notification_module",
+          "kind": "value"
+        },
+        {
+          "name": "auth_module",
+          "kind": "value"
+        },
+        {
+          "name": "project_module",
+          "kind": "value"
+        },
+        {
+          "name": "user_module",
+          "kind": "value"
+        }
+      ],
+      "importedBy": [],
+      "importsFrom": []
+    },
+    {
+      "file": "src/gen-import.ts",
+      "exports": [
+        {
+          "name": "TokenType",
+          "kind": "value"
+        },
+        {
+          "name": "addJobToQueue",
+          "kind": "value"
+        },
+        {
+          "name": "queue",
+          "kind": "value"
+        },
+        {
+          "name": "sendEmail",
+          "kind": "value"
+        },
+        {
+          "name": "jobProcessor",
+          "kind": "value"
+        },
+        {
+          "name": "loginTemp",
+          "kind": "value"
+        },
+        {
+          "name": "registerTemp",
+          "kind": "value"
+        },
+        {
+          "name": "addNotificationJobToQueue",
+          "kind": "value"
+        },
+        {
+          "name": "sendNotification",
+          "kind": "value"
+        },
+        {
+          "name": "jobNotificationProcessor",
+          "kind": "value"
+        },
+        {
+          "name": "resendFunction",
+          "kind": "value"
+        },
+        {
+          "name": "allowedOrigins",
+          "kind": "value"
+        },
+        {
+          "name": "app_config",
+          "kind": "value"
+        },
+        {
+          "name": "cloudinary",
+          "kind": "value"
+        },
+        {
+          "name": "dotenv",
+          "kind": "value"
+        },
+        {
+          "name": "getPostgresConnectionString",
+          "kind": "value"
+        },
+        {
+          "name": "prisma",
+          "kind": "value"
+        },
+        {
+          "name": "redisConfig",
+          "kind": "value"
+        },
+        {
+          "name": "redis",
+          "kind": "value"
+        },
+        {
+          "name": "startSubscriber",
+          "kind": "value"
+        },
+        {
+          "name": "invalidateSearchCache",
+          "kind": "value"
+        },
+        {
+          "name": "cacheService",
+          "kind": "value"
+        },
+        {
+          "name": "avatarProfile",
+          "kind": "value"
+        },
+        {
+          "name": "getContentType",
+          "kind": "value"
+        },
+        {
+          "name": "imagesUpload",
+          "kind": "value"
+        },
+        {
+          "name": "avatarProcess",
+          "kind": "value"
+        },
+        {
+          "name": "imageProcess",
+          "kind": "value"
+        },
+        {
+          "name": "uploadAvatar",
+          "kind": "value"
+        },
+        {
+          "name": "medical_historyImage",
+          "kind": "value"
+        },
+        {
+          "name": "uploadMultiImage",
+          "kind": "value"
+        },
+        {
+          "name": "userMiddleware",
+          "kind": "value"
+        },
+        {
+          "name": "validateDTO",
+          "kind": "value"
+        },
+        {
+          "name": "listController",
+          "kind": "value"
+        },
+        {
+          "name": "publishController",
+          "kind": "value"
+        },
+        {
+          "name": "streamController",
+          "kind": "value"
+        },
+        {
+          "name": "subscriber",
+          "kind": "value"
+        },
+        {
+          "name": "connectRedis",
+          "kind": "value"
+        },
+        {
+          "name": "connectSubscriber",
+          "kind": "value"
+        },
+        {
+          "name": "clients",
+          "kind": "value"
+        },
+        {
+          "name": "formatSSEEvent",
+          "kind": "value"
+        },
+        {
+          "name": "formatHeartbeat",
+          "kind": "value"
+        },
+        {
+          "name": "RegisterDTO",
+          "kind": "value"
+        },
+        {
+          "name": "LoginDTO",
+          "kind": "value"
+        },
+        {
+          "name": "googleController",
+          "kind": "value"
+        },
+        {
+          "name": "logoutConrtoller",
+          "kind": "value"
+        },
+        {
+          "name": "refreshController",
+          "kind": "value"
+        },
+        {
+          "name": "loginController",
+          "kind": "value"
+        },
+        {
+          "name": "registerController",
+          "kind": "value"
+        },
+        {
+          "name": "BaseAuth",
+          "kind": "value"
+        },
+        {
+          "name": "formatLoginTime",
+          "kind": "value"
+        },
+        {
+          "name": "token_PASETO",
+          "kind": "value"
+        },
+        {
+          "name": "createProjectDTO",
+          "kind": "value"
+        },
+        {
+          "name": "editProjectDTO",
+          "kind": "value"
+        },
+        {
+          "name": "createController",
+          "kind": "value"
+        },
+        {
+          "name": "editController",
+          "kind": "value"
+        },
+        {
+          "name": "getController",
+          "kind": "value"
+        },
+        {
+          "name": "BasedProject",
+          "kind": "value"
+        },
+        {
+          "name": "deleteController",
+          "kind": "value"
+        },
+        {
+          "name": "profileController",
+          "kind": "value"
+        },
+        {
+          "name": "updateProfileController",
+          "kind": "value"
+        },
+        {
+          "name": "updateProfileDTO",
+          "kind": "value"
+        },
+        {
+          "name": "meMiddleware",
+          "kind": "value"
+        },
+        {
+          "name": "BaseUser",
+          "kind": "value"
+        },
+        {
+          "name": "asyncHandler",
+          "kind": "value"
+        },
+        {
+          "name": "AppError",
+          "kind": "value"
+        },
+        {
+          "name": "errorHandler",
+          "kind": "value"
+        },
+        {
+          "name": "getLocation",
+          "kind": "value"
+        },
+        {
+          "name": "limiter",
+          "kind": "value"
+        },
+        {
+          "name": "authlimiter",
+          "kind": "value"
+        },
+        {
+          "name": "loadPrivateKey",
+          "kind": "value"
+        },
+        {
+          "name": "loadPubliceKey",
+          "kind": "value"
+        },
+        {
+          "name": "logger",
+          "kind": "value"
+        },
+        {
+          "name": "createLogger",
+          "kind": "value"
+        },
+        {
+          "name": "app_module",
+          "kind": "value"
+        },
+        {
+          "name": "notification_module",
+          "kind": "value"
+        },
+        {
+          "name": "auth_module",
+          "kind": "value"
+        },
+        {
+          "name": "project_module",
+          "kind": "value"
+        },
+        {
+          "name": "user_module",
+          "kind": "value"
+        }
+      ],
+      "importedBy": [],
+      "importsFrom": []
+    },
+    {
+      "file": "src/middleware/multer/index.ts",
+      "exports": [
+        {
+          "name": "uploadAvatar",
+          "kind": "value"
+        },
+        {
+          "name": "medical_historyImage",
+          "kind": "value"
+        },
+        {
+          "name": "uploadMultiImage",
+          "kind": "value"
+        }
+      ],
+      "importedBy": [
+        "src/module/user/user.module.ts"
+      ],
+      "importsFrom": [
+        "src/utils/errors/app-error.ts"
+      ]
+    },
+    {
+      "file": "src/middleware/user/user.middleware.ts",
+      "exports": [
+        {
+          "name": "userMiddleware",
+          "kind": "value"
+        }
+      ],
+      "importedBy": [
+        "src/module/Notifications/notification.module.ts",
+        "src/module/project/project.module.ts",
+        "src/module/user/user.module.ts"
+      ],
+      "importsFrom": [
+        "src/utils/api-requesthandler.ts",
+        "src/utils/loadKey.ts",
+        "src/config/prisma.ts",
+        "src/utils/errors/app-error.ts"
+      ]
+    },
+    {
+      "file": "src/middleware/validateDTO.ts",
+      "exports": [
+        {
+          "name": "validateDTO",
+          "kind": "value"
+        }
+      ],
+      "importedBy": [
+        "src/module/authentication/auth.module.ts",
+        "src/module/project/project.module.ts"
+      ],
+      "importsFrom": [
+        "src/utils/api-requesthandler.ts",
+        "src/utils/errors/app-error.ts"
+      ]
+    },
+    {
+      "file": "src/module/Notifications/controller/list.controller.ts",
+      "exports": [
+        {
+          "name": "listController",
+          "kind": "value"
+        }
+      ],
+      "importedBy": [],
+      "importsFrom": [
+        "src/utils/api-requesthandler.ts",
+        "src/config/prisma.ts"
+      ]
+    },
+    {
+      "file": "src/module/Notifications/controller/publish.controller.ts",
+      "exports": [
+        {
+          "name": "publishController",
+          "kind": "value"
+        }
+      ],
+      "importedBy": [],
+      "importsFrom": [
+        "src/utils/api-requesthandler.ts",
+        "src/MessageQueue/notifications/Queue/queue.notification.ts"
+      ]
+    },
+    {
+      "file": "src/module/Notifications/controller/stream.controller.ts",
+      "exports": [
+        {
+          "name": "streamController",
+          "kind": "value"
+        }
+      ],
+      "importedBy": [],
+      "importsFrom": [
+        "src/utils/api-requesthandler.ts",
+        "src/module/Notifications/utils/client.ts"
+      ]
+    },
+    {
+      "file": "src/module/Notifications/notification.controller.ts",
+      "exports": [
+        {
+          "name": "listController",
+          "kind": "value"
+        },
+        {
+          "name": "publishController",
+          "kind": "value"
+        },
+        {
+          "name": "streamController",
+          "kind": "value"
+        }
+      ],
+      "importedBy": [
+        "src/module/Notifications/notification.module.ts"
+      ],
+      "importsFrom": []
+    },
+    {
+      "file": "src/module/Notifications/shared/redis.ts",
+      "exports": [
+        {
+          "name": "redis",
+          "kind": "value"
+        },
+        {
+          "name": "subscriber",
+          "kind": "value"
+        },
+        {
+          "name": "connectRedis",
+          "kind": "value"
+        },
+        {
+          "name": "connectSubscriber",
+          "kind": "value"
+        }
+      ],
+      "importedBy": [
+        "src/MessageQueue/notifications/jobs/job.process.notification.ts",
+        "src/config/subscriber.ts"
+      ],
+      "importsFrom": []
+    },
+    {
+      "file": "src/module/Notifications/utils/client.ts",
+      "exports": [
+        {
+          "name": "clients",
+          "kind": "value"
+        }
+      ],
+      "importedBy": [
+        "src/config/subscriber.ts",
+        "src/module/Notifications/controller/stream.controller.ts"
+      ],
+      "importsFrom": []
+    },
+    {
+      "file": "src/module/Notifications/utils/sseFormat.ts",
+      "exports": [
+        {
+          "name": "formatSSEEvent",
+          "kind": "value"
+        },
+        {
+          "name": "formatHeartbeat",
+          "kind": "value"
+        }
+      ],
+      "importedBy": [],
+      "importsFrom": []
+    },
+    {
+      "file": "src/module/authentication/DTO/index.dto.ts",
+      "exports": [
+        {
+          "name": "RegisterDTO",
+          "kind": "value"
+        },
+        {
+          "name": "LoginDTO",
+          "kind": "value"
+        }
+      ],
+      "importedBy": [
+        "src/module/authentication/controller/login.controller.ts",
+        "src/module/authentication/controller/register.controller.ts",
+        "src/module/authentication/service/base.auth.service.ts",
+        "src/module/authentication/auth.module.ts"
+      ],
+      "importsFrom": []
+    },
+    {
+      "file": "src/module/authentication/auth.controller.ts",
+      "exports": [
+        {
+          "name": "googleController",
+          "kind": "value"
+        },
+        {
+          "name": "logoutConrtoller",
+          "kind": "value"
+        },
+        {
+          "name": "refreshController",
+          "kind": "value"
+        },
+        {
+          "name": "loginController",
+          "kind": "value"
+        },
+        {
+          "name": "registerController",
+          "kind": "value"
+        }
+      ],
+      "importedBy": [
+        "src/module/authentication/auth.module.ts"
+      ],
+      "importsFrom": []
+    },
+    {
+      "file": "src/module/authentication/controller/google.controller.ts",
+      "exports": [
+        {
+          "name": "googleController",
+          "kind": "value"
+        }
+      ],
+      "importedBy": [],
+      "importsFrom": [
+        "src/utils/api-requesthandler.ts",
+        "src/module/authentication/service/base.auth.service.ts",
+        "src/module/authentication/utils/paseto.utils.ts",
+        "src/MessageQueue/emails/Queue/queue.email.ts"
+      ]
+    },
+    {
+      "file": "src/module/authentication/controller/login.controller.ts",
+      "exports": [
+        {
+          "name": "loginController",
+          "kind": "value"
+        }
+      ],
+      "importedBy": [],
+      "importsFrom": [
+        "src/utils/api-requesthandler.ts",
+        "src/module/authentication/DTO/index.dto.ts",
+        "src/module/authentication/service/base.auth.service.ts",
+        "src/module/authentication/utils/paseto.utils.ts",
+        "src/module/authentication/utils/formatLoginTime.ts",
+        "src/utils/getLocation.ts",
+        "src/MessageQueue/emails/Queue/queue.email.ts"
+      ]
+    },
+    {
+      "file": "src/module/authentication/controller/logout.controller.ts",
+      "exports": [
+        {
+          "name": "logoutConrtoller",
+          "kind": "value"
+        }
+      ],
+      "importedBy": [],
+      "importsFrom": [
+        "src/utils/api-requesthandler.ts"
+      ]
+    },
+    {
+      "file": "src/module/authentication/controller/refresh.controller.ts",
+      "exports": [
+        {
+          "name": "refreshController",
+          "kind": "value"
+        }
+      ],
+      "importedBy": [],
+      "importsFrom": [
+        "src/utils/api-requesthandler.ts",
+        "src/utils/errors/app-error.ts",
+        "src/utils/loadKey.ts",
+        "src/config/prisma.ts",
+        "src/module/authentication/utils/paseto.utils.ts"
+      ]
+    },
+    {
+      "file": "src/module/authentication/controller/register.controller.ts",
+      "exports": [
+        {
+          "name": "registerController",
+          "kind": "value"
+        }
+      ],
+      "importedBy": [],
+      "importsFrom": [
+        "src/utils/api-requesthandler.ts",
+        "src/module/authentication/DTO/index.dto.ts",
+        "src/module/authentication/service/base.auth.service.ts",
+        "src/module/authentication/utils/paseto.utils.ts",
+        "src/MessageQueue/emails/Queue/queue.email.ts"
+      ]
+    },
+    {
+      "file": "src/module/authentication/service/base.auth.service.ts",
+      "exports": [
+        {
+          "name": "BaseAuth",
+          "kind": "value"
+        }
+      ],
+      "importedBy": [
+        "src/module/authentication/controller/google.controller.ts",
+        "src/module/authentication/controller/login.controller.ts",
+        "src/module/authentication/controller/register.controller.ts"
+      ],
+      "importsFrom": [
+        "src/config/prisma.ts",
+        "src/module/authentication/DTO/index.dto.ts",
+        "src/functions/upload/avatar.image.fun.ts"
+      ]
+    },
+    {
+      "file": "src/module/authentication/utils/formatLoginTime.ts",
+      "exports": [
+        {
+          "name": "formatLoginTime",
+          "kind": "value"
+        }
+      ],
+      "importedBy": [
+        "src/module/authentication/controller/login.controller.ts"
+      ],
+      "importsFrom": []
+    },
+    {
+      "file": "src/module/authentication/utils/paseto.utils.ts",
+      "exports": [
+        {
+          "name": "TokenType",
+          "kind": "type"
+        },
+        {
+          "name": "token_PASETO",
+          "kind": "value"
+        }
+      ],
+      "importedBy": [
+        "src/module/authentication/controller/google.controller.ts",
+        "src/module/authentication/controller/login.controller.ts",
+        "src/module/authentication/controller/refresh.controller.ts",
+        "src/module/authentication/controller/register.controller.ts"
+      ],
+      "importsFrom": [
+        "src/utils/loadKey.ts"
+      ]
+    },
+    {
+      "file": "src/module/project/DTO/index.ts",
+      "exports": [
+        {
+          "name": "createProjectDTO",
+          "kind": "value"
+        },
+        {
+          "name": "editProjectDTO",
+          "kind": "value"
+        }
+      ],
+      "importedBy": [
+        "src/module/project/controller/create.controller.ts",
+        "src/module/project/controller/edit.controller.ts",
+        "src/module/project/project.module.ts"
+      ],
+      "importsFrom": []
+    },
+    {
+      "file": "src/module/project/controller/create.controller.ts",
+      "exports": [
+        {
+          "name": "createController",
+          "kind": "value"
+        }
+      ],
+      "importedBy": [],
+      "importsFrom": [
+        "src/utils/api-requesthandler.ts",
+        "src/module/project/DTO/index.ts",
+        "src/module/project/service/base.project.service.ts"
+      ]
+    },
+    {
+      "file": "src/module/project/controller/edit.controller.ts",
+      "exports": [
+        {
+          "name": "editController",
+          "kind": "value"
+        }
+      ],
+      "importedBy": [],
+      "importsFrom": [
+        "src/utils/api-requesthandler.ts",
+        "src/module/project/DTO/index.ts",
+        "src/module/project/service/base.project.service.ts"
+      ]
+    },
+    {
+      "file": "src/module/project/controller/get.controller.ts",
+      "exports": [
+        {
+          "name": "getController",
+          "kind": "value"
+        }
+      ],
+      "importedBy": [],
+      "importsFrom": [
+        "src/utils/api-requesthandler.ts",
+        "src/module/project/service/base.project.service.ts"
+      ]
+    },
+    {
+      "file": "src/module/project/project.controller.ts",
+      "exports": [
+        {
+          "name": "getController",
+          "kind": "value"
+        },
+        {
+          "name": "editController",
+          "kind": "value"
+        },
+        {
+          "name": "createController",
+          "kind": "value"
+        }
+      ],
+      "importedBy": [
+        "src/module/project/project.module.ts"
+      ],
+      "importsFrom": []
+    },
+    {
+      "file": "src/module/project/service/base.project.service.ts",
+      "exports": [
+        {
+          "name": "BasedProject",
+          "kind": "value"
+        }
+      ],
+      "importedBy": [
+        "src/module/project/controller/create.controller.ts",
+        "src/module/project/controller/edit.controller.ts",
+        "src/module/project/controller/get.controller.ts"
+      ],
+      "importsFrom": [
+        "src/config/prisma.ts"
+      ]
+    },
+    {
+      "file": "src/module/user/Controller/delete.controller.ts",
+      "exports": [
+        {
+          "name": "deleteController",
+          "kind": "value"
+        }
+      ],
+      "importedBy": [],
+      "importsFrom": [
+        "src/utils/api-requesthandler.ts",
+        "src/module/user/Service/base.user.service.ts"
+      ]
+    },
+    {
+      "file": "src/module/user/Controller/profile.controller.ts",
+      "exports": [
+        {
+          "name": "profileController",
+          "kind": "value"
+        }
+      ],
+      "importedBy": [],
+      "importsFrom": [
+        "src/utils/api-requesthandler.ts"
+      ]
+    },
+    {
+      "file": "src/module/user/Controller/update.controller.ts",
+      "exports": [
+        {
+          "name": "updateProfileController",
+          "kind": "value"
+        }
+      ],
+      "importedBy": [],
+      "importsFrom": [
+        "src/utils/api-requesthandler.ts",
+        "src/module/user/DTO/index.dto.ts",
+        "src/module/user/Service/base.user.service.ts"
+      ]
+    },
+    {
+      "file": "src/module/user/DTO/index.dto.ts",
+      "exports": [
+        {
+          "name": "updateProfileDTO",
+          "kind": "value"
+        }
+      ],
+      "importedBy": [
+        "src/module/user/Controller/update.controller.ts",
+        "src/module/user/Service/base.user.service.ts"
+      ],
+      "importsFrom": []
+    },
+    {
+      "file": "src/module/user/Middleware/me.middleware.ts",
+      "exports": [
+        {
+          "name": "meMiddleware",
+          "kind": "value"
+        }
+      ],
+      "importedBy": [
+        "src/module/user/user.module.ts"
+      ],
+      "importsFrom": [
+        "src/utils/api-requesthandler.ts",
+        "src/config/prisma.ts",
+        "src/utils/errors/app-error.ts",
+        "src/utils/loadKey.ts"
+      ]
+    },
+    {
+      "file": "src/module/user/Service/base.user.service.ts",
+      "exports": [
+        {
+          "name": "BaseUser",
+          "kind": "value"
+        }
+      ],
+      "importedBy": [
+        "src/module/user/Controller/delete.controller.ts",
+        "src/module/user/Controller/update.controller.ts"
+      ],
+      "importsFrom": [
+        "src/config/prisma.ts",
+        "src/functions/upload/image.process.ts",
+        "src/module/user/DTO/index.dto.ts"
+      ]
+    },
+    {
+      "file": "src/module/user/user.controller.ts",
+      "exports": [
+        {
+          "name": "deleteController",
+          "kind": "value"
+        },
+        {
+          "name": "updateProfileController",
+          "kind": "value"
+        },
+        {
+          "name": "profileController",
+          "kind": "value"
+        }
+      ],
+      "importedBy": [
+        "src/module/user/user.module.ts"
+      ],
+      "importsFrom": []
+    },
+    {
+      "file": "src/utils/api-requesthandler.ts",
+      "exports": [
+        {
+          "name": "asyncHandler",
+          "kind": "value"
+        }
+      ],
+      "importedBy": [
+        "src/middleware/user/user.middleware.ts",
+        "src/middleware/validateDTO.ts",
+        "src/module/Notifications/controller/list.controller.ts",
+        "src/module/Notifications/controller/publish.controller.ts",
+        "src/module/Notifications/controller/stream.controller.ts",
+        "src/module/authentication/controller/google.controller.ts",
+        "src/module/authentication/controller/login.controller.ts",
+        "src/module/authentication/controller/logout.controller.ts",
+        "src/module/authentication/controller/refresh.controller.ts",
+        "src/module/authentication/controller/register.controller.ts",
+        "src/module/project/controller/create.controller.ts",
+        "src/module/project/controller/edit.controller.ts",
+        "src/module/project/controller/get.controller.ts",
+        "src/module/user/Controller/delete.controller.ts",
+        "src/module/user/Controller/profile.controller.ts",
+        "src/module/user/Controller/update.controller.ts",
+        "src/module/user/Middleware/me.middleware.ts"
+      ],
+      "importsFrom": []
+    },
+    {
+      "file": "src/utils/errors/app-error.ts",
+      "exports": [
+        {
+          "name": "AppError",
+          "kind": "value"
+        }
+      ],
+      "importedBy": [
+        "src/middleware/multer/index.ts",
+        "src/middleware/user/user.middleware.ts",
+        "src/middleware/validateDTO.ts",
+        "src/module/authentication/controller/refresh.controller.ts",
+        "src/module/user/Middleware/me.middleware.ts",
+        "src/utils/errors/errorHandler.ts"
+      ],
+      "importsFrom": []
+    },
+    {
+      "file": "src/utils/errors/errorHandler.ts",
+      "exports": [
+        {
+          "name": "errorHandler",
+          "kind": "value"
+        }
+      ],
+      "importedBy": [],
+      "importsFrom": [
+        "src/utils/errors/app-error.ts",
+        "src/utils/logger.ts"
+      ]
+    },
+    {
+      "file": "src/utils/getLocation.ts",
+      "exports": [
+        {
+          "name": "getLocation",
+          "kind": "value"
+        }
+      ],
+      "importedBy": [
+        "src/module/authentication/controller/login.controller.ts"
+      ],
+      "importsFrom": []
+    },
+    {
+      "file": "src/utils/limit-request.ts",
+      "exports": [
+        {
+          "name": "limiter",
+          "kind": "value"
+        },
+        {
+          "name": "authlimiter",
+          "kind": "value"
+        }
+      ],
+      "importedBy": [
+        "src/app.config.ts"
+      ],
+      "importsFrom": []
+    },
+    {
+      "file": "src/utils/loadKey.ts",
+      "exports": [
+        {
+          "name": "loadPrivateKey",
+          "kind": "value"
+        },
+        {
+          "name": "loadPubliceKey",
+          "kind": "value"
+        }
+      ],
+      "importedBy": [
+        "src/middleware/user/user.middleware.ts",
+        "src/module/authentication/controller/refresh.controller.ts",
+        "src/module/authentication/utils/paseto.utils.ts",
+        "src/module/user/Middleware/me.middleware.ts"
+      ],
+      "importsFrom": []
+    },
+    {
+      "file": "src/utils/logger.ts",
+      "exports": [
+        {
+          "name": "logger",
+          "kind": "value"
+        },
+        {
+          "name": "createLogger",
+          "kind": "value"
+        }
+      ],
+      "importedBy": [
+        "src/app.ts",
+        "src/utils/errors/errorHandler.ts"
+      ],
+      "importsFrom": []
+    },
+    {
+      "file": "src/app.module.ts",
+      "exports": [
+        {
+          "name": "default",
+          "kind": "default"
+        }
+      ],
+      "importedBy": [
+        "src/app.ts"
+      ],
+      "importsFrom": []
+    },
+    {
+      "file": "src/module/Notifications/notification.module.ts",
+      "exports": [
+        {
+          "name": "default",
+          "kind": "default"
+        }
+      ],
+      "importedBy": [],
+      "importsFrom": [
+        "src/module/Notifications/notification.controller.ts",
+        "src/middleware/user/user.middleware.ts"
+      ]
+    },
+    {
+      "file": "src/module/authentication/auth.module.ts",
+      "exports": [
+        {
+          "name": "default",
+          "kind": "default"
+        }
+      ],
+      "importedBy": [],
+      "importsFrom": [
+        "src/module/authentication/auth.controller.ts",
+        "src/module/authentication/DTO/index.dto.ts",
+        "src/middleware/validateDTO.ts"
+      ]
+    },
+    {
+      "file": "src/module/project/project.module.ts",
+      "exports": [
+        {
+          "name": "default",
+          "kind": "default"
+        }
+      ],
+      "importedBy": [],
+      "importsFrom": [
+        "src/middleware/validateDTO.ts",
+        "src/module/project/project.controller.ts",
+        "src/module/project/DTO/index.ts",
+        "src/middleware/user/user.middleware.ts"
+      ]
+    },
+    {
+      "file": "src/module/user/user.module.ts",
+      "exports": [
+        {
+          "name": "default",
+          "kind": "default"
+        }
+      ],
+      "importedBy": [],
+      "importsFrom": [
+        "src/module/user/user.controller.ts",
+        "src/module/user/Middleware/me.middleware.ts",
+        "src/middleware/user/user.middleware.ts",
+        "src/middleware/multer/index.ts"
+      ]
+    }
+  ]
+}
