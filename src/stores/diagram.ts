@@ -74,8 +74,8 @@ const FIELD_KEYS = new Set<ErdFieldKey>(['', 'PK', 'FK'])
 /** A fresh crow's-foot table starts with an id primary key + a name field. */
 function defaultFields(): ErdField[] {
   return [
-    { id: createId('field'), name: 'id', key: 'PK' },
-    { id: createId('field'), name: 'name', key: '' },
+    { id: createId('field'), name: 'id', key: 'PK', type: 'uuid' },
+    { id: createId('field'), name: 'name', key: '', type: 'text' },
   ]
 }
 
@@ -88,6 +88,7 @@ function normalizeFields(value: unknown): ErdField[] {
       id: typeof f.id === 'string' ? f.id : createId('field'),
       name: typeof f.name === 'string' ? f.name : '',
       key: FIELD_KEYS.has(f.key as ErdFieldKey) ? (f.key as ErdFieldKey) : '',
+      type: typeof f.type === 'string' ? f.type : '',
     }))
   return fields.length > 0 ? fields : defaultFields()
 }
@@ -506,7 +507,7 @@ export const useDiagramStore = defineStore('diagram', {
       const node = this.nodes.find((n) => n.id === nodeId)
       if (!node || node.data.shape !== 'table') return
       this.commit()
-      const field: ErdField = { id: createId('field'), name: '', key: '' }
+      const field: ErdField = { id: createId('field'), name: '', key: '', type: '' }
       this.nodes = this.nodes.map((n) =>
         n.id === nodeId
           ? { ...n, data: { ...n.data, fields: [...(n.data.fields ?? []), field] } }

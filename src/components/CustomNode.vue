@@ -29,6 +29,7 @@ interface ColorStyle {
   border: string
   text: string
   sticky: string // solid Miro-style sticky fill + readable text
+  header: string // solid accent fill for the ERD table header bar (white text)
 }
 
 // Excalidraw-like pastel palette (light + dark variants baked in).
@@ -38,36 +39,42 @@ const colorStyles: Record<NodeColor, ColorStyle> = {
     border: 'border-slate-400 dark:border-slate-500',
     text: 'text-slate-700 dark:text-slate-100',
     sticky: 'bg-slate-200 text-slate-800 dark:bg-slate-300 dark:text-slate-900',
+    header: 'bg-slate-600',
   },
   blue: {
     fill: 'bg-sky-100 dark:bg-sky-500/20',
     border: 'border-sky-400 dark:border-sky-400/70',
     text: 'text-sky-900 dark:text-sky-100',
     sticky: 'bg-sky-200 text-sky-900 dark:bg-sky-300 dark:text-sky-950',
+    header: 'bg-sky-500',
   },
   green: {
     fill: 'bg-emerald-100 dark:bg-emerald-500/20',
     border: 'border-emerald-400 dark:border-emerald-400/70',
     text: 'text-emerald-900 dark:text-emerald-100',
     sticky: 'bg-emerald-200 text-emerald-900 dark:bg-emerald-300 dark:text-emerald-950',
+    header: 'bg-emerald-500',
   },
   yellow: {
     fill: 'bg-amber-100 dark:bg-amber-500/20',
     border: 'border-amber-400 dark:border-amber-400/70',
     text: 'text-amber-900 dark:text-amber-100',
     sticky: 'bg-amber-200 text-amber-900 dark:bg-amber-300 dark:text-amber-950',
+    header: 'bg-amber-500',
   },
   red: {
     fill: 'bg-rose-100 dark:bg-rose-500/20',
     border: 'border-rose-400 dark:border-rose-400/70',
     text: 'text-rose-900 dark:text-rose-100',
     sticky: 'bg-rose-200 text-rose-900 dark:bg-rose-300 dark:text-rose-950',
+    header: 'bg-rose-500',
   },
   violet: {
     fill: 'bg-violet-100 dark:bg-violet-500/20',
     border: 'border-violet-400 dark:border-violet-400/70',
     text: 'text-violet-900 dark:text-violet-100',
     sticky: 'bg-violet-200 text-violet-900 dark:bg-violet-300 dark:text-violet-950',
+    header: 'bg-violet-500',
   },
 }
 
@@ -271,6 +278,34 @@ function cancelFieldEdit() {
   editingFieldId.value = null
 }
 
+// ---- Crow's-foot field *type* editing (the right-hand column) ----------------
+const editingTypeId = ref<string | null>(null)
+const typeDraft = ref('')
+const typeInputRef = ref<HTMLInputElement | null>(null)
+
+function setTypeInput(el: Element | null) {
+  if (el) typeInputRef.value = el as HTMLInputElement
+}
+
+async function startTypeEdit(field: ErdField) {
+  editingTypeId.value = field.id
+  typeDraft.value = field.type ?? ''
+  await nextTick()
+  typeInputRef.value?.focus()
+  typeInputRef.value?.select()
+}
+
+function commitTypeEdit() {
+  const id = editingTypeId.value
+  if (!id) return
+  store.updateTableField(props.id, id, { type: typeDraft.value.trim() })
+  editingTypeId.value = null
+}
+
+function cancelTypeEdit() {
+  editingTypeId.value = null
+}
+
 async function addField() {
   store.addTableField(props.id)
   await nextTick()
@@ -429,28 +464,29 @@ onMounted(() => {
          "+ field" button — otherwise the bottom rows are clipped + unclickable. -->
     <div
       v-else
-      class="erd-table relative flex w-full flex-col overflow-hidden rounded-xl border-2 bg-white text-left dark:bg-slate-800"
+      class="erd-table relative flex w-full flex-col overflow-hidden rounded-xl border-2 bg-white text-left shadow-xl dark:bg-slate-800"
       :class="[palette.border, props.selected ? 'ring-2 ring-indigo-400 dark:ring-indigo-500' : '']"
       :style="{ opacity: opacityValue }"
     >
-      <!-- Entity name (double-click to rename). Drag the table by this header. -->
+      <!-- Entity name on a solid accent bar (double-click to rename). Drag the
+           table by this header. -->
       <div
-        class="erd-table__header border-b-2 px-2 py-1 text-center text-sm font-bold"
-        :class="[palette.border, palette.fill, palette.text]"
+        class="erd-table__header flex items-center gap-1.5 px-2.5 py-1.5 text-sm font-bold text-white"
+        :class="palette.header"
         @dblclick.stop="startEditing"
       >
+        <span class="i-mdi-table-large shrink-0 text-base opacity-90" aria-hidden="true" />
         <input
           v-if="editing"
           ref="inputRef"
           v-model="draft"
           type="text"
-          class="w-full border-0 bg-transparent text-center font-bold outline-none"
-          :class="palette.text"
+          class="w-full border-0 bg-transparent font-bold text-white outline-none placeholder:text-white/60"
           @keydown.enter.prevent="commitEditing"
           @keydown.esc.prevent="cancelEditing"
           @blur="commitEditing"
         />
-        <span v-else>{{ props.data.label || 'Entity' }}</span>
+        <span v-else class="truncate">{{ props.data.label || 'Entity' }}</span>
       </div>
 
       <!-- Field rows -->
@@ -458,41 +494,61 @@ onMounted(() => {
         <li
           v-for="f in fields"
           :key="f.id"
-          class="group flex items-center gap-1 px-1.5 py-1"
+          class="group flex items-center gap-1.5 px-2 py-1.5"
         >
+          <!-- Key role: click to cycle none → PK → FK → none. -->
           <button
             type="button"
             title="Toggle PK / FK"
-            class="h-4 w-6 shrink-0 rounded text-center text-[9px] font-bold leading-4"
+            class="shrink-0 text-sm leading-none"
             :class="
               f.key === 'PK'
-                ? 'bg-amber-200 text-amber-800 dark:bg-amber-400/30 dark:text-amber-200'
+                ? 'i-mdi-key text-amber-500'
                 : f.key === 'FK'
-                  ? 'bg-sky-200 text-sky-800 dark:bg-sky-400/30 dark:text-sky-200'
-                  : 'text-slate-300 hover:text-slate-500 dark:text-slate-600 dark:hover:text-slate-400'
+                  ? 'i-mdi-key-link text-sky-500'
+                  : 'i-mdi-key-outline text-slate-300 hover:text-slate-500 dark:text-slate-600 dark:hover:text-slate-400'
             "
             @click.stop="cycleKey(f)"
-          >
-            {{ f.key || '••' }}
-          </button>
+          />
 
           <input
             v-if="editingFieldId === f.id"
             :ref="(el) => setFieldInput(el as Element | null)"
             v-model="fieldDraft"
             type="text"
-            class="min-w-0 flex-1 border-0 bg-transparent outline-none"
+            class="min-w-0 flex-1 border-0 bg-transparent font-medium outline-none"
             @keydown.enter.prevent="commitFieldEdit"
             @keydown.esc.prevent="cancelFieldEdit"
             @blur="commitFieldEdit"
           />
           <span
             v-else
-            class="min-w-0 flex-1 cursor-text truncate"
+            class="min-w-0 flex-1 cursor-text truncate font-medium"
             :class="f.name ? '' : 'text-slate-400 dark:text-slate-500'"
             @click.stop="startFieldEdit(f)"
           >
             {{ f.name || 'field' }}
+          </span>
+
+          <!-- Data type column (click to edit). -->
+          <input
+            v-if="editingTypeId === f.id"
+            :ref="(el) => setTypeInput(el as Element | null)"
+            v-model="typeDraft"
+            type="text"
+            placeholder="type"
+            class="w-16 min-w-0 shrink-0 border-0 bg-transparent text-right text-slate-400 outline-none dark:text-slate-400"
+            @keydown.enter.prevent="commitTypeEdit"
+            @keydown.esc.prevent="cancelTypeEdit"
+            @blur="commitTypeEdit"
+          />
+          <span
+            v-else
+            class="max-w-[88px] shrink-0 cursor-text truncate text-right text-[11px] text-slate-400 opacity-0 transition group-hover:opacity-100 dark:text-slate-500"
+            :class="f.type ? 'opacity-100' : ''"
+            @click.stop="startTypeEdit(f)"
+          >
+            {{ f.type || 'type' }}
           </span>
 
           <button

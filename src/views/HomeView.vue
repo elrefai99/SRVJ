@@ -301,10 +301,10 @@ onBeforeUnmount(() => {
             class="lp-btn lp-btn--primary lp-btn--lg"
             @click="authOpen = true"
           >
-            Start drawing — it’s free
+            Get started
           </button>
-          <a href="#usecases" class="lp-btn lp-btn--ghost lp-btn--lg"
-            >See what you can build</a
+          <RouterLink to="/app/demo" class="lp-btn lp-btn--ghost lp-btn--lg"
+            >Try demo</RouterLink
           >
         </div>
         <p style="font-size: 13px; color: #6b6b7a">
