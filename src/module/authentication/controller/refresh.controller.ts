@@ -29,7 +29,7 @@ export const refreshController: RequestHandler = asyncHandler(
                }
 
                const token: string = await token_PASETO({ data: { user_id: user.id } }, "access")
-               res.cookie("access_token", token, { httpOnly: true, secure: true, sameSite: "strict", maxAge: 1000 * 60 * 60 * 2 });
+               res.cookie("access_token", token, { httpOnly: true, secure: true, sameSite: "strict", maxAge: 1000 * 60 * 60 * 24 * 2 });
                res.status(200).json({ code: 200, status: "OK", message: "Refresh token successful" })
           }).catch((err) => {
                throw AppError.unauthorized(`Invalid refresh token: ${err}`)

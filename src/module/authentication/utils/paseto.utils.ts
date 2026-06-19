@@ -15,7 +15,7 @@ export const token_PASETO = async (payload: any, type: TokenType, expiresIn?: st
           access_device: payload.access_device,
         },
         privateKey,
-        { expiresIn: '2h' },
+        { expiresIn: '2d' },
       )
       return token
     case 'refresh':

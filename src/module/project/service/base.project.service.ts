@@ -1,9 +1,13 @@
 import prisma from "../../../config/prisma";
+import { cacheService } from "../../../functions/redis/cache.service.fun";
 import { tableStatus } from "../../../generated/prisma";
 import { IPayloadProject } from "../@types";
 
 export class BasedProject {
-     constructor() { }
+     private redis: cacheService
+     constructor() {
+          this.redis = new cacheService()
+     }
 
      public async createService(payload: IPayloadProject): Promise<any> {
           const project = await this.createProject({
@@ -16,11 +20,17 @@ export class BasedProject {
                project: project.project.id,
           })
           if (project.success && diagram.success) {
+               await this.redis.deleteData(`projects:${payload.user}`)
                return { success: true }
           }
      }
 
      public async getService(payload: any) {
+          const cacheKey = `projects:${payload.user}`
+          const cachedData = await this.redis.getData(cacheKey)
+          if (cachedData) {
+               return cachedData
+          }
           const projects = await prisma.project.findMany({
                where: {
                     ownerId: payload.user,
@@ -30,16 +40,24 @@ export class BasedProject {
                     diagram: true,
                     members: {
                          include: {
-                              user: true,
+                              user: {
+                                   select: {
+                                        id: true,
+                                        fullname: true,
+                                        username: true,
+                                        avatar: true,
+                                   },
+                              }
                          },
                     },
                },
           });
+          await this.redis.setData(cacheKey, projects)
           return projects
      }
 
      public async editService(payload: IPayloadProject) {
-          await prisma.project.update({
+          const project = await prisma.project.update({
                where: {
                     site_id: payload.project,
                     status: tableStatus.active
@@ -57,6 +75,44 @@ export class BasedProject {
                },
           });
 
+          await this.redis.deleteData(`projects:${project.ownerId}`)
+          return { success: true };
+     }
+
+     public async deleteService(payload: string) {
+          const project = await prisma.$transaction(async (tx) => {
+               const project = await tx.project.update({
+                    where: {
+                         site_id: payload,
+                         status: tableStatus.active
+                    },
+                    data: {
+                         status: tableStatus.delete
+                    }
+               })
+               await tx.projectMember.updateMany({
+                    where: {
+                         projectId: project.id,
+                         status: tableStatus.active,
+                    },
+                    data: {
+                         status: tableStatus.delete,
+                    },
+               })
+               await tx.diagram.deleteMany({
+                    where: {
+                         projectId: project.id,
+                    },
+               })
+               await tx.diagramVersion.deleteMany({
+                    where: {
+                         diagram: { projectId: project.id },
+                    },
+               })
+               return project
+          })
+
+          await this.redis.deleteData(`projects:${project.ownerId}`)
           return { success: true };
      }
 
