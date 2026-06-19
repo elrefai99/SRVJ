@@ -28,15 +28,8 @@ export const refreshController: RequestHandler = asyncHandler(
                     throw AppError.notFound("User not found")
                }
 
-               // calculate remaining time for the refresh token
-               const expireDate: Date = new Date(payload.exp)
-               const remainingMs: number = expireDate.getTime() - Date.now()
-               const remainingDays: number = Math.floor(remainingMs / (1000 * 60 * 60 * 24))
-
                const token: string = await token_PASETO({ data: { user_id: user.id } }, "access")
-               const tokenRefresh: string = await token_PASETO({ data: { user_id: user.id } }, "refresh", `${remainingDays}d`)
-               res.cookie("access_token", token, { httpOnly: true, secure: true, sameSite: "strict", maxAge: remainingMs })
-               res.cookie("refresh_token", tokenRefresh, { httpOnly: true, secure: true, sameSite: "strict", maxAge: remainingMs })
+               res.cookie("access_token", token, { httpOnly: true, secure: true, sameSite: "strict", maxAge: 1000 * 60 * 60 * 2 });
                res.status(200).json({ code: 200, status: "OK", message: "Refresh token successful" })
           }).catch((err) => {
                throw AppError.unauthorized(`Invalid refresh token: ${err}`)

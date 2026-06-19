@@ -18,6 +18,8 @@ export const meMiddleware: RequestHandler = asyncHandler(
 
           const publicKey = loadPubliceKey("ACCESS_PUBLICE_KEY")
           await V4.verify(token, publicKey).then(async (payload: any) => {
+               console.log(payload);
+
                const user = await prisma.user.findFirst({
                     where: {
                          id: payload.data.user_id,
