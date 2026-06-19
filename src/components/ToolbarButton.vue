@@ -40,6 +40,6 @@ const ACTIVE_CLASS =
     :class="props.active ? ACTIVE_CLASS : variantClasses[props.variant]"
   >
     <span v-if="props.icon" :class="props.icon" aria-hidden="true" />
-    <span>{{ props.label }}</span>
+    <span v-else>{{ props.label }}</span>
   </button>
 </template>

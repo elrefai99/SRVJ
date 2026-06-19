@@ -12,8 +12,6 @@ const google = useGoogleAuth();
 const route = useRoute();
 const router = useRouter();
 
-/** After a successful sign-in from the public home page, send the user to
- * their dashboard; elsewhere (e.g. the editor) stay put. */
 function onAuthSuccess() {
   emit("close");
   if (route.name === "home") router.push({ name: "dashboard" });
@@ -29,23 +27,14 @@ const isRegister = computed(() => mode.value === "register");
 const title = computed(() => (isRegister.value ? "Create your account" : "Welcome back"));
 const submitLabel = computed(() => (isRegister.value ? "Sign up" : "Sign in"));
 
-/** Exchange the Google ID token from the popup for an SRVJ session. */
 async function onGoogleCredential(credential: string) {
   try {
     await auth.loginWithGoogleCredential(credential);
     onAuthSuccess();
   } catch {
-    // Error surfaced via auth.error; keep the dialog open for a retry.
   }
 }
 
-/**
- * Boot Google Identity Services once the dialog is open and its button slot has
- * mounted: render the official button (which opens the account-chooser popup and
- * hands back an ID token via {@link onGoogleCredential}) and surface the One Tap
- * card. Failures (script blocked, misconfigured origin) are swallowed — the
- * email form and redirect fallback still work.
- */
 async function mountGoogleSignIn() {
   if (!google.isConfigured || !googleButton.value) return;
   try {
@@ -53,11 +42,9 @@ async function mountGoogleSignIn() {
     google.renderButton(googleButton.value);
     google.prompt();
   } catch {
-    // GIS unavailable; the rest of the dialog remains usable.
   }
 }
 
-// Reset transient state and focus the first field whenever the dialog opens.
 watch(
   () => props.open,
   (open) => {

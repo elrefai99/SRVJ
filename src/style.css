@@ -16,23 +16,16 @@ body,
   flex-direction: column;
 }
 
-/* --------------------------------------------------- Dark theme palette --- */
-/* Flat neutral dark mode: background #202020, text #e8e8e8. Rather than rewrite
-   the `dark:` utility classes across every template, we remap the dark `slate`
-   scale here. style.css is imported after `virtual:uno.css` (see main.ts), so
-   these equal-specificity rules win the cascade. */
 html.dark,
 .dark body {
   background-color: #010101;
   color: #e8e8e8;
 }
 
-/* Surfaces */
 .dark .dark\:bg-slate-900 {
   background-color: #010101;
 }
 
-/* Top navbar / toolbar (navBar + DiagramToolbar use `dark:bg-slate-900/85`). */
 .dark .dark\:bg-slate-900\/85 {
   background-color: #020202;
 }
@@ -69,7 +62,6 @@ html.dark,
   background-color: #454545;
 }
 
-/* Borders */
 .dark .dark\:border-slate-800 {
   border-color: #2a2a2a;
 }
@@ -86,7 +78,6 @@ html.dark,
   border-color: #505050;
 }
 
-/* Text — primary #e8e8e8, with muted steps for secondary/tertiary copy. */
 .dark .dark\:text-slate-100 {
   color: #e8e8e8;
 }
@@ -111,8 +102,6 @@ html.dark,
   color: #9a9a9a;
 }
 
-/* Dot-grid page background (dashboard). Sets only `background-image`, so it
-   layers over whatever `background-color` utility the element already carries. */
 .bg-dots {
   background-image: radial-gradient(circle, rgba(15, 23, 42, 0.1) 1px, transparent 1px);
   background-size: 22px 22px;
@@ -123,15 +112,11 @@ html.dark,
   background-image: radial-gradient(circle, rgba(255, 255, 255, 0.07) 1px, transparent 1px);
 }
 
-/* Let Vue Flow fill its parent. */
 .diagram-flow {
   width: 100%;
   height: 100%;
 }
 
-/* --------------------------------------------- New-node "pop" animation --- */
-/* Excalidraw-style brief scale-in on freshly created shapes. Subtle overshoot
-   easing for a tactile feel; runs once on mount. */
 .node-pop {
   transform-origin: center;
   animation: node-pop 180ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
@@ -149,30 +134,20 @@ html.dark,
   }
 }
 
-/* ------------------------------------------------------------------ Nodes -- */
-
 .diagram-shape {
   background-clip: padding-box;
-  /* Soft, padded ambient shadow for a friendlier Miro/Excalidraw feel. */
   box-shadow: 0 4px 14px -4px rgba(15, 23, 42, 0.12);
 }
 
-/* Selection is shown by the resize dots (corner resize handles), the draw
-   glow, or the text dashed box — never a rectangular ring around the shape. So a
-   selected shape keeps its normal ambient shadow and just gains corner dots. */
 .diagram-shape.is-selected {
   box-shadow: 0 4px 14px -4px rgba(15, 23, 42, 0.12);
 }
 
-/* Text nodes are pure labels — never give them a CSS border box (the preflight
-   sets `border-style: solid`, and sketch mode bumps `.diagram-shape` border-width,
-   which would otherwise draw a rectangle around the text). */
 .diagram-shape.shape-text,
 .sketch-mode .diagram-shape.shape-text {
   border: 0 !important;
 }
 
-/* Text nodes are borderless: show a light dashed selection box, not a solid one. */
 .diagram-shape.shape-text.is-selected {
   box-shadow: none;
   outline: 1.5px dashed #6366f1;
@@ -180,21 +155,12 @@ html.dark,
   border-radius: 4px;
 }
 
-/* SVG shapes (rough.js hand-drawn shapes + freehand pen strokes) carry their own
-   outline; never draw a box shadow/ring around them (an ellipse/diamond would
-   otherwise sit on a rectangle). Selection is shown by the corner resize dots
-   (rough shapes) or the ink glow (freehand). */
 svg.diagram-shape,
 .sketch-mode svg.diagram-shape {
   box-shadow: none !important;
-  /* The preflight sets `border-style: solid`, and sketch mode bumps
-     `.diagram-shape` border-width to 2.5px — that would draw a rectangle around
-     a freehand stroke / rough shape. These carry their own outline, so kill it. */
   border: 0 !important;
 }
 
-/* Freehand strokes are pure ink: no shape box. On selection the stroke itself
-   gets a soft indigo glow, and resizing is exposed through corner dots only. */
 .diagram-shape.draw-shape {
   box-shadow: none !important;
   outline: none !important;
@@ -204,10 +170,6 @@ svg.diagram-shape,
   filter: drop-shadow(0 0 3px rgba(99, 102, 241, 0.95));
 }
 
-/* Only the inked path is a hit target. `pointer-events` is inherited, so making
-   the whole node element `none` and re-enabling just the <path> means clicking
-   blank space inside a stroke's bounding box never grabs it — you must click the
-   drawn line itself (events still bubble from the path to drive select/drag). */
 .vue-flow__node.vf-draw-node {
   pointer-events: none;
 }
@@ -220,11 +182,6 @@ svg.diagram-shape,
   pointer-events: auto !important;
 }
 
-/* Connection handles — one per side. The visible "connection dots" were
-   removed: handles stay in the DOM purely as anchor points so the toolbar
-   Arrow tool can attach edges to a node's sides, but they're never shown and
-   never accept pointer input (you connect shapes with the Arrow tool, not by
-   dragging a dot). */
 .handle-side {
   width: 1px !important;
   height: 1px !important;
@@ -237,8 +194,6 @@ svg.diagram-shape,
   z-index: 6;
 }
 
-/* ----------------------------------------------------------- Sketch mode --- */
-/* Hand-drawn (Excalidraw-like) look: handwriting font + wobbly rectangles. */
 
 .sketch-mode .diagram-shape,
 .sketch-mode .vue-flow__node,
@@ -255,12 +210,10 @@ svg.diagram-shape,
   box-shadow: 2px 3px 0 rgba(15, 23, 42, 0.12);
 }
 
-/* The classic CSS "hand-drawn box" — asymmetric corner radii. */
 .sketch-mode .shape-rectangle {
   border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px !important;
 }
 
-/* Sticky notes get a playful tilt in sketch mode. */
 .sketch-mode .shape-sticky {
   transform: rotate(-1.5deg);
 }
@@ -270,8 +223,6 @@ svg.diagram-shape,
   letter-spacing: 0.2px;
 }
 
-/* Hand-drawn arrows (Ref 2): wobble the straight path with the displacement
-   filter, beef up the stroke, and put labels in the handwriting font. */
 .sketch-mode .vue-flow__edge-path {
   filter: url(#sketch-edge);
   stroke-width: 2.25;
@@ -280,10 +231,6 @@ svg.diagram-shape,
 .sketch-mode .edge-label {
   font-family: var(--font-hand);
 }
-
-/* --------------------------------------------------------------- Edges ----- */
-/* Clean straight connectors (Ref 1): thin muted-gray stroke with round caps,
-   a touch lighter in dark mode. */
 
 .vue-flow__edge-path {
   stroke: #64748b;
@@ -308,7 +255,6 @@ svg.diagram-shape,
   stroke: #94a3b8;
 }
 
-/* ---- Crow's-foot ERD relationship markers (bar / crow's foot) ------------- */
 .erd-marker path {
   fill: none;
   stroke: #64748b;
@@ -321,7 +267,6 @@ svg.diagram-shape,
   stroke: #94a3b8;
 }
 
-/* ---- Edge labels (the "Push work" / "Delegate" tags on the line) ---------- */
 .edge-label {
   position: absolute;
   pointer-events: all;
@@ -347,7 +292,6 @@ svg.diagram-shape,
   box-shadow: 0 0 0 3px #1e293b;
 }
 
-/* Faint "+ label" affordance on unlabeled edges — only shown on hover. */
 .edge-label__hint {
   display: inline-block;
   padding: 2px 7px;
@@ -397,7 +341,6 @@ svg.diagram-shape,
   stroke: #6366f1;
 }
 
-/* ----------------------------------------------- Node resize handles ------- */
 
 .diagram-flow .vue-flow__node.selected,
 .diagram-flow .vue-flow__node:focus,
@@ -427,8 +370,6 @@ svg.diagram-shape,
   border-color: #818cf8;
 }
 
-/* Hide the rectangular resize frame entirely — selection shows only the corner
-   dots (the user's "resize dots, no box" choice), Excalidraw-style. */
 .vue-flow__resize-control.line {
   display: none !important;
   border: 0 !important;
@@ -436,15 +377,11 @@ svg.diagram-shape,
   pointer-events: none !important;
 }
 
-/* ------------------------------------------------ Selection marquee box ---- */
-
 .vue-flow__selection {
   background: rgba(99, 102, 241, 0.08);
   border: 1px solid rgba(99, 102, 241, 0.8);
   border-radius: 4px;
 }
-
-/* ----------------------------------------- Controls & MiniMap (dark) ------- */
 
 .dark .vue-flow__controls {
   --vf-controls-bg: #1e293b;

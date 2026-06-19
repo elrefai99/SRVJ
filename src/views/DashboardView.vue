@@ -32,6 +32,22 @@ const form = reactive({ title: '', description: '', visibility: 'PRIVATE' as Pro
 const editingId = ref<string | null>(null)
 const editForm = reactive({ title: '', description: '', visibility: 'PRIVATE' as ProjectVisibility })
 
+// The project pending deletion (shown in the confirm modal), or `null` when closed.
+const deleteTarget = ref<Project | null>(null)
+const deleting = ref(false)
+
+// Transient success toast; auto-dismisses after 3s.
+const successMessage = ref('')
+let successTimer: ReturnType<typeof setTimeout> | undefined
+
+function showSuccess(message: string) {
+  successMessage.value = message
+  if (successTimer) clearTimeout(successTimer)
+  successTimer = setTimeout(() => {
+    successMessage.value = ''
+  }, 3000)
+}
+
 const VISIBILITY_LABEL: Record<ProjectVisibility, string> = {
   PRIVATE: 'Private',
   PUBLIC: 'Public',
@@ -57,7 +73,10 @@ onMounted(async () => {
   await loadIfReady()
 })
 
-onBeforeUnmount(() => setForcedTheme(null))
+onBeforeUnmount(() => {
+  setForcedTheme(null)
+  if (successTimer) clearTimeout(successTimer)
+})
 
 // Refetch when the user signs in/out without leaving the page.
 watch(isAuthenticated, loadIfReady)
@@ -77,9 +96,11 @@ async function submitCreate() {
     description: form.description.trim() || undefined,
     visibility: form.visibility,
   })
-  if (project) {
+  // The create endpoint may not echo the new project back, so treat the
+  // absence of an error as success rather than gating on a returned object.
+  if (!error.value) {
     creating.value = false
-    openProject(project)
+    showSuccess(project ? `Project “${project.title}” created.` : 'Project created.')
   }
 }
 
@@ -109,9 +130,20 @@ async function submitEdit() {
   if (ok) editingId.value = null
 }
 
-async function removeProject(project: Project) {
-  if (!window.confirm(`Delete project “${project.title}”? This also deletes its diagram.`)) return
-  await projects.deleteProject(project.site_id)
+function removeProject(project: Project) {
+  deleteTarget.value = project
+}
+
+async function confirmDelete() {
+  const project = deleteTarget.value
+  if (!project) return
+  deleting.value = true
+  const ok = await projects.deleteProject(project.site_id)
+  deleting.value = false
+  if (ok) {
+    deleteTarget.value = null
+    showSuccess(`Project “${project.title}” deleted.`)
+  }
 }
 
 /** Members shown on a card: everyone except the signed-in user (so the owner
@@ -424,6 +456,82 @@ function formatDate(value: string): string {
           </div>
         </form>
       </div>
+    </Teleport>
+
+    <!-- Delete project confirmation modal -->
+    <Teleport to="body">
+      <div
+        v-if="deleteTarget"
+        class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4 backdrop-blur-sm"
+        @click.self="deleteTarget = null"
+      >
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Delete project"
+          tabindex="-1"
+          class="w-full max-w-sm rounded-xl border border-slate-200 bg-white/85 p-6 shadow-xl backdrop-blur-md dark:border-white/10 dark:bg-[#202020]/85"
+          @keydown.esc="deleteTarget = null"
+        >
+          <div class="flex items-start gap-3">
+            <div
+              class="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-rose-50 text-xl text-rose-600 dark:bg-rose-900/30 dark:text-rose-400"
+            >
+              <span class="i-mdi-trash-can-outline" aria-hidden="true" />
+            </div>
+            <div>
+              <h2 class="text-lg font-bold text-slate-800 dark:text-slate-100">Delete project</h2>
+              <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                Delete “{{ deleteTarget.title }}”? This also deletes its diagram and can’t be undone.
+              </p>
+            </div>
+          </div>
+
+          <div class="mt-6 flex justify-end gap-2">
+            <button
+              type="button"
+              class="rounded-md border border-slate-300 px-4 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-100 dark:border-slate-600 dark:text-slate-300 dark:hover:bg-slate-700"
+              @click="deleteTarget = null"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              :disabled="deleting"
+              class="inline-flex items-center gap-1.5 rounded-md bg-rose-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-rose-700 disabled:cursor-not-allowed disabled:opacity-60"
+              @click="confirmDelete"
+            >
+              <span
+                :class="deleting ? 'i-mdi-loading animate-spin' : 'i-mdi-trash-can-outline'"
+                aria-hidden="true"
+              />
+              Delete
+            </button>
+          </div>
+        </div>
+      </div>
+    </Teleport>
+
+    <!-- Success toast (auto-dismisses after 3s) -->
+    <Teleport to="body">
+      <Transition
+        enter-active-class="transition duration-200 ease-out"
+        enter-from-class="opacity-0 translate-y-2"
+        enter-to-class="opacity-100 translate-y-0"
+        leave-active-class="transition duration-150 ease-in"
+        leave-from-class="opacity-100 translate-y-0"
+        leave-to-class="opacity-0 translate-y-2"
+      >
+        <div
+          v-if="successMessage"
+          role="status"
+          aria-live="polite"
+          class="fixed bottom-6 right-6 z-[60] flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-3 text-sm font-medium text-white shadow-lg"
+        >
+          <span class="i-mdi-check-circle-outline text-lg" aria-hidden="true" />
+          {{ successMessage }}
+        </div>
+      </Transition>
     </Teleport>
   </div>
 </template>

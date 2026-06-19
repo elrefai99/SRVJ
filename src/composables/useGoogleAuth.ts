@@ -1,20 +1,5 @@
 import { GOOGLE_CLIENT_ID } from '@/utils/constants'
 
-/**
- * Thin wrapper over Google Identity Services (GIS). It lazily injects Google's
- * `gsi/client` script, initialises it with the configured web client ID, and
- * exposes the two ways to surface the sign-in popup the user expects:
- *
- *  - `renderButton` paints Google's official "Sign in with Google" button,
- *    which opens the account-chooser popup on click;
- *  - `prompt` shows the floating One Tap card (the account list from the
- *    screenshot) on top of the page.
- *
- * Both hand back a Google **ID token** (`credential`, a JWT) via the callback
- * passed to {@link init}; the caller exchanges it with the SRVJ backend for a
- * session token. All of this is client-only — calling on the server is a no-op.
- */
-
 const GIS_SRC = 'https://accounts.google.com/gsi/client'
 
 /** The single field we use off the GIS credential callback. */
@@ -66,10 +51,8 @@ function loadGisScript(): Promise<void> {
 }
 
 export function useGoogleAuth() {
-  /** Whether a client ID is configured — gates the whole GIS path. */
   const isConfigured = Boolean(GOOGLE_CLIENT_ID)
 
-  /** Load + initialise GIS, wiring `onCredential` to the returned ID token. */
   async function init(onCredential: (credential: string) => void): Promise<void> {
     if (!isConfigured) throw new Error('Missing VITE_GOOGLE_CLIENT_ID')
     await loadGisScript()

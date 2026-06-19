@@ -143,7 +143,6 @@ function confirmReset() {
         @click="toggleSketch"
       >
         <span class="i-mdi-draw" aria-hidden="true" />
-        <span class="hidden lg:inline">Sketch</span>
       </button>
 
       <button
