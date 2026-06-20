@@ -58,6 +58,8 @@ model Project {
   updatedAt DateTime @updatedAt
 
   @@index([ownerId])
+  @@index([title])
+  @@index([status])
   @@index([createdAt])
   @@map("projects")
 }

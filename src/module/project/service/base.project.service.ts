@@ -1,5 +1,6 @@
 import prisma from "../../../config/prisma";
 import { cacheService } from "../../../functions/redis/cache.service.fun";
+import { invalidateUserProjectsCache } from "../../../functions/redis/cache.invalidation";
 import { tableStatus } from "../../../generated/prisma";
 import { IPayloadProject } from "../@types";
 
@@ -20,40 +21,85 @@ export class BasedProject {
                project: project.project.id,
           })
           if (project.success && diagram.success) {
-               await this.redis.deleteData(`projects:${payload.user}`)
+               await invalidateUserProjectsCache(payload.user as number)
                return { success: true }
           }
      }
 
      public async getService(payload: any) {
-          const cacheKey = `projects:${payload.user}`
+          const cacheKey = `projects:${payload.user}:${payload.page || 1}:${payload.limit || 10}:${payload.search || ""}`
           const cachedData = await this.redis.getData(cacheKey)
           if (cachedData) {
                return cachedData
           }
-          const projects = await prisma.project.findMany({
-               where: {
-                    ownerId: payload.user,
-                    status: tableStatus.active
-               },
-               include: {
-                    diagram: true,
-                    members: {
-                         include: {
-                              user: {
-                                   select: {
-                                        id: true,
-                                        fullname: true,
-                                        username: true,
-                                        avatar: true,
-                                   },
+          const page = Number(payload.page) || 1;
+          const limit = Number(payload.limit) || 10;
+          const search = String(payload.search || "");
+
+          const skip = (page - 1) * limit;
+
+          const [projects, total] = await Promise.all([
+               prisma.project.findMany({
+                    where: {
+                         ownerId: payload.user,
+                         status: tableStatus.active,
+
+                         ...(search && {
+                              title: {
+                                   contains: search,
+                                   mode: "insensitive"
                               }
+                         })
+                    },
+                    include: {
+                         diagram: true,
+                         members: {
+                              take: 5,
+                              include: {
+                                   user: {
+                                        select: {
+                                             id: true,
+                                             fullname: true,
+                                             username: true,
+                                             avatar: true,
+                                        },
+                                   }
+                              },
                          },
                     },
-               },
-          });
-          await this.redis.setData(cacheKey, projects)
-          return projects
+                    skip,
+                    take: limit,
+                    orderBy: {
+                         createdAt: "desc"
+                    }
+               }),
+               prisma.project.count({
+                    where: {
+                         ownerId: payload.user,
+                         status: tableStatus.active,
+
+                         ...(search && {
+                              title: {
+                                   contains: search,
+                                   mode: "insensitive"
+                              }
+                         })
+                    }
+               })
+          ]);
+
+          const result = {
+               data: projects,
+               pagination: {
+                    total,
+                    page,
+                    limit,
+                    totalPages: Math.ceil(total / limit)
+               }
+
+          }
+          await this.redis.setData(cacheKey, result)
+          return result
      }
 
      public async editService(payload: IPayloadProject) {
@@ -75,7 +121,7 @@ export class BasedProject {
                },
           });
 
-          await this.redis.deleteData(`projects:${project.ownerId}`)
+          await invalidateUserProjectsCache(project.ownerId)
           return { success: true };
      }
 
@@ -112,7 +158,7 @@ export class BasedProject {
                return project
           })
 
-          await this.redis.deleteData(`projects:${project.ownerId}`)
+          await invalidateUserProjectsCache(project.ownerId)
           return { success: true };
      }
 
