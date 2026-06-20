@@ -15,7 +15,7 @@ import { useAuthStore } from '@/stores/auth'
  * SSG-renders without `ClientOnly`. It's `noindex` (a locked app preview, not a
  * marketing page).
  */
-useSeo({ title: 'Demo — SRVJ Diagram Editor', noindex: true })
+useSeo({ title: 'Demo | SRVJ Diagram Editor', noindex: true })
 
 const router = useRouter()
 const auth = useAuthStore()

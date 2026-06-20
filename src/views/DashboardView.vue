@@ -15,7 +15,7 @@ import {
   type ProjectVisibility,
 } from '@/types/project'
 
-useSeo({ title: 'Your projects — SRVJ', path: '/dashboard', noindex: true })
+useSeo({ title: 'Your projects | SRVJ', path: '/dashboard', noindex: true })
 
 const router = useRouter()
 const auth = useAuthStore()
