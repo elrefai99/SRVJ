@@ -82,7 +82,7 @@ function confirmReset() {
       :to="{ name: 'dashboard' }"
       class="mr-1 flex shrink-0 items-center gap-2"
     >
-      <img src="/favicon.png" alt="" class="h-12 w-14 rounded-lg shadow-sm" />
+      <img src="/favicon.png" alt="" class="h-9 w-11 rounded-lg shadow-sm sm:h-12 sm:w-14" />
     </RouterLink>
 
 

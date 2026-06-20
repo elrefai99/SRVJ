@@ -67,6 +67,19 @@ export interface ProjectPayload {
   visibility: ProjectVisibility
 }
 
+/**
+ * List-pagination metadata returned alongside `data` by the paged `/project`
+ * endpoint (sibling of `data` in the envelope, not nested inside it).
+ */
+export interface Pagination {
+  page: number
+  limit: number
+  total: number
+  totalPages: number
+  hasNextPage: boolean
+  hasPrevPage: boolean
+}
+
 /** Body for saving a project's canvas (the editor autosaves this). */
 export interface SaveDiagramPayload {
   version: number

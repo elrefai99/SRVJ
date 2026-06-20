@@ -21,8 +21,12 @@ const router = useRouter()
 const auth = useAuthStore()
 const projects = useProjectsStore()
 const { isAuthenticated, user } = storeToRefs(auth)
-const { projects: list, loading, error } = storeToRefs(projects)
+const { projects: list, loading, error, pagination, search } = storeToRefs(projects)
 const { init: initDarkMode, setForcedTheme } = useDarkMode()
+
+// Bound to the search box; debounced into the store so each keystroke doesn't fire a request.
+const searchInput = ref('')
+let searchTimer: ReturnType<typeof setTimeout> | undefined
 
 const authDialogOpen = ref(false)
 const creating = ref(false)
@@ -76,10 +80,19 @@ onMounted(async () => {
 onBeforeUnmount(() => {
   setForcedTheme(null)
   if (successTimer) clearTimeout(successTimer)
+  if (searchTimer) clearTimeout(searchTimer)
 })
 
 // Refetch when the user signs in/out without leaving the page.
 watch(isAuthenticated, loadIfReady)
+
+// Debounce the search box (350ms) before hitting the server.
+watch(searchInput, (value) => {
+  if (searchTimer) clearTimeout(searchTimer)
+  searchTimer = setTimeout(() => {
+    void projects.setSearch(value)
+  }, 350)
+})
 
 function openCreate() {
   form.title = ''
@@ -162,7 +175,7 @@ function formatDate(value: string): string {
   <div class="bg-dots min-h-screen bg-slate-50 text-slate-800 dark:bg-slate-900 dark:text-slate-100">
     <NavBar variant="app" />
 
-    <main class="mx-auto max-w-5xl px-6 py-10">
+    <main class="mx-auto max-w-5xl px-4 py-8 sm:px-6 sm:py-10">
       <!-- Signed out -->
       <div
         v-if="!isAuthenticated"
@@ -202,6 +215,21 @@ function formatDate(value: string): string {
           </button>
         </div>
 
+        <!-- Search -->
+        <div class="relative mb-6 max-w-5xl">
+          <span
+            class="i-mdi-magnify pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-lg text-slate-400"
+            aria-hidden="true"
+          />
+          <input
+            v-model="searchInput"
+            type="search"
+            placeholder="Search projects…"
+            aria-label="Search projects"
+            class="w-full rounded-lg border border-slate-300 bg-white py-2 pl-10 pr-3 text-sm outline-none transition focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-slate-700 dark:bg-slate-800"
+          />
+        </div>
+
         <p
           v-if="error"
           class="mb-4 flex items-center gap-1.5 rounded-md bg-rose-50 px-3 py-2 text-sm text-rose-600 dark:bg-rose-900/30 dark:text-rose-400"
@@ -214,6 +242,15 @@ function formatDate(value: string): string {
         <div v-if="loading && list.length === 0" class="py-16 text-center text-slate-400">
           <span class="i-mdi-loading mr-2 animate-spin text-xl align-middle" aria-hidden="true" />
           Loading projects…
+        </div>
+
+        <!-- No search results -->
+        <div
+          v-else-if="list.length === 0 && search"
+          class="rounded-xl border border-dashed border-slate-300 py-16 text-center text-slate-500 dark:border-slate-700 dark:text-slate-400"
+        >
+          <div class="i-mdi-file-search-outline mx-auto mb-3 text-5xl text-slate-400" aria-hidden="true" />
+          No projects match “{{ search }}”.
         </div>
 
         <!-- Empty -->
@@ -292,6 +329,35 @@ function formatDate(value: string): string {
             </button>
           </li>
         </ul>
+
+        <!-- Pagination -->
+        <nav
+          v-if="pagination && pagination.totalPages > 1"
+          class="mt-8 flex items-center justify-center gap-3 text-sm"
+          aria-label="Pagination"
+        >
+          <button
+            type="button"
+            :disabled="!pagination.hasPrevPage || loading"
+            class="inline-flex items-center gap-1 rounded-lg border border-slate-300 px-3 py-1.5 font-medium text-slate-600 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+            @click="projects.goToPage(pagination.page - 1)"
+          >
+            <span class="i-mdi-chevron-left" aria-hidden="true" />
+            Previous
+          </button>
+          <span class="text-slate-500 dark:text-slate-400">
+            Page {{ pagination.page }} of {{ pagination.totalPages }}
+          </span>
+          <button
+            type="button"
+            :disabled="!pagination.hasNextPage || loading"
+            class="inline-flex items-center gap-1 rounded-lg border border-slate-300 px-3 py-1.5 font-medium text-slate-600 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+            @click="projects.goToPage(pagination.page + 1)"
+          >
+            Next
+            <span class="i-mdi-chevron-right" aria-hidden="true" />
+          </button>
+        </nav>
       </template>
     </main>
 
