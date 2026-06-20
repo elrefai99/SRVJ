@@ -79,7 +79,6 @@ onBeforeUnmount(() => heroObserver?.disconnect())
   >
     <RouterLink to="/" aria-label="SRVJ home" class="mr-1 flex shrink-0 items-center gap-2">
       <img src="/favicon.png" alt="" class="h-10 w-12 rounded-lg shadow-sm" />
-      <span class="text-lg font-bold tracking-tight text-slate-900 dark:text-white">SRVJ</span>
     </RouterLink>
     <div class="ml-auto flex items-center gap-3">
       <NotificationBell />

@@ -1,16 +1,23 @@
 import { defineStore } from 'pinia'
 import { ApiError } from '@/utils/api'
 import * as projectsApi from '@/utils/projectsApi'
+import { PROJECTS_PAGE_LIMIT } from '@/utils/projectsApi'
 import { useAuthStore } from './auth'
-import type { Project, ProjectPayload } from '@/types/project'
+import type { Pagination, Project, ProjectPayload } from '@/types/project'
 
 interface ProjectsState {
-  /** All of the signed-in user's projects (dashboard list). */
+  /** The current page of the signed-in user's projects (dashboard list). */
   projects: Project[]
   /** In-flight flag for any list/CRUD request. */
   loading: boolean
   /** Last human-readable error, or `null`. */
   error: string | null
+  /** Current page (1-based) requested from the server. */
+  page: number
+  /** Current search term filtering the list (empty = no filter). */
+  search: string
+  /** Server pagination metadata for the loaded page, or `null` before first load. */
+  pagination: Pagination | null
 }
 
 function messageOf(error: unknown): string {
@@ -31,6 +38,9 @@ export const useProjectsStore = defineStore('projects', {
     projects: [],
     loading: false,
     error: null,
+    page: 1,
+    search: '',
+    pagination: null,
   }),
 
   actions: {
@@ -39,17 +49,47 @@ export const useProjectsStore = defineStore('projects', {
       return useAuthStore().token
     },
 
-    /** Load every project for the dashboard. */
+    /** Load the current page of projects (filtered by {@link search}). */
     async fetchProjects() {
       this.loading = true
       this.error = null
       try {
-        this.projects = await projectsApi.listProjects(this.token())
+        const result = await projectsApi.listProjects(this.token(), {
+          page: this.page,
+          limit: PROJECTS_PAGE_LIMIT,
+          search: this.search,
+        })
+        this.projects = result.projects
+        this.pagination = result.pagination
+        // Clamp to the last page if the requested one no longer exists (e.g. the
+        // total shrank), then reload that page.
+        const totalPages = result.pagination?.totalPages
+        if (totalPages && this.page > totalPages) {
+          this.page = totalPages
+          await this.fetchProjects()
+        }
       } catch (error) {
         this.error = messageOf(error)
       } finally {
         this.loading = false
       }
+    },
+
+    /** Apply a search term, reset to the first page, and reload. */
+    async setSearch(search: string) {
+      const next = search.trim()
+      if (next === this.search) return
+      this.search = next
+      this.page = 1
+      await this.fetchProjects()
+    },
+
+    /** Jump to a page (clamped to ≥ 1) and reload. */
+    async goToPage(page: number) {
+      const next = Math.max(1, Math.trunc(page))
+      if (next === this.page) return
+      this.page = next
+      await this.fetchProjects()
     },
 
     /** Create a project, then re-fetch the list from the server; returns the

@@ -110,7 +110,7 @@ onBeforeUnmount(() => disconnect())
 
     <div
       v-if="open"
-      class="absolute right-0 z-30 mt-2 w-80 overflow-hidden rounded-lg border border-slate-200 bg-white shadow-xl dark:border-slate-700 dark:bg-slate-900"
+      class="absolute right-0 z-30 mt-2 w-[min(20rem,calc(100vw-2rem))] overflow-hidden rounded-lg border border-slate-200 bg-white shadow-xl dark:border-slate-700 dark:bg-slate-900"
     >
       <!-- header -->
       <div class="flex items-center justify-between border-b border-slate-200 px-3 py-2 dark:border-slate-700">

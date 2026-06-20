@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useDiagramStore } from '@/stores/diagram'
 import { useEditorTool, type ShapeTool } from '@/composables/useEditorTool'
@@ -86,8 +86,15 @@ function colorFor(tool: Tool): NodeColor {
   return activeColor.value
 }
 
+// On phones the palette is a collapsible overlay — a tall rail that would
+// otherwise cover the canvas — but stays permanently visible from `sm` up.
+const open = ref(false)
+
 function pickTool(tool: Tool) {
   setTool({ shape: tool.shape, variant: tool.variant })
+  // Picking a shape closes the mobile overlay so you can draw straight away
+  // (no-op visually on >=sm, where the rail is always shown).
+  open.value = false
 }
 
 function onDragStart(event: DragEvent, tool: Tool) {
@@ -189,9 +196,32 @@ function pickRelationship(value: EdgeCardinality) {
 </script>
 
 <template>
-  <aside
-    class="pointer-events-auto absolute left-4 top-4 z-10 flex max-h-[calc(100vh-6rem)] w-40 flex-col items-center gap-1.5 overflow-y-auto rounded-2xl border border-slate-200/80 bg-white/85 p-2 shadow-xl backdrop-blur-md dark:border-slate-700/80 dark:bg-slate-800/85"
+  <!-- Mobile: floating button to open the tool rail (hidden once it's open and
+       from `sm` up, where the rail is always visible). -->
+  <button
+    v-if="!open"
+    type="button"
+    aria-label="Open tools"
+    class="pointer-events-auto absolute left-4 top-4 z-10 flex h-11 w-11 items-center justify-center rounded-xl border border-slate-200/80 bg-white/90 text-xl text-slate-700 shadow-xl backdrop-blur-md sm:hidden dark:border-slate-700/80 dark:bg-slate-800/90 dark:text-slate-200"
+    @click="open = true"
   >
+    <span class="i-mdi-shape-outline" aria-hidden="true" />
+  </button>
+
+  <aside
+    :class="[open ? 'flex' : 'hidden', 'sm:flex']"
+    class="pointer-events-auto absolute left-4 top-4 z-10 max-h-[calc(100dvh-7rem)] w-40 flex-col items-center gap-1.5 overflow-y-auto overscroll-contain rounded-2xl border border-slate-200/80 bg-white/85 p-2 shadow-xl backdrop-blur-md dark:border-slate-700/80 dark:bg-slate-800/85 sm:max-h-[calc(100vh-6rem)]"
+  >
+    <!-- Mobile: close the overlay (hidden from `sm` up). -->
+    <button
+      type="button"
+      aria-label="Close tools"
+      class="-mr-0.5 -mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center self-end rounded-lg text-slate-500 hover:bg-slate-100 sm:hidden dark:text-slate-300 dark:hover:bg-slate-700"
+      @click="open = false"
+    >
+      <span class="i-mdi-close text-lg" aria-hidden="true" />
+    </button>
+
     <!-- Select / cursor + freehand pen tools -->
     <div class="flex gap-1">
       <button
