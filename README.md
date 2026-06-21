@@ -7,7 +7,7 @@ A web-based diagram editor and whiteboard. It blends a **Draw.io / Lucidchart**
 style flow editor with the look-and-feel of **[Excalidraw](https://excalidraw.com)**
 (hand-drawn "sketch" mode) and **Miro** (sticky notes, infinite canvas, zoom bar) —
 backed by your own account so every diagram is saved, organised, and shareable.
-
+</div>
 ## The app at a glance
 
 SRVJ is four spaces that flow into each other:
@@ -21,7 +21,6 @@ SRVJ is four spaces that flow into each other:
 You can sketch on the canvas without signing in (your work is kept locally in the
 browser), and sign in whenever you want it saved to your account and synced across
 devices.
-</div>
 ## Features
 
 ### Canvas
