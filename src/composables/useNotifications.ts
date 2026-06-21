@@ -1,20 +1,7 @@
 import { ref } from 'vue'
-import { apiFetchEnvelope } from '@/utils/api'
+import { apiFetch, apiFetchEnvelope } from '@/utils/api'
 import { useAuthStore } from '@/stores/auth'
 import { API_BASE_URL } from '@/utils/constants'
-
-/**
- * Notifications feed backed by the SSE endpoints:
- *   GET  /notification/stream   — Server-Sent Events feed
- *   GET  /notification/list     — existing notifications (seeds the feed)
- *
- * The stream is consumed with `fetch` + a `ReadableStream` reader (not the
- * native `EventSource`) so the bearer access token can ride along in an
- * `Authorization` header — `EventSource` can't set request headers. Events are
- * parsed from the raw `text/event-stream` body by splitting on the blank-line
- * record separator. State is module-level (mirroring `useDarkMode`/
- * `useEditorTool`) so every caller shares one live connection.
- */
 
 export interface NotificationItem {
   /** Server notification id (falls back to the SSE `id:` / a generated one). */
@@ -32,6 +19,8 @@ export type NotificationStatus = 'idle' | 'connecting' | 'open' | 'error'
 export interface Pagination {
   page: number
   limit: number
+  /** Number of notifications on the server — drives the bell badge count. */
+  count: number
   total: number
   totalPages: number
   hasNextPage: boolean
@@ -44,6 +33,8 @@ const PAGE_LIMIT = 5
 const notifications = ref<NotificationItem[]>([])
 const status = ref<NotificationStatus>('idle')
 const unread = ref(0)
+/** Total notifications on the server (from pagination), shown on the bell badge. */
+const total = ref(0)
 const lastError = ref<string | null>(null)
 const loadingList = ref(false)
 /** True while a "load more" (next page) fetch is in flight. */
@@ -61,6 +52,7 @@ let active = false
 function push(item: NotificationItem) {
   notifications.value = [item, ...notifications.value].slice(0, 50)
   unread.value += 1
+  total.value += 1
 }
 
 /** The notification object shape returned by /list and the stream. */
@@ -95,12 +87,6 @@ function pickPagination(...candidates: unknown[]): Pagination | undefined {
   return undefined
 }
 
-/**
- * GET one page of notifications (newest first) and map it to display items.
- * Reads the whole envelope so `pagination` is found whether the server returns
- * it as a sibling of `data` (`{ data: [...], pagination }`) or nested inside it
- * (`{ data: { data: [...], pagination } }`).
- */
 async function fetchPage(p: number): Promise<{ items: NotificationItem[]; pagination?: Pagination }> {
   const envelope = await apiFetchEnvelope<unknown>(
     `/notification/list?page=${p}&limit=${PAGE_LIMIT}`,
@@ -153,7 +139,7 @@ async function readStream(body: ReadableStream<Uint8Array>) {
   const reader = body.getReader()
   const decoder = new TextDecoder()
   let buffer = ''
-  for (;;) {
+  for (; ;) {
     const { done, value } = await reader.read()
     if (done) break
     buffer += decoder.decode(value, { stream: true })
@@ -197,7 +183,6 @@ async function connect() {
     }
     status.value = 'error'
     lastError.value = (err as Error).message
-    // Test-grade backoff: retry every 3s while still wanted.
     reconnectTimer = setTimeout(() => {
       reconnectTimer = null
       void connect()
@@ -216,7 +201,6 @@ function disconnect() {
   status.value = 'idle'
 }
 
-/** GET the first page of notifications (limit {@link PAGE_LIMIT}) and seed the feed. */
 async function fetchList() {
   if (!API_BASE_URL) return
   loadingList.value = true
@@ -225,6 +209,7 @@ async function fetchList() {
     notifications.value = items
     page.value = pagination?.page ?? 1
     hasNextPage.value = pagination?.hasNextPage ?? false
+    total.value = pagination?.count ?? items.length
   } catch (err) {
     lastError.value = err instanceof Error ? err.message : 'Failed to load notifications'
   } finally {
@@ -232,11 +217,6 @@ async function fetchList() {
   }
 }
 
-/**
- * Fetch the next page and append it to the feed (infinite scroll). No-op when a
- * load is already running or the server has no further pages. New items are
- * deduped by id so a live SSE push doesn't show twice.
- */
 async function loadMore() {
   if (!API_BASE_URL || loadingList.value || loadingMore.value || !hasNextPage.value) return
   loadingMore.value = true
@@ -258,9 +238,20 @@ function markAllRead() {
   unread.value = 0
 }
 
+async function markSeen() {
+  if (!API_BASE_URL || total.value <= 0) return
+  total.value = 0
+  try {
+    await apiFetch('/notification/seen', { method: 'PATCH', token: useAuthStore().token })
+  } catch (err) {
+    lastError.value = err instanceof Error ? err.message : 'Failed to mark notifications seen'
+  }
+}
+
 function clear() {
   notifications.value = []
   unread.value = 0
+  total.value = 0
 }
 
 export function useNotifications() {
@@ -268,6 +259,7 @@ export function useNotifications() {
     notifications,
     status,
     unread,
+    total,
     lastError,
     loadingList,
     loadingMore,
@@ -277,6 +269,7 @@ export function useNotifications() {
     fetchList,
     loadMore,
     markAllRead,
+    markSeen,
     clear,
   }
 }
