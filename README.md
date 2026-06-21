@@ -1,100 +1,79 @@
+<div align="center">
+
 # SRVJ — Diagram Editor & Whiteboard
+<img src="https://res.cloudinary.com/cs74as-sjoaaaaaaaaaaaadsa/image/upload/v1782020694/SRVJ/favicon_le87qf.png" width="200" alt="SRVJ" />
 
-A production-ready, web-based diagram editor and whiteboard built with **Vue 3**,
-**Vite**, **TypeScript** and **Vue Flow**. It blends a **Draw.io / Lucidchart**
-style flow editor with the look-and-feel of **[Excalidraw](https://excalidraw.com)** (hand-drawn "sketch"
-mode) and **Miro** (sticky notes, infinite canvas, zoom bar).
+A web-based diagram editor and whiteboard. It blends a **Draw.io / Lucidchart**
+style flow editor with the look-and-feel of **[Excalidraw](https://excalidraw.com)**
+(hand-drawn "sketch" mode) and **Miro** (sticky notes, infinite canvas, zoom bar) —
+backed by your own account so every diagram is saved, organised, and shareable.
+</div>
 
+## The app at a glance
+
+SRVJ is four spaces that flow into each other:
+
+- **Home** — a public landing page that introduces the editor.
+- **Dashboard** — your workspace: every project you own, with search and quick
+  access. Create, rename, and delete projects from here.
+- **Project** — a single project and the diagrams inside it.
+- **Editor** — the full-screen canvas where the work happens.
+
+You can sketch on the canvas without signing in (your work is kept locally in the
+browser), and sign in whenever you want it saved to your account and synced across
+devices.
 ## Features
 
 ### Canvas
 - Full-screen, infinite, pan-and-zoom canvas with a dotted grid background.
 - Miro-style **zoom bar** (zoom in/out + click the percentage to fit to screen).
-- **Mini-map** for quick navigation.
-- **Dark mode** (persisted, follows the OS preference on first run).
+- **Mini-map** for quick navigation around large diagrams.
+- **Dark mode** (persisted, follows your OS preference on first run).
 - **Sketch mode** — an Excalidraw-style hand-drawn theme (handwriting font +
   wobbly borders), toggleable and persisted.
 
 ### Shapes & nodes
-- Shapes: **rectangle, ellipse, diamond**, plus a Miro-style **sticky note** and
-  a borderless **text** label.
-- Flow roles: **default / input / output** (controls which connection handles
-  render).
-- Six-colour Excalidraw-like palette; recolour the current selection live.
-- **Double-click to edit** a label; drag the body to move.
+- Classic shapes: **rectangle, ellipse, diamond**, plus a Miro-style **sticky
+  note** and a borderless **text** label.
+- **Freehand pen** — draw smooth, pressure-styled ink strokes anywhere on the
+  canvas; each stroke moves and resizes like any other element.
+- **ERD modelling** — Chen-notation stamps (entities, weak entities,
+  relationships, attributes, key / multivalued / derived attributes) and a
+  crow's-foot **table** with inline-editable fields and PK / FK toggles.
+- A colourful Excalidraw-like palette with adjustable **fill style, stroke
+  style, stroke width, and opacity** — restyle the current selection live.
+- **Double-click to edit** a label; new shapes open straight into editing.
 - **Resize with the mouse** via drag handles on the selected node.
 
 ### Edges
-- Connect nodes by dragging from a handle; smooth curved edges with arrowheads.
-- Click an edge to select it, then delete it.
+- Connect nodes by dragging from a handle, or use the **Arrow tool** to click a
+  source then a target.
+- Edges fan out across multiple connection points so arrows don't stack.
+- Inline-editable edge labels and arrowheads; click an edge to select or delete.
 
 ### Selection
 - Click to select; **Shift-click** to add to the selection.
 - **Drag on empty canvas to marquee-select** multiple elements.
 - **Ctrl/Cmd + A** to select everything.
+- Hold **Space** to temporarily pan while a tool is active.
 
-### Editing & persistence
-- **Undo / Redo** (Ctrl/Cmd+Z, Ctrl/Cmd+Shift+Z) with a 50-step history.
-- **Auto-save** to `localStorage` (debounced) and restore on startup.
-- **Export** the diagram as JSON and **import** it back.
+### Saving, sharing & collaboration
+- **Auto-save** — your changes are saved continuously, with no Save button to
+  remember.
+- **Undo / Redo** with a generous history.
+- **Share** a diagram with a single link.
+- **Live collaboration** — see other people's cursors move in real time as you
+  work together on the same diagram.
+- **Export** a diagram as a file and **import** it back.
 - **Reset** the canvas (undoable).
 
 ### Keyboard shortcuts
 | Action | Shortcut |
 | --- | --- |
+| Select tool | `V` |
+| Pen tool | `P` |
 | Delete selection | `Delete` / `Backspace` |
 | Select all | `Ctrl/Cmd + A` |
 | Undo | `Ctrl/Cmd + Z` |
 | Redo | `Ctrl/Cmd + Shift + Z` or `Ctrl + Y` |
-| Clear selection | `Esc` |
-
-## Tech stack
-
-- [Vue 3](https://vuejs.org) (Composition API, `<script setup>`)
-- [Vite](https://vite.dev) + TypeScript (strict)
-- [Vue Flow](https://vueflow.dev) (`core`, `minimap`, `node-resizer`)
-- [Pinia](https://pinia.vuejs.org) for state management
-- [UnoCSS](https://unocss.dev) (Wind preset) for styling
-- [Iconify](https://iconify.design) icon sets via `presetIcons`
-- `unplugin-auto-import` + `unplugin-vue-components`
-
-## Getting started
-
-> This project uses **pnpm**. (npm's installer trips over the existing pnpm
-> store layout — use pnpm.)
-
-```bash
-pnpm install
-pnpm dev        # start the dev server
-pnpm build      # type-check + production build
-pnpm preview    # preview the production build
-```
-
-Then open the printed local URL (e.g. http://localhost:5173).
-
-## Project structure
-
-```
-src/
-├── components/      # CustomNode, DiagramCanvas, DiagramToolbar,
-│                    # NodePalette, ToolbarButton, ZoomBar
-├── composables/     # useDiagramPersistence, useKeyboardShortcuts,
-│                    # useDarkMode, useSketchMode
-├── stores/          # Pinia diagram store (single source of truth)
-├── views/           # EditorView (composition root)
-├── types/           # Shared TypeScript types
-├── utils/           # storage, id, export/import, constants
-├── App.vue
-├── main.ts
-└── style.css
-```
-
-### Architecture notes
-- The **Pinia store** is the single source of truth for nodes, edges, selection
-  and undo history. Vue Flow runs in *controlled* mode: it emits changes
-  (`@nodes-change`, `@edges-change`, `@connect`, `@selection-change`) which the
-  store applies via Vue Flow's `applyNodeChanges` / `applyEdgeChanges` helpers.
-- Domain types (`DiagramNode`, `DiagramEdge`) are plain and serialisable,
-  decoupled from Vue Flow's heavy internal `GraphNode` type.
-- UI concerns (dark mode, sketch mode, persistence, shortcuts) live in
-  composables; templates contain no business logic.
+| Clear selection / exit tool | `Esc` |

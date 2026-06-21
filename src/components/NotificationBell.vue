@@ -10,7 +10,7 @@ import { useNotifications } from '@/composables/useNotifications'
 const {
   notifications,
   status,
-  unread,
+  total,
   lastError,
   loadingList,
   loadingMore,
@@ -20,6 +20,7 @@ const {
   fetchList,
   loadMore,
   markAllRead,
+  markSeen,
   clear,
 } = useNotifications()
 
@@ -28,16 +29,13 @@ const open = ref(false)
 // The scrollable feed container (only in the DOM while the dropdown is open).
 const feedRef = ref<HTMLElement | null>(null)
 
-const statusColor: Record<string, string> = {
-  idle: 'bg-slate-400',
-  connecting: 'bg-amber-400 animate-pulse',
-  open: 'bg-emerald-500',
-  error: 'bg-red-500',
-}
-
 function toggle() {
   open.value = !open.value
-  if (open.value) markAllRead()
+  if (open.value) {
+    markAllRead()
+    // PATCH /notification/seen and zero the badge — no-op when the count is 0.
+    void markSeen()
+  }
 }
 
 // Pull the next page when the feed is scrolled within ~80px of the bottom.
@@ -96,15 +94,10 @@ onBeforeUnmount(() => disconnect())
     >
       <span class="i-mdi-bell-outline text-slate-700 dark:text-slate-200" aria-hidden="true" />
       <span
-        class="absolute -right-0.5 -top-0.5 h-2.5 w-2.5 rounded-full ring-2 ring-white dark:ring-slate-900"
-        :class="statusColor[status]"
-        aria-hidden="true"
-      />
-      <span
-        v-if="unread > 0"
-        class="absolute -right-1.5 -top-2 min-w-4 rounded-full bg-red-500 px-1 text-[10px] font-bold leading-4 text-white"
+        v-if="total > 0"
+        class="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold leading-none text-white ring-2 ring-white dark:ring-slate-900"
       >
-        {{ unread > 99 ? '99+' : unread }}
+        {{ total > 9 ? '9+' : total }}
       </span>
     </button>
 
