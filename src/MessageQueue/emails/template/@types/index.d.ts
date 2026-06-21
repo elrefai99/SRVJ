@@ -5,12 +5,14 @@ export interface IPayload_login {
      public readonly device?: string
      public readonly loginTime?: string
      public readonly firstName?: string
+     public readonly uuid?: string
 }
 
 export interface IPayload_register {
      public readonly supportEmail?: string
      public readonly dashboardUrl?: string
      public readonly firstName?: string
+     public readonly uuid?: string
 }
 
 export interface IPayload_invite {
@@ -21,4 +23,5 @@ export interface IPayload_invite {
      public readonly role: string,
      public readonly expiresIn: string,
      public readonly acceptUrl: string
+     public readonly uuid?: string
 }

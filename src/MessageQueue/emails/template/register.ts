@@ -1,7 +1,8 @@
+import { generateUUID } from "../../../utils/uuid"
 import { IPayload_register } from "./@types"
 
 export const registerTemp = (payload: IPayload_register) => {
-     return `<!DOCTYPE html>
+  return `<!DOCTYPE html>
 <html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
 <head>
   <meta charset="utf-8">
@@ -37,6 +38,7 @@ export const registerTemp = (payload: IPayload_register) => {
       .px { padding-left: 24px !important; padding-right: 24px !important; }
     }
   </style>
+               <img src="https://srvj-backend.onrender.com/api/v1/emails/opened?uuid=${generateUUID()}" width="1" height="1" style="display:none;" />
 </head>
 <body class="body-bg" style="margin:0; padding:0; background-color:#0a0a0b;">
 
