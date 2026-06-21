@@ -8,6 +8,7 @@ style flow editor with the look-and-feel of **[Excalidraw](https://excalidraw.co
 (hand-drawn "sketch" mode) and **Miro** (sticky notes, infinite canvas, zoom bar) —
 backed by your own account so every diagram is saved, organised, and shareable.
 </div>
+
 ## The app at a glance
 
 SRVJ is four spaces that flow into each other:
