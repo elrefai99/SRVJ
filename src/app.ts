@@ -66,7 +66,7 @@ async function startServer() {
                prisma.$connect().then(async () => {
                     console.log(`✅ Success connected to ${process.env.NODE_ENV === 'development' ? 'development' : 'production'} Database`)
                     server.listen(PORT, () => {
-                         console.log('🌐 Server is running on:', `http://${process.env.API_LINK as string}:${PORT}`)
+                         console.log('🌐 Server is running on:', `${process.env.API_LINK as string}`)
                     })
                }).catch((error: any) => {
                     console.log(error);
