@@ -9,7 +9,7 @@ export interface SSEClient {
 
 export interface NotificationPayload {
      id: string;
-     type: 'upload' | 'comment' | 'like' | 'system';
+     type: string;
      title: string;
      message: string;
      createdAt: string;

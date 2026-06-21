@@ -25,6 +25,8 @@ export const userMiddleware: RequestHandler = asyncHandler(
                     },
                     select: {
                          id: true,
+                         fullname: true,
+                         email: true
                     }
                })
                if (!user) {

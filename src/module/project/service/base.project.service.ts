@@ -3,6 +3,7 @@ import { cacheService } from "../../../functions/redis/cache.service.fun";
 import { invalidateUserProjectsCache } from "../../../functions/redis/cache.invalidation";
 import { tableStatus } from "../../../generated/prisma";
 import { IPayloadProject } from "../@types";
+import { AppError } from "../../../gen-import";
 
 export class BasedProject {
      private redis: cacheService
@@ -41,7 +42,10 @@ export class BasedProject {
           const [projects, total] = await Promise.all([
                prisma.project.findMany({
                     where: {
-                         ownerId: payload.user,
+                         OR: [
+                              { ownerId: payload.user },
+                              { members: { some: { userId: payload.user } } }
+                         ],
                          status: tableStatus.active,
 
                          ...(search && {
@@ -162,22 +166,43 @@ export class BasedProject {
           return { success: true };
      }
 
-     public async inviteService(payload: string): Promise<any> {
-          const user = await prisma.user.findFirst({
+     public async inviteService(payload: any): Promise<any> {
+          await prisma.user.findFirst({
                where: {
-                    email: payload,
+                    email: payload.email,
                     status: tableStatus.active
                },
                select: {
                     id: true
                }
           })
-          if (!user) {
+          const project = await prisma.project.findFirst({
+               where: {
+                    site_id: payload.project,
+                    status: tableStatus.active,
+                    ownerId: payload.id,
+               },
+               select: {
+                    id: true,
+                    title: true
+               }
+          })
 
-               return { success: true }
+          if (!project) {
+               throw new AppError("this project is exest", 400)
           }
 
-          return { success: true }
+          const invite = await prisma.inviteProjects.create({
+               data: {
+                    inviterName: payload.fullname,
+                    snederInvite: payload.id,
+                    email: payload.email,
+                    projectId: project.id,
+                    status: tableStatus.inactive,
+                    workspaceName: project.title
+               }
+          })
+          return { success: true, data: invite }
      }
 
      // Private Functions

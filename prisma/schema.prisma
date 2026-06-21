@@ -198,15 +198,16 @@ model Emails {
 }
 
 model InviteProjects {
-  id            Int  @id @default(autoincrement())
-  inviterName   Int?
+  id            Int         @id @default(autoincrement())
+  inviterName   String?
   snederInvite  Int
-  toUserInvetId Int
+  toUserInvetId Int?
   projectId     Int
-
-  firstName     String
-  site_id       String @unique @default(uuid())
+  email         String?
+  firstName     String?
+  site_id       String      @unique @default(uuid())
   workspaceName String
+  status        tableStatus @default(active)
 
   snederInviteid User?    @relation("InviteFrom", fields: [snederInvite], references: [id], onDelete: Cascade)
   toUserInvetid  User?    @relation("InviteTo", fields: [toUserInvetId], references: [id], onDelete: Cascade)
