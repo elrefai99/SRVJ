@@ -30,19 +30,19 @@ export const loginController: RequestHandler = asyncHandler(
           }
           const token = await token_PASETO(token_data, "access")
           const refresh_token = await token_PASETO(token_data, "refresh")
-          res.cookie("access_token", token, { httpOnly: true, secure: true, sameSite: "strict", maxAge: 1000 * 60 * 60 * 24 * 2 });
-          res.cookie("refresh_token", refresh_token, { httpOnly: true, secure: true, sameSite: "strict", maxAge: 1000 * 60 * 60 * 24 * 30, });
+          res.cookie("access_token", token, { httpOnly: true, secure: true, sameSite: "none", maxAge: 1000 * 60 * 60 * 24 * 2 });
+          res.cookie("refresh_token", refresh_token, { httpOnly: true, secure: true, sameSite: "none", maxAge: 1000 * 60 * 60 * 24 * 30, });
           const emailBody = {
                type: "login",
                subject: "New sign-in to your SRVJ account",
                email: body.email,
                emailBody: {
                     supportEmail: process.env.EMAIL as string,
-                    dashboardUrl: "https://srvj.elrefai.me/",
-                    secureAccountUrl: "https://srvj.elrefai.me/",
+                    dashboardUrl: `${process.env.NODE_ENV === 'development' ? process.env.SITE_URL_TEST : process.env.SITE_URL_LIVE}/app/dashboard/projects`,
+                    secureAccountUrl: process.env.SITE_URL_LIVE as string,
                     ipAddress: req.clientIP,
                     location: getLocation(req),
-                    device: req.useragent?.source,
+                    device: req.useragent?.browser,
                     loginTime: formatLoginTime(Date.now()),
                     firstName: result.data.fullname,
                }

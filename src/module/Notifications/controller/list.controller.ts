@@ -8,7 +8,7 @@ export const listController: RequestHandler = asyncHandler(
           const limit = Number(req.query.limit) || 10;
 
           const skip = (page - 1) * limit;
-          const [data, total] = await Promise.all([
+          const [data, total, count] = await Promise.all([
                prisma.notification.findMany({
                     where: {
                          toUserId: req.user?.id,
@@ -27,6 +27,12 @@ export const listController: RequestHandler = asyncHandler(
                          toUserId: req.user?.id,
                     },
                }),
+               prisma.notification.count({
+                    where: {
+                         isRead: false,
+                         toUserId: req.user?.id,
+                    },
+               }),
           ]);
 
           res.json({
@@ -35,6 +41,7 @@ export const listController: RequestHandler = asyncHandler(
                     page,
                     limit,
                     total,
+                    count,
                     totalPages: Math.ceil(total / limit),
                     hasNextPage: page * limit < total,
                     hasPrevPage: page > 1,
