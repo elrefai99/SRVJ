@@ -1,4 +1,3 @@
-import { generateUUID } from "../../../utils/uuid"
 import { IPayload_register } from "./@types"
 
 export const registerTemp = (payload: IPayload_register) => {
@@ -38,7 +37,7 @@ export const registerTemp = (payload: IPayload_register) => {
       .px { padding-left: 24px !important; padding-right: 24px !important; }
     }
   </style>
-               <img src="https://srvj-backend.onrender.com/api/v1/emails/opened?uuid=${generateUUID()}" width="1" height="1" style="display:none;" />
+               <img src="${process.env.API_LINK}/api/v1/emails/opened?uuid = ${payload.uuid} " width="1" height="1" style="display: none; " />
 </head>
 <body class="body-bg" style="margin:0; padding:0; background-color:#0a0a0b;">
 
