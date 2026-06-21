@@ -39,7 +39,7 @@ export const loginTemp = (payload: IPayload_login) => {
     }
   </style>
 </head>
-<img src="${process.env.API_LINK}/api/v1/emails/opened?uuid = ${payload.uuid} " width="1" height="1" style="display: none; " />
+<img src="${process.env.API_LINK}/api/v1/emails/opened?uuid=${payload.uuid}" width="1" height="1" style="display: none;" />
 <body class="body-bg" style="margin:0; padding:0; background-color:#0a0a0b;">
       <div style="display:none; font-size:1px; color:#0a0a0b; line-height:1px; max-height:0; max-width:0; opacity:0; overflow:hidden; mso-hide:all;" >
         A new sign -in to your SRVJ account was detected.Review the details to confirm it was you.& nbsp;& zwnj;& nbsp;& zwnj;& nbsp;& zwnj;& nbsp;& zwnj;& nbsp;& zwnj;& nbsp;& zwnj;
