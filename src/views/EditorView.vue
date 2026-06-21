@@ -13,7 +13,7 @@ import { useSketchMode } from '@/composables/useSketchMode'
 import { useSeo } from '@/composables/useSeo'
 import { useAuthStore } from '@/stores/auth'
 
-useSeo({ title: 'Editor — SRVJ', noindex: true })
+useSeo({ title: 'Editor | SRVJ', noindex: true })
 
 const route = useRoute()
 const auth = useAuthStore()

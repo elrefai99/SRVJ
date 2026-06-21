@@ -15,7 +15,7 @@ import {
   type ProjectVisibility,
 } from '@/types/project'
 
-useSeo({ title: 'Your projects — SRVJ', path: '/dashboard', noindex: true })
+useSeo({ title: 'Your projects | SRVJ', path: '/dashboard', noindex: true })
 
 const router = useRouter()
 const auth = useAuthStore()
@@ -29,8 +29,6 @@ const searchInput = ref('')
 let searchTimer: ReturnType<typeof setTimeout> | undefined
 
 const authDialogOpen = ref(false)
-const creating = ref(false)
-const form = reactive({ title: '', description: '', visibility: 'PRIVATE' as ProjectVisibility })
 
 // The project being edited (its `site_id`), or `null` when the edit modal is closed.
 const editingId = ref<string | null>(null)
@@ -94,27 +92,17 @@ watch(searchInput, (value) => {
   }, 350)
 })
 
-function openCreate() {
-  form.title = ''
-  form.description = ''
-  form.visibility = 'PRIVATE'
-  creating.value = true
-}
-
-async function submitCreate() {
-  const title = form.title.trim()
-  if (!title) return
+// Create a project immediately (no modal): a private "Untitled" project, then
+// jump straight into its diagram editor.
+async function createAndOpen() {
+  if (loading.value) return
   const project = await projects.createProject({
-    title,
-    description: form.description.trim() || undefined,
-    visibility: form.visibility,
+    title: 'Untitled',
+    description: 'Untitled',
+    visibility: 'PRIVATE',
   })
-  // The create endpoint may not echo the new project back, so treat the
-  // absence of an error as success rather than gating on a returned object.
-  if (!error.value) {
-    creating.value = false
-    showSuccess(project ? `Project “${project.title}” created.` : 'Project created.')
-  }
+  if (error.value) return
+  if (project) openProject(project)
 }
 
 function openProject(project: Project) {
@@ -207,8 +195,9 @@ function formatDate(value: string): string {
           </div>
           <button
             type="button"
-            class="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700"
-            @click="openCreate"
+            :disabled="loading"
+            class="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-60"
+            @click="createAndOpen"
           >
             <span class="i-mdi-plus" aria-hidden="true" />
             New project
@@ -362,87 +351,6 @@ function formatDate(value: string): string {
     </main>
 
     <AuthDialog :open="authDialogOpen" @close="authDialogOpen = false" />
-
-    <!-- Create project modal -->
-    <Teleport to="body">
-      <div
-        v-if="creating"
-        class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4 backdrop-blur-sm"
-        @click.self="creating = false"
-      >
-        <form
-          role="dialog"
-          aria-modal="true"
-          aria-label="New project"
-          class="w-full max-w-sm rounded-xl border border-slate-200 bg-white/85 p-6 shadow-xl backdrop-blur-md dark:border-white/10 dark:bg-[#202020]/85"
-          @submit.prevent="submitCreate"
-          @keydown.esc="creating = false"
-        >
-          <div class="mb-5 flex items-start justify-between gap-4">
-            <h2 class="text-lg font-bold text-slate-800 dark:text-slate-100">New project</h2>
-            <button
-              type="button"
-              aria-label="Close"
-              class="rounded-md p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-700 dark:hover:text-slate-200"
-              @click="creating = false"
-            >
-              <span class="i-mdi-close text-lg" aria-hidden="true" />
-            </button>
-          </div>
-
-          <div class="flex flex-col gap-3">
-            <label class="flex flex-col gap-1 text-sm">
-              <span class="font-medium text-slate-600 dark:text-slate-300">Title</span>
-              <input
-                v-model="form.title"
-                type="text"
-                required
-                autofocus
-                placeholder="e.g. System architecture"
-                class="rounded-md border border-slate-300 bg-white px-3 py-2 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-slate-600 dark:bg-slate-900"
-              />
-            </label>
-            <label class="flex flex-col gap-1 text-sm">
-              <span class="font-medium text-slate-600 dark:text-slate-300">Description (optional)</span>
-              <textarea
-                v-model="form.description"
-                rows="3"
-                placeholder="What’s this project about?"
-                class="resize-none rounded-md border border-slate-300 bg-white px-3 py-2 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-slate-600 dark:bg-slate-900"
-              />
-            </label>
-            <label class="flex flex-col gap-1 text-sm">
-              <span class="font-medium text-slate-600 dark:text-slate-300">Visibility</span>
-              <select
-                v-model="form.visibility"
-                class="rounded-md border border-slate-300 bg-white px-3 py-2 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-slate-600 dark:bg-slate-900"
-              >
-                <option v-for="v in PROJECT_VISIBILITIES" :key="v" :value="v">
-                  {{ VISIBILITY_LABEL[v] }}
-                </option>
-              </select>
-            </label>
-          </div>
-
-          <div class="mt-6 flex justify-end gap-2">
-            <button
-              type="button"
-              class="rounded-md border border-slate-300 px-4 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-100 dark:border-slate-600 dark:text-slate-300 dark:hover:bg-slate-700"
-              @click="creating = false"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              :disabled="loading || !form.title.trim()"
-              class="rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              Create project
-            </button>
-          </div>
-        </form>
-      </div>
-    </Teleport>
 
     <!-- Edit project modal -->
     <Teleport to="body">

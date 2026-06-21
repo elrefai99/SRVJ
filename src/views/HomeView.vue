@@ -9,7 +9,7 @@ import { useAuthStore } from "@/stores/auth";
 import { useGoogleAuth } from "@/composables/useGoogleAuth";
 import { SITE_DESCRIPTION } from "@/utils/constants";
 
-useSeo({ title: "SRVJ — Free Online Diagram Editor & Whiteboard", path: "/" });
+useSeo({ title: "SRVJ | Free Online Diagram Editor & Whiteboard", path: "/" });
 
 // Marketing typefaces from the design (loaded into <head>, SSG-safe).
 useHead({

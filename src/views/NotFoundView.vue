@@ -3,7 +3,7 @@ import { onMounted } from 'vue'
 import { useDarkMode } from '@/composables/useDarkMode'
 import { useSeo } from '@/composables/useSeo'
 
-useSeo({ title: 'Page not found — SRVJ', noindex: true })
+useSeo({ title: 'Page not found | SRVJ', noindex: true })
 
 const { init: initDarkMode } = useDarkMode()
 
