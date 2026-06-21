@@ -39,6 +39,6 @@ COPY --from=builder /app/prisma ./prisma
 COPY package.json ./dist/package.json
 COPY . .
 
-EXPOSE 9000
+EXPOSE 60459
 
 CMD ["pm2-runtime", "start", "ecosystem.config.js"]

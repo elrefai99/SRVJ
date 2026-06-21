@@ -11,7 +11,7 @@ services:
       NODE_ENV: development
       REDIS_CACHE_DEV: redis://redis-dev:6379
     ports:
-      - "${PORT}:9000"
+      - "${PORT}:60459"
     volumes:
       - .:/app
       - /app/node_modules
