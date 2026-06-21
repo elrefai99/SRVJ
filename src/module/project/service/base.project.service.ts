@@ -22,7 +22,7 @@ export class BasedProject {
           })
           if (project.success && diagram.success) {
                await invalidateUserProjectsCache(payload.user as number)
-               return { success: true }
+               return { success: true, diagram: diagram }
           }
      }
 
@@ -160,6 +160,24 @@ export class BasedProject {
 
           await invalidateUserProjectsCache(project.ownerId)
           return { success: true };
+     }
+
+     public async inviteService(payload: string): Promise<any> {
+          const user = await prisma.user.findFirst({
+               where: {
+                    email: payload,
+                    status: tableStatus.active
+               },
+               select: {
+                    id: true
+               }
+          })
+          if (!user) {
+
+               return { success: true }
+          }
+
+          return { success: true }
      }
 
      // Private Functions

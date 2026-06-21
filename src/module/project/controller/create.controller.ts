@@ -15,6 +15,6 @@ export const createController: RequestHandler = asyncHandler(
                res.status(400).json({ code: 400, status: "Bad Request", message: "Failed create project" })
                return
           }
-          res.status(200).json({ code: 200, status: "OK", message: "Success Create new project" })
+          res.status(200).json({ code: 200, status: "OK", message: "Success Create new project", data: result.diagram })
      }
 )
