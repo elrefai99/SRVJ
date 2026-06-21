@@ -27,8 +27,8 @@ export const googleController: RequestHandler = asyncHandler(
           }
           const token = await token_PASETO(token_data, "access")
           const refresh_token = await token_PASETO(token_data, "refresh")
-          res.cookie("access_token", token, { httpOnly: true, secure: true, sameSite: "strict", maxAge: 1000 * 60 * 60 * 24 * 2 });
-          res.cookie("refresh_token", refresh_token, { httpOnly: true, secure: true, sameSite: "strict", maxAge: 1000 * 60 * 60 * 24 * 30, });
+          res.cookie("access_token", token, { httpOnly: true, secure: true, sameSite: "none", maxAge: 1000 * 60 * 60 * 24 * 2 });
+          res.cookie("refresh_token", refresh_token, { httpOnly: true, secure: true, sameSite: "none", maxAge: 1000 * 60 * 60 * 24 * 30, });
           if (result.data.login) {
                const emailBody = {
                     type: "login",
