@@ -36,7 +36,7 @@ export const registerController: RequestHandler = asyncHandler(
                email: body.email,
                emailBody: {
                     supportEmail: process.env.EMAIL,
-                    dashboardUrl: "https://srvj.elrefai.me/",
+                    dashboardUrl: `${process.env.NODE_ENV === 'development' ? process.env.SITE_URL_TEST : process.env.SITE_URL_LIVE}/app/dashboard/projects`,
                     firstName: body.fullname
                }
           }

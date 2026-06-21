@@ -116,7 +116,7 @@ export class BaseAuth {
           })
 
           if (user) {
-               return { success: true, error: false, message: "Success create new account", data: { id: user?.id, email: user?.email, fullname: user?.fullname } }
+               return { success: true, error: false, message: "Success create new account", data: { id: user?.id, email: user?.email, fullname: user?.fullname, login: true } }
           }
 
           const fullname: string = `${token.given_name} ${token.family_name}`
@@ -136,6 +136,6 @@ export class BaseAuth {
                     id: true
                }
           })
-          return { success: true, error: false, message: "Success create new account", data: { id: new_account.id, email: token.email, fullname } }
+          return { success: true, error: false, message: "Success create new account", data: { id: new_account.id, email: token.email, fullname, register: true } }
      }
 }

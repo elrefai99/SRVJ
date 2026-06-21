@@ -14,12 +14,6 @@
       "Bash(git stash*)",
       "Bash(git add src/*)"
     ],
-    "ask": [
-      "Edit(**)",
-      "Write(**)",
-      "MultiEdit(**)",
-      "NotebookEdit(**)"
-    ],
     "deny": [
       "Read(**/.env*)",
       "Edit(**/.env*)",

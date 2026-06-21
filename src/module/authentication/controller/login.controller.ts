@@ -38,11 +38,11 @@ export const loginController: RequestHandler = asyncHandler(
                email: body.email,
                emailBody: {
                     supportEmail: process.env.EMAIL as string,
-                    dashboardUrl: "https://srvj.elrefai.me/",
-                    secureAccountUrl: "https://srvj.elrefai.me/",
+                    dashboardUrl: `${process.env.NODE_ENV === 'development' ? process.env.SITE_URL_TEST : process.env.SITE_URL_LIVE}/app/dashboard/projects`,
+                    secureAccountUrl: process.env.SITE_URL_LIVE as string,
                     ipAddress: req.clientIP,
                     location: getLocation(req),
-                    device: req.useragent?.source,
+                    device: req.useragent?.browser,
                     loginTime: formatLoginTime(Date.now()),
                     firstName: result.data.fullname,
                }

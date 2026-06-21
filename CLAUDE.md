@@ -5,9 +5,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Project state
 
 SRVJ is a collaborative diagram/project backend (Express 5 + Prisma 7 + Postgres). The bootstrap
-layer and three feature domains are live: **authentication**, **user**, and **project** (registered
-in `src/app.module.ts`). A BullMQ email worker exists under `src/MessageQueue/`. Beyond the feature
-routers, the app also exposes `/api/health` and `/metrics`.
+layer and five feature domains are live (registered in `src/app.module.ts`, mounted under
+`/api/v1`): **authentication**, **user**, **project**, **notification** (SSE + Redis pub/sub), and
+**emails** (open/click tracking). Two BullMQ workers (`emailQueue`, `notificationQueue`) live under
+`src/MessageQueue/`. A `src/module/diagram/` directory exists but is empty — the diagram feature is
+modeled in Prisma but not yet implemented as a router. Beyond the feature routers, the app also
+exposes `/api/health` and `/metrics`.
 
 Test runners are configured in `package.json` (`jest` for `test`, `vitest` for `test:e2e`) but
 **neither jest nor vitest is installed** — only `supertest` is present. Install the runner before
@@ -23,8 +26,9 @@ relying on those scripts.
   `datasource db` block intentionally omits `url`)
 - Seed: `npx prisma db seed` (runs `prisma/seeds/seed.ts` — not present yet)
 - Dev (app only, recommended): `pnpm dev:local` — runs `nodemon`, which execs `tsx ./src/app.ts`.
-- Dev (app + email worker): `pnpm dev` — also spawns `src/MessageQueue/index.ts`; requires a
-  reachable Redis (`REDIS_CACHE_DEV`) or the worker process crashes.
+- Dev (app + workers): `pnpm dev` — also spawns `src/MessageQueue/index.ts`, which connects its own
+  Prisma client then requires both `worker.emails.ts` and `worker.notification.ts`; requires a
+  reachable Redis (`REDIS_CACHE_BULLMQ`) or the worker process crashes.
 - Build: `pnpm build` — `prisma generate && tsc -p tsconfig.build.json`, then copies
   `src/generated` into `dist/src/` (tsc excludes generated output). `tsconfig.build.json` extends
   the root `tsconfig.json`, which extends `@mohamed-elrefai/tsconfigs`.
@@ -40,8 +44,11 @@ relying on those scripts.
 `src/MessageQueue/worker.emails.ts` all do this. Preserve that ordering when adding entry points.
 
 Key vars read in code: `PORT`, `API_LINK`, `DATABASE_URL`, `SITE_URL_TEST` / `SITE_URL_LIVE` (CORS
-allowlist), `SITE_API_URL` (CSP), `REDIS_CACHE_DEV` / `REDIS_CACHE_LIVE`, `CLOUDINARY_*`, `LOG_LEVEL`,
-`API_KEY_SALT` (bcrypt rounds), `GOOGLE_CLIENT_ID`, `EMAIL`, and the PASETO PEM keys below.
+allowlist), `SITE_API_URL` (CSP), `CLOUDINARY_*`, `LOG_LEVEL`, `API_KEY_SALT` (bcrypt rounds),
+`GOOGLE_CLIENT_ID`, `EMAIL`, and the PASETO PEM keys below. There are **two distinct Redis configs**:
+`REDIS_CACHE_DEV` / `REDIS_CACHE_LIVE` (selected by `NODE_ENV`) drive the shared cache client in
+`src/config/redis.ts`, while `REDIS_CACHE_BULLMQ` is a single URL used by both BullMQ queues/workers
+**and** the notifications pub/sub (`src/module/Notifications/shared/redis.ts`) — don't conflate them.
 
 PASETO keys are loaded from env as raw PEM strings (with literal `\n`) via `src/utils/loadKey.ts`,
 which normalizes them. The key env names are referenced by string literal in code:
@@ -56,7 +63,8 @@ which normalizes them. The key env names are referenced by string literal in cod
 3. Express app + raw `http.Server` + Socket.IO (`ioSocket` is exported; the http server, not the
    Express app, is what `.listen`s).
 4. `appConfig(app)` → `appModule(app)` → health / metrics / 404 routes.
-5. `startServer()` connects Prisma and Redis in parallel, then listens.
+5. `startServer()` connects Prisma and Redis (`redisConfig()`) in parallel, fires `startSubscriber()`
+   (the notifications pub/sub listener, see below), then listens.
 
 ### Global middleware (`src/app.config.ts`)
 Applied in order: helmet (CSP + HSTS), `express.json({ limit: '75mb' })`, urlencoded, static mounts
@@ -79,8 +87,12 @@ lazily via `require(...).default`). Each domain follows a consistent layered sha
   objects (they don't throw); controllers translate that into status codes.
 - **`DTO/index.dto.ts`** (or `DTO/index.ts`) — zod schemas; the inferred type is the DTO type.
 
-Casing is inconsistent across domains (`user/` uses `Controller/`, `Service/`, `Middleware/`;
-`authentication/`/`project/` use lowercase). Match the casing of the domain you're editing.
+Casing is inconsistent across domains (`user/` and `emails/` use `Controller/`/`Service/`;
+`authentication/`/`project/`/`Notifications/` use lowercase `controller/`/`service/`). Match the
+casing of the domain you're editing. Some domains deviate from the standard layered shape:
+`emails/` is a public open/click tracker (no auth, no DTO; `service/based.emails.service.ts` flips
+`seen`/`click` flags on the `Emails` row), and `Notifications/` adds `shared/`, `utils/`, and an SSE
+`stream` route rather than a plain request/response service.
 
 ### Auth & request identity
 - Tokens are **PASETO v4** (`paseto` lib), not JWT. `token_PASETO(payload, type, expiresIn?)` in
@@ -120,22 +132,40 @@ that are inapplicable here (this project is Postgres/Prisma).
 - `upload/` — avatar generation + image processing (`avatarProfile`, `avatarProcess`,
   content-type detection). New users get a generated avatar; updates run through `avatarProcess`.
 
+### Real-time notifications (SSE + Redis pub/sub)
+Notifications fan out across instances over a Redis pub/sub channel (`"notifications"`), not
+Socket.IO. The flow: `POST /api/v1/notification/publish` enqueues a `notificationQueue` job →
+`worker.notification` (`notifications/jobs/job.process.notification.ts`) persists a `Notification`
+row and `redis.publish("notifications", payload)` → `startSubscriber()` (`src/config/subscriber.ts`,
+wired in `app.ts`) subscribes and writes SSE frames to matching clients. `GET /stream` is the SSE
+endpoint; live connections are held in an **in-process** `Map<userId, Set<SSEClient>>`
+(`Notifications/utils/client.ts`), so each app instance only pushes to its own connected tabs — the
+pub/sub is what bridges instances. All three routes are guarded by `userMiddleware`.
+
 ### Background jobs (`src/MessageQueue/`)
 Separate process started by `src/MessageQueue/index.ts` (own Prisma client + signal handlers), which
-requires `worker.emails.ts`. BullMQ queue `emailQueue` (`emails/Queue/queue.email.ts`,
-`addJobToQueue(name, data)`); the worker dispatches by `data.type` (`login` / `register`) to HTML
-templates in `emails/template/` sent via Resend (`provider/resend.ts`). Controllers enqueue with
-`addJobToQueue("login", emailBody)` after the response path. Redis connection comes from
-`REDIS_CACHE_DEV` / `REDIS_CACHE_LIVE` by `NODE_ENV`. `bull-arena` is a dependency for queue
-inspection.
+connects Prisma then requires **both** `worker.emails.ts` and `worker.notification.ts`. Two BullMQ
+queues, each with its own `add*ToQueue(name, data)` helper and `removeOnComplete`/`removeOnFail` age
+configs:
+- `emailQueue` (`emails/Queue/queue.email.ts`, `addJobToQueue`) — worker dispatches by `data.type`
+  (`login` / `register`; `invite` template also exists) to HTML templates in `emails/template/` sent
+  via Resend (`provider/resend.ts`). Controllers enqueue with `addJobToQueue("login", emailBody)`
+  after the response path.
+- `notificationQueue` (`notifications/Queue/queue.notification.ts`, `addNotificationJobToQueue`) —
+  feeds the pub/sub flow above.
+
+Both queues/workers connect via `REDIS_CACHE_BULLMQ` (a single URL, **not** the `_DEV`/`_LIVE` cache
+vars). `bull-arena` is a dependency for queue inspection.
 
 ### Data model (`prisma/schema.prisma`)
 Postgres, `@@map`'d snake_case tables. Every model has an `Int @id @default(autoincrement())` **and**
 a separate `site_id String @unique @default(uuid())` — the integer is the internal PK; `site_id` is
 the public/external identifier. Core entities: `User`, `Project` (owner + `ProjectMember` roles via
 `ProjectRole`/`ProjectVisibility` enums), `Diagram` (+ `DiagramVersion` history, JSON `nodes`/
-`edges`), `ShareLink`. The generator output is `../src/generated/prisma`; import `Prisma` types from
-there too (e.g. `Prisma.UserUpdateInput`).
+`edges`), `ShareLink`, `InviteProjects` (project invites, `InviteFrom`/`InviteTo` relations),
+`Notification` (`fromUserId`/`toUserId`, `isRead`), and `Emails` (open/click tracking by `email_id`).
+The generator output is `../src/generated/prisma`; import `Prisma` types from there too (e.g.
+`Prisma.UserUpdateInput`).
 
 ## Utilities (`src/utils/`)
 - `logger.ts` — pino. Use `createLogger("Context")` for module-scoped child loggers over the raw
@@ -149,6 +179,15 @@ there too (e.g. `Prisma.UserUpdateInput`).
 
 - **Express 5** and **Prisma 7** — both have breaking changes vs. previous majors; verify API shapes
   against installed versions, not older docs. Express 5 auto-catches rejected async handlers.
-- Auth: `paseto` (not JWT) + `bcryptjs`. Validation: `zod` v4. Realtime: `socket.io` via `ioSocket`.
+- Auth: `paseto` (not JWT) + `bcryptjs`. Validation: `zod` v4. Realtime: `socket.io` (`ioSocket`) is
+  set up in `app.ts`, but the live notifications feature uses **SSE + Redis pub/sub**, not Socket.IO.
 - Background jobs: `bullmq` (Redis) + `resend` for email; `bull-arena` for inspection.
 - A few legacy console logs say "MongoDB" — the project is Postgres/Prisma; ignore the wording.
+
+## Strict Rules
+
+- Never add comments to the code.
+- Do not generate `//` comments.
+- Do not generate `/* */` comments.
+- Do not generate JSDoc comments (`/** */`).
+- The final code must contain zero comments of any kind.
