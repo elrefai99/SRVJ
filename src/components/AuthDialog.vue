@@ -91,14 +91,14 @@ async function onSubmit() {
   <Teleport to="body">
     <div
       v-if="props.open"
-      class="fixed inset-0 z-50 flex items-center justify-center bg-black/1 p-4 backdrop-blur-xl"
+      class="fixed inset-0 z-50 flex items-center justify-center bg-black/1 p-4 backdrop-blur-sm"
       @click.self="emit('close')"
     >
       <div
         role="dialog"
         aria-modal="true"
         :aria-label="title"
-        class="w-full max-w-sm rounded-2xl  p-6 shadow-2xl backdrop-blur-xl bg-[#050505]/85"
+        class="w-full max-w-sm rounded-2xl  p-6 shadow-2xl backdrop-blur-xl bg-[#050505]/70"
         @keydown.esc="emit('close')"
       >
         <div class="mb-5 flex items-start justify-between gap-4">
