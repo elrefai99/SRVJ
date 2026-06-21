@@ -38,6 +38,16 @@ export const routes: RouteRecordRaw[] = [
     meta: { requiresAuth: true },
   },
   {
+    // Accept a collaboration invite from a project owner. Reachable signed-out
+    // (the invitee may not have an account yet) — the page itself prompts for
+    // sign-in before accepting, so this route is intentionally unguarded. The
+    // JWT may arrive in the path segment or as a `?token=` query param, so the
+    // param is optional.
+    path: '/app/invite/:token?',
+    name: 'invite',
+    component: () => import('@/views/InviteView.vue'),
+  },
+  {
     path: '/:pathMatch(.*)*',
     name: 'not-found',
     component: () => import('@/views/NotFoundView.vue'),

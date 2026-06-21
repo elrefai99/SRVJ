@@ -122,6 +122,19 @@ export const useProjectsStore = defineStore('projects', {
       }
     },
 
+    /** Invite a collaborator to a project by email. Returns true on success;
+     * the backend emails the invitee a signed accept link. */
+    async inviteToProject(siteId: string, email: string): Promise<boolean> {
+      this.error = null
+      try {
+        await projectsApi.inviteToProject(siteId, email, this.token())
+        return true
+      } catch (error) {
+        this.error = messageOf(error)
+        return false
+      }
+    },
+
     /** Delete a project (cascades its diagram), then re-fetch the list. */
     async deleteProject(siteId: string): Promise<boolean> {
       this.error = null

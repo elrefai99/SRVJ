@@ -44,6 +44,30 @@ export interface ProjectMember {
 }
 
 /**
+ * A pending invitation to collaborate, as returned by `GET /invite/get` (the
+ * invite `token` is carried in the `/app/invite/:token` URL). This is a
+ * display-only preview the invitee sees before accepting — it names who invited
+ * them, the board/workspace, the role they'll receive, and when the link
+ * expires. Accepting POSTs back to {@link acceptUrl} (or the accept endpoint).
+ */
+export interface ProjectInvite {
+  /** The invitee — the email/name the invite was addressed to. */
+  firstName: string
+  /** Display name of the person who sent the invite (the project owner). */
+  inviterName?: string
+  /** Name of the board (project/diagram) being shared. */
+  boardName: string
+  /** Workspace the board lives in. */
+  workspaceName: string
+  /** Role granted on accepting (e.g. "All", "Editor", "Viewer"). */
+  role: string
+  /** Human-readable time until the link expires, e.g. "3h". */
+  expiresIn?: string
+  /** Backend-supplied URL to accept the invite (may be empty — see acceptInvite). */
+  acceptUrl?: string
+}
+
+/**
  * A project's single canvas. Stores `nodes`/`edges`/`version` in the same shape
  * as the editor's {@link DiagramSnapshot} (plus optional free-form `metadata`),
  * so converting between the two is a field copy — see {@link diagramToSnapshot}.

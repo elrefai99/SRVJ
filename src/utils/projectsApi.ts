@@ -3,6 +3,7 @@ import type {
   Diagram,
   Pagination,
   Project,
+  ProjectInvite,
   ProjectPayload,
   SaveDiagramPayload,
 } from '@/types/project'
@@ -71,4 +72,66 @@ export function saveDiagram(
   token: string | null,
 ) {
   return apiFetch<Diagram>(`/diagram/${diagramSiteId}`, { method: 'PATCH', body: payload, token })
+}
+
+/**
+ * Invite someone to collaborate on a project (owner action). The backend emails
+ * the address a signed invite link (the JWT consumed by {@link getInvite}).
+ * `projectSiteId` is the project's public `site_id`.
+ */
+export function inviteToProject(projectSiteId: string, email: string, token: string | null) {
+  return apiFetch<void>('/project/invite', {
+    method: 'POST',
+    body: { email, project: projectSiteId },
+    token,
+  })
+}
+
+/**
+ * Preview a project invitation by its `inviteToken` — the JWT carried in the
+ * `/app/invite/:token` URL (signed server-side with `{ site_id, email }`, 6h
+ * expiry). Sent as the `token` query param; the backend decodes it to resolve
+ * the project (`site_id`) and invitee. The bearer `token` is forwarded when
+ * present, but the call works for guests too (they sign in before accepting).
+ */
+export function getInvite(inviteToken: string, token: string | null) {
+  const query = new URLSearchParams({ token: inviteToken })
+  return apiFetch<ProjectInvite>(`/project/invite/get?${query.toString()}`, { token })
+}
+
+/** How the invitee responds to an invitation (the `status` query param). */
+export type InviteResponse = 'accept' | 'reject'
+
+/**
+ * Respond to a project invitation. `id` is the project `site_id` decoded from
+ * the invite JWT (see {@link decodeInviteProjectId}); `status` is accept/reject.
+ * The signed-in user's access token rides in the header (required) and the
+ * status in the query. On accept the user becomes a `ProjectMember`; the backend
+ * returns the joined project (with its embedded diagram) so the editor can open.
+ */
+export function acceptInvite(id: string, status: InviteResponse, token: string | null) {
+  const query = new URLSearchParams({ status })
+  return apiFetch<Project>(`/project/invite/accept/${id}?${query.toString()}`, {
+    method: 'PATCH',
+    token,
+  })
+}
+
+/**
+ * Decode the project `site_id` out of an invite JWT (the `:token` from the
+ * `/app/invite/:token` URL). The JWT is signed server-side as
+ * `{ site_id, email }`; we read the unverified payload purely to address the
+ * accept call — the backend still verifies the signature. Returns `null` if the
+ * token isn't a well-formed JWT.
+ */
+export function decodeInviteProjectId(inviteToken: string): string | null {
+  const part = inviteToken.split('.')[1]
+  if (!part) return null
+  try {
+    const json = atob(part.replace(/-/g, '+').replace(/_/g, '/'))
+    const payload = JSON.parse(json) as { site_id?: string }
+    return payload.site_id ?? null
+  } catch {
+    return null
+  }
 }

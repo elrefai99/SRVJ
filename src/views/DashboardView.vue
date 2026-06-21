@@ -38,6 +38,11 @@ const editForm = reactive({ title: '', description: '', visibility: 'PRIVATE' as
 const deleteTarget = ref<Project | null>(null)
 const deleting = ref(false)
 
+// The project being shared (shown in the invite modal), or `null` when closed.
+const inviteTarget = ref<Project | null>(null)
+const inviteEmail = ref('')
+const inviting = ref(false)
+
 // Transient success toast; auto-dismisses after 3s.
 const successMessage = ref('')
 let successTimer: ReturnType<typeof setTimeout> | undefined
@@ -129,6 +134,24 @@ async function submitEdit() {
     visibility: editForm.visibility,
   })
   if (ok) editingId.value = null
+}
+
+function startInvite(project: Project) {
+  inviteTarget.value = project
+  inviteEmail.value = ''
+}
+
+async function submitInvite() {
+  const project = inviteTarget.value
+  const email = inviteEmail.value.trim()
+  if (!project || !email) return
+  inviting.value = true
+  const ok = await projects.inviteToProject(project.site_id, email)
+  inviting.value = false
+  if (ok) {
+    inviteTarget.value = null
+    showSuccess(`Invitation sent to ${email}.`)
+  }
 }
 
 function removeProject(project: Project) {
@@ -261,6 +284,14 @@ function formatDate(value: string): string {
             <div
               class="absolute right-3 top-3 flex gap-1 opacity-0 transition group-hover:opacity-100"
             >
+              <button
+                type="button"
+                class="rounded-md p-1.5 text-slate-400 transition hover:bg-indigo-50 hover:text-indigo-600 dark:hover:bg-indigo-900/30 dark:hover:text-indigo-400"
+                title="Invite collaborator"
+                @click.stop="startInvite(project)"
+              >
+                <span class="i-mdi-account-plus-outline" aria-hidden="true" />
+              </button>
               <button
                 type="button"
                 class="rounded-md p-1.5 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-700 dark:hover:text-slate-200"
@@ -426,6 +457,82 @@ function formatDate(value: string): string {
               class="rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-60"
             >
               Save changes
+            </button>
+          </div>
+        </form>
+      </div>
+    </Teleport>
+
+    <!-- Invite collaborator modal -->
+    <Teleport to="body">
+      <div
+        v-if="inviteTarget"
+        class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4 backdrop-blur-sm"
+        @click.self="inviteTarget = null"
+      >
+        <form
+          role="dialog"
+          aria-modal="true"
+          aria-label="Invite collaborator"
+          class="w-full max-w-sm rounded-xl border border-slate-200 bg-white/85 p-6 shadow-xl backdrop-blur-md dark:border-white/10 dark:bg-[#202020]/85"
+          @submit.prevent="submitInvite"
+          @keydown.esc="inviteTarget = null"
+        >
+          <div class="mb-5 flex items-start justify-between gap-4">
+            <div>
+              <h2 class="text-lg font-bold text-slate-800 dark:text-slate-100">Invite collaborator</h2>
+              <p class="mt-0.5 text-sm text-slate-500 dark:text-slate-400">
+                Invite someone to “{{ inviteTarget.title }}”.
+              </p>
+            </div>
+            <button
+              type="button"
+              aria-label="Close"
+              class="rounded-md p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-700 dark:hover:text-slate-200"
+              @click="inviteTarget = null"
+            >
+              <span class="i-mdi-close text-lg" aria-hidden="true" />
+            </button>
+          </div>
+
+          <label class="flex flex-col gap-1 text-sm">
+            <span class="font-medium text-slate-600 dark:text-slate-300">Email address</span>
+            <input
+              v-model="inviteEmail"
+              type="email"
+              required
+              autofocus
+              placeholder="collaborator@example.com"
+              class="rounded-md border border-slate-300 bg-white px-3 py-2 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-slate-600 dark:bg-slate-900"
+            />
+          </label>
+
+          <p
+            v-if="error"
+            class="mt-3 flex items-center gap-1.5 rounded-md bg-rose-50 px-3 py-2 text-sm text-rose-600 dark:bg-rose-900/30 dark:text-rose-400"
+          >
+            <span class="i-mdi-alert-circle-outline shrink-0" aria-hidden="true" />
+            {{ error }}
+          </p>
+
+          <div class="mt-6 flex justify-end gap-2">
+            <button
+              type="button"
+              class="rounded-md border border-slate-300 px-4 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-100 dark:border-slate-600 dark:text-slate-300 dark:hover:bg-slate-700"
+              @click="inviteTarget = null"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              :disabled="inviting || !inviteEmail.trim()"
+              class="inline-flex items-center gap-1.5 rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              <span
+                :class="inviting ? 'i-mdi-loading animate-spin' : 'i-mdi-send-outline'"
+                aria-hidden="true"
+              />
+              Send invite
             </button>
           </div>
         </form>
