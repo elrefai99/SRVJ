@@ -20,7 +20,7 @@ export const errorHandler = (
     return
   }
 
-  // Mongoose validation error
+  // Prisma validation error
   if (err.name === 'ValidationError') {
     res.status(422).json({
       success: false,
@@ -30,7 +30,7 @@ export const errorHandler = (
     return
   }
 
-  // Mongoose duplicate key
+  // Prisma duplicate key
   if (err.name === 'MongoServerError' && (err as any).code === 11000) {
     res.status(409).json({
       success: false,

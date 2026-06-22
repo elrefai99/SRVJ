@@ -4,11 +4,14 @@ import { invalidateUserProjectsCache } from "../../../functions/redis/cache.inva
 import { tableStatus } from "../../../generated/prisma";
 import { IPayloadProject } from "../@types";
 import { AppError } from "../../../gen-import";
+import jwt from "jsonwebtoken";
 
 export class BasedProject {
      private redis: cacheService
+     private INVITE_TOKEN: string;
      constructor() {
           this.redis = new cacheService()
+          this.INVITE_TOKEN = process.env.INVITE_TOKEN as string
      }
 
      public async createService(payload: IPayloadProject): Promise<any> {
@@ -203,6 +206,59 @@ export class BasedProject {
                }
           })
           return { success: true, data: invite }
+     }
+
+     public async getInvitesService(payload: any): Promise<any> {
+          let decoded: any
+          try {
+               decoded = jwt.verify(payload, this.INVITE_TOKEN, { algorithms: ['HS256'] })
+          } catch (err) {
+               return { token: true }
+          }
+
+          const invite = await prisma.inviteProjects.findFirst({
+               where: {
+                    email: decoded.email as string,
+                    status: tableStatus.inactive
+               },
+               include: {
+                    snederInviteid: {
+                         select: {
+                              id: true,
+                              fullname: true,
+                              username: true,
+                              avatar: true,
+                         }
+                    },
+                    project: {
+                         select: {
+                              title: true,
+                         }
+                    }
+               }
+          })
+
+          return { invite }
+     }
+
+     public async acceptInviteService(payload: any): Promise<any> {
+          const project = await prisma.inviteProjects.update({
+               where: {
+                    site_id: payload.site_id as string,
+                    email: payload.email as string,
+                    status: tableStatus.inactive
+               },
+               data: {
+                    status: payload.status === "accept" ? tableStatus.active : tableStatus.delete
+               }
+          })
+          await prisma.projectMember.create({
+               data: {
+                    projectId: project.projectId,
+                    userId: payload.user as number,
+               }
+          })
+          return { project }
      }
 
      // Private Functions
