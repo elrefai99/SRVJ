@@ -43,19 +43,20 @@ export const allowedOrigins: string[] = [
   process.env.SITE_URL_TEST as string,
   process.env.SITE_URL_LIVE as string,
 ]
-export default (app: Application) => {
-  const corsOptions: object = {
-    origin: (origin: any, callback: any) => {
-      if (!origin || origin === 'null' || allowedOrigins.includes(origin)) {
-        callback(null, true)
-      } else {
-        callback(new Error('Not allowed by CORS'))
-      }
-    },
-    credentials: true,
-    optionsSuccessState: 200,
-  }
+const corsOptions: object = {
+  origin: (origin: any, callback: any) => {
+    if (!origin || origin === 'null' || allowedOrigins.includes(origin)) {
+      callback(null, true)
+    } else {
+      callback(new Error('Not allowed by CORS'))
+    }
+  },
+  credentials: true,
+  optionsSuccessState: 200,
+}
 
+export default (app: Application) => {
+  app.use(cors(corsOptions))
   app.use(
     helmet({
       contentSecurityPolicy: {
@@ -64,7 +65,7 @@ export default (app: Application) => {
           styleSrc: ["'self'", "'unsafe-inline'"],
           scriptSrc: ["'self'"],
           imgSrc: ["'self'", 'data:', 'https:'],
-          connectSrc: ["'self'", process.env.SITE_API_URL as string],
+          connectSrc: ["'self'", process.env.API_LINK as string],
         },
       },
       hsts: {
@@ -78,7 +79,7 @@ export default (app: Application) => {
   )
   app.use(
     express.json({
-      limit: '75mb',
+      limit: '30mb',
     }),
   )
   app.use(
@@ -86,10 +87,8 @@ export default (app: Application) => {
       extended: true,
     }),
   )
-
-  app.use('/v0/cdn', express.static('cdn'))
-  app.use(cors(corsOptions))
   app.use(cookieParser())
+  app.use('/v0/cdn', express.static('cdn'))
   app.use(
     morgan(process.env.NODE_ENV === 'development' ? 'dev' : 'combined', {
       stream: {
@@ -102,7 +101,7 @@ export default (app: Application) => {
   )
   app.use(useragent.express())
   app.set('trust proxy', true)
-
+  app.set("trust proxy", 1);
   app.use(async (req: Request | any, res: Response, next: NextFunction) => {
     // get langouage of headers
     req.lang =
