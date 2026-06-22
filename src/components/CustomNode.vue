@@ -226,6 +226,11 @@ function onResize({ params }: OnResize) {
 }
 
 // ---- Inline label editing ---------------------------------------------------
+function focusInput() {
+  inputRef.value?.focus()
+  inputRef.value?.select()
+}
+
 async function startEditing() {
   if (shape.value === 'draw') return // freehand strokes carry no label
   if (isLocked.value) return // locked nodes can't be edited
@@ -233,8 +238,14 @@ async function startEditing() {
   draft.value = props.data.label
   editing.value = true
   await nextTick()
-  inputRef.value?.focus()
-  inputRef.value?.select()
+  focusInput()
+  // When a node is created by the canvas drag/click, Vue Flow processes the same
+  // `pointerup` to select it *after* this — rewriting the node array and stealing
+  // focus from the input we just focused. Re-assert focus on the next frame so a
+  // freshly placed text/shape node opens straight into typing (no extra click).
+  requestAnimationFrame(() => {
+    if (editing.value && document.activeElement !== inputRef.value) focusInput()
+  })
 }
 
 function commitEditing() {
