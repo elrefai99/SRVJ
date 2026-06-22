@@ -117,21 +117,41 @@ export function acceptInvite(id: string, status: InviteResponse, token: string |
   })
 }
 
+/** The (unverified) claims we read out of an invite JWT, client-side. */
+export interface InvitePayload {
+  /** Project `site_id` the invite addresses. */
+  site_id?: string
+  /** Email the invite was sent to. */
+  email?: string
+  /** Expiry, in seconds since the epoch (standard JWT `exp`). */
+  exp?: number
+}
+
 /**
- * Decode the project `site_id` out of an invite JWT (the `:token` from the
- * `/app/invite/:token` URL). The JWT is signed server-side as
- * `{ site_id, email }`; we read the unverified payload purely to address the
- * accept call — the backend still verifies the signature. Returns `null` if the
- * token isn't a well-formed JWT.
+ * Decode the (unverified) payload of an invite JWT (the `:token` from the
+ * `/app/invite/:token` URL), signed server-side as `{ site_id, email, exp }`.
+ * We read it purely to address the accept call and to tell the user *why* a
+ * link won't load (malformed vs. expired) — the backend still verifies the
+ * signature. Returns `null` if the token isn't a well-formed JWT.
  */
-export function decodeInviteProjectId(inviteToken: string): string | null {
+export function decodeInvitePayload(inviteToken: string): InvitePayload | null {
   const part = inviteToken.split('.')[1]
   if (!part) return null
   try {
     const json = atob(part.replace(/-/g, '+').replace(/_/g, '/'))
-    const payload = JSON.parse(json) as { site_id?: string }
-    return payload.site_id ?? null
+    return JSON.parse(json) as InvitePayload
   } catch {
     return null
   }
+}
+
+/** Convenience: the project `site_id` from an invite JWT, or `null`. */
+export function decodeInviteProjectId(inviteToken: string): string | null {
+  return decodeInvitePayload(inviteToken)?.site_id ?? null
+}
+
+/** True when an invite JWT carries an `exp` that's already in the past. */
+export function isInviteExpired(inviteToken: string): boolean {
+  const exp = decodeInvitePayload(inviteToken)?.exp
+  return typeof exp === 'number' && exp * 1000 <= Date.now()
 }

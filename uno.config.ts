@@ -40,6 +40,11 @@ export default defineConfig({
     'i-mdi-lock-outline',
     'i-mdi-earth',
     'i-mdi-link-variant',
+    // Invite error cards (`:class="errorCopy.icon"` in InviteView)
+    'i-mdi-link-variant-off',
+    'i-mdi-clock-alert-outline',
+    'i-mdi-email-remove-outline',
+    'i-mdi-wifi-off',
   ],
   theme: {
     colors: {
