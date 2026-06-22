@@ -3,6 +3,7 @@ import { loginTemp } from "../template/login";
 import { registerTemp } from "../template/register";
 import { resendFunction } from "../../../MessageQueue/provider/resend";
 import { generateUUID } from "../../../utils/uuid";
+import { inviteTemp } from "../template/invite";
 
 export const sendEmail = async (data: any) => {
      try {
@@ -14,6 +15,9 @@ export const sendEmail = async (data: any) => {
                     break;
                case "register":
                     await resendFunction(data.email, registerTemp(data.emailBody), data.subject, uuid)
+                    break;
+               case "invite":
+                    await resendFunction(data.email, inviteTemp(data.emailBody), data.subject, uuid)
                     break;
           }
      }

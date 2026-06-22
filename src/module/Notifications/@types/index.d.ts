@@ -8,11 +8,11 @@ export interface SSEClient {
 }
 
 export interface NotificationPayload {
-     id: string;
-     type: 'upload' | 'comment' | 'like' | 'system';
-     title: string;
-     message: string;
-     createdAt: string;
+     id?: string;
+     type?: string;
+     title?: string;
+     message?: string;
+     createdAt?: string;
      sender?: string
      to?: string
      userId?: any

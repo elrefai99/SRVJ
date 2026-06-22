@@ -112,6 +112,7 @@
     "typescript": "catalog:tools",
     "vite-tsconfig-paths": "catalog:testing",
     "vitest": "catalog:testing",
+    "yjs": "^13.6.31",
     "zod": "catalog:validation"
   }
 }

@@ -68,11 +68,9 @@ async function startServer() {
                     server.listen(PORT, () => {
                          console.log('🌐 Server is running on:', `${process.env.API_LINK as string}`)
                     })
-               }).catch((error: any) => {
-                    console.log(error);
                }).catch((err: any) => {
                     logger.error({
-                         message: 'MongoDB connection failed',
+                         message: 'Prisma connection failed',
                          error: err.message,
                          stack: err.stack,
                     })

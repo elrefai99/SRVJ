@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { validateDTO } from "../../middleware/validateDTO";
-import { createController, deleteController, editController, getController } from "./project.controller";
+import { acceptInvitesController, createController, deleteController, editController, getController, getInvitesController, invitesController } from "./project.controller";
 import { createProjectDTO } from "./DTO";
 import { userMiddleware } from "../../middleware/user/user.middleware";
 
@@ -10,6 +10,9 @@ router.post('/create', userMiddleware, validateDTO(createProjectDTO), createCont
 router.get('/', userMiddleware, getController)
 router.put('/edit/:id', userMiddleware, editController)
 router.delete('/delete/:id', userMiddleware, deleteController)
+router.post('/invite', userMiddleware, invitesController)
+router.patch('/invite/accept/:id', userMiddleware, acceptInvitesController)
+router.get('/invite/get', getInvitesController)
 
 export default router
 
