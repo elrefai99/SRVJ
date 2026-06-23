@@ -20,7 +20,8 @@
     "taze:update": "npx taze major -w",
     "taze:patch": "npx taze patch",
     "compress:ubuntu": "sudo zip -r project.zip .",
-    "gen:app": "gen-import --app-config --lazy --map --module-pattern"
+    "gen:app": "gen-import --app-config --lazy --map --module-pattern",
+    "mcp": "tsx ./mcp/index.ts"
   },
   "prisma": {
     "seed": "ts-node prisma/seeds/seed.ts"
@@ -56,6 +57,7 @@
   },
   "devDependencies": {
     "@eslint/js": "catalog:tools",
+    "@modelcontextprotocol/sdk": "^1.29.0",
     "@mohamed-elrefai/tsconfigs": "catalog:types",
     "@prisma/adapter-neon": "catalog:prisma",
     "@prisma/adapter-pg": "catalog:prisma",
