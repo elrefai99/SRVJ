@@ -2,9 +2,10 @@ import '../src/config/dotenv'
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { CallToolRequestSchema, ListToolsRequestSchema } from "@modelcontextprotocol/sdk/types.js";
-import { GET_LAST_Notifications, GET_LAST_USERS, TOTAL_USERS } from "./tools/tools";
-import { getUsers, totalUsers } from './functions/users';
+import { getUsers, getUserUsername, totalUsers } from './functions/users';
 import { lastNotifications } from './functions/notifications';
+import { notification, system, user } from './tools';
+import { architectureProject } from './CallTool/project_architecture';
 
 const server = new Server({
      name: "srvj-backend",
@@ -15,13 +16,26 @@ const server = new Server({
 
 server.setRequestHandler(ListToolsRequestSchema, async () => ({
      tools: [
-          GET_LAST_USERS,
-          TOTAL_USERS,
-          GET_LAST_Notifications
+          user.GET_LAST_USERS,
+          user.USER_DATA_BY_USERNAME,
+          user.TOTAL_USERS,
+          notification.GET_LAST_Notifications,
+          system.GET_FEATURE_EXAMPLE,
+          system.PROJECT_ARCHITECTURE
      ]
 }));
 
 server.setRequestHandler(CallToolRequestSchema, async (request) => {
+     if (request.params.name === "get_username_data") {
+          const username = String(request.params.arguments?.username)
+          const user = await getUserUsername(username)
+          return {
+               content: [{
+                    type: "text",
+                    text: JSON.stringify(user)
+               }]
+          };
+     }
      if (request.params.name === "get_last_users") {
           const limit = Number(request.params.arguments?.limit ?? 10);
 
@@ -53,6 +67,9 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
                     text: JSON.stringify(notification)
                }]
           };
+     }
+     if (request.params.name === 'get_project_architecture') {
+          architectureProject()
      }
      return {
           isError: true,

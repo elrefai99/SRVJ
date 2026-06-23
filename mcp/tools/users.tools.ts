@@ -13,6 +13,7 @@ export const GET_LAST_USERS: Tool = {
           }
      }
 } as const
+
 export const TOTAL_USERS: Tool = {
      name: "total_users",
      description: "Count the total number of users in the database, filtered by status",
@@ -27,16 +28,18 @@ export const TOTAL_USERS: Tool = {
           }
      }
 } as const
-export const GET_LAST_Notifications: Tool = {
-     name: "get_last_notification",
-     description: "Fetch the most recently created notifications from the database",
+
+export const USER_DATA_BY_USERNAME: Tool = {
+     name: "get_username_data",
+     description: "Fetch user data with username",
      inputSchema: {
           type: "object",
           properties: {
-               limit: {
-                    type: "number",
-                    description: "Maximum number of notifications to return (default 10)"
+               username: {
+                    type: "string",
+                    description: "User username always requeird"
                }
-          }
+          },
+          required: ["username"]
      }
 } as const
