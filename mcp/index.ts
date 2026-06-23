@@ -2,8 +2,8 @@ import '../src/config/dotenv'
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { CallToolRequestSchema, ListToolsRequestSchema } from "@modelcontextprotocol/sdk/types.js";
-import { GET_LAST_Notifications, GET_LAST_USERS } from "./tools/tools";
-import { getUsers } from './functions/get.users';
+import { GET_LAST_Notifications, GET_LAST_USERS, TOTAL_USERS } from "./tools/tools";
+import { getUsers, totalUsers } from './functions/users';
 import { lastNotifications } from './functions/notifications';
 
 const server = new Server({
@@ -16,6 +16,7 @@ const server = new Server({
 server.setRequestHandler(ListToolsRequestSchema, async () => ({
      tools: [
           GET_LAST_USERS,
+          TOTAL_USERS,
           GET_LAST_Notifications
      ]
 }));
@@ -29,6 +30,16 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
                content: [{
                     type: "text",
                     text: JSON.stringify(user)
+               }]
+          };
+     }
+     if (request.params.name === "total_users") {
+          const status = String(request.params.arguments?.status ?? 'active');
+          const totalUsersDB = await totalUsers(status)
+          return {
+               content: [{
+                    type: "text",
+                    text: JSON.stringify(totalUsersDB)
                }]
           };
      }
