@@ -4,37 +4,44 @@ export const architectureProject = () => {
                {
                     type: 'text',
                     text: `
-All new features MUST strictly follow this architecture:
+                         All new features MUST strictly follow this architecture:
+                         
+                         Module/
+                              FeatureName/
+                                   feature.module.ts       # Express Router — applies validateDTO + wires controllers
+                                   feature.controller.ts   # Barrel re-exporting all controllers
 
-Module/
-  FeatureName/
-    feature.module.ts       # Express Router — applies validateDTO + wires controllers
-    feature.controller.ts   # Barrel re-exporting all controllers
+                                   middleware/             # Feature-specific middlewares
 
-    DTO/
-      index.dto.ts          # Zod schemas + inferred types
+                                   shared/                 # Shared constants/helpers for this feature
 
-    Controller/
-      action.controller.ts  # One file per endpoint
+                                   @types/
+                                     index.d.ts            # Feature-specific TypeScript interfaces/types
+                                   
+                                   DTO/
+                                     index.dto.ts          # Zod schemas + inferred types
 
-    Service/
-      feature.service.ts    # Business logic class
+                                   Controller/
+                                     action.controller.ts  # One file per endpoint
 
-    utils/                  # Optional feature utilities
+                                   Service/
+                                     feature.service.ts    # Business logic class
 
-    @types/
-      index.d.ts            # Optional feature types
+                                   utils/                  # Optional feature utilities
 
-Rules:
-- One controller file per endpoint.
-- Controllers must export a single RequestHandler.
-- Controllers should contain no business logic.
-- All business logic belongs in Service classes.
-- Use Zod for all DTOs.
-- Export both schema and inferred type from DTO files.
-- feature.module.ts is responsible for routes and middleware wiring.
-- feature.controller.ts should only re-export controllers.
-- Follow existing naming conventions used in the codebase.
+                                   @types/
+                                     index.d.ts            # Optional feature types
+
+                         Rules:
+                         - One controller file per endpoint.
+                         - Controllers must export a single RequestHandler.
+                         - Controllers should contain no business logic.
+                         - All business logic belongs in Service classes.
+                         - Use Zod for all DTOs.
+                         - Export both schema and inferred type from DTO files.
+                         - feature.module.ts is responsible for routes and middleware wiring.
+                         - feature.controller.ts should only re-export controllers.
+                         - Follow existing naming conventions used in the codebase.
                     `.trim()
                }
           ]
