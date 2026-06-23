@@ -22,6 +22,9 @@ catalogs:
       specifier: ^7.8.0
       version: 7.8.0
   runtime:
+    '@modelcontextprotocol/sdk':
+      specifier: ^1.29.0
+      version: 1.29.0
     axios:
       specifier: ^1.13.6
       version: 1.18.0
@@ -62,7 +65,7 @@ catalogs:
       specifier: ^9.0.3
       version: 9.0.3
     mongoose:
-      specifier: ^9.3.1
+      specifier: ^9.7.1
       version: 9.7.1
     morgan:
       specifier: ^1.10.1
@@ -100,10 +103,16 @@ catalogs:
     uuid:
       specifier: ^13.0.2
       version: 13.0.2
+    yjs:
+      specifier: ^13.6.31
+      version: 13.6.31
   testing:
     '@types/supertest':
       specifier: ^6.0.3
       version: 6.0.3
+    '@vitest/coverage-v8':
+      specifier: ^4.1.9
+      version: 4.1.9
     supertest:
       specifier: ^7.2.2
       version: 7.2.2
@@ -113,6 +122,9 @@ catalogs:
     vitest:
       specifier: ^3.2.6
       version: 3.2.6
+    vitest-mock-extended:
+      specifier: ^4.0.0
+      version: 4.0.0
   tools:
     '@eslint/js':
       specifier: ^10.0.1
@@ -340,7 +352,7 @@ importers:
         specifier: catalog:tools
         version: 10.0.1(eslint@10.5.0(jiti@2.7.0)(supports-color@5.5.0))
       '@modelcontextprotocol/sdk':
-        specifier: ^1.29.0
+        specifier: catalog:runtime
         version: 1.29.0(zod@3.25.76)
       '@mohamed-elrefai/tsconfigs':
         specifier: catalog:types
@@ -445,7 +457,7 @@ importers:
         specifier: catalog:tools
         version: 8.61.0(eslint@10.5.0(jiti@2.7.0)(supports-color@5.5.0))(supports-color@5.5.0)(typescript@5.9.3)
       '@vitest/coverage-v8':
-        specifier: ^4.1.9
+        specifier: catalog:testing
         version: 4.1.9(vitest@3.2.6(@types/node@25.9.3)(jiti@2.7.0)(supports-color@5.5.0)(tsx@4.22.4))
       bull-arena:
         specifier: catalog:tools
@@ -520,10 +532,10 @@ importers:
         specifier: catalog:testing
         version: 3.2.6(@types/node@25.9.3)(jiti@2.7.0)(supports-color@5.5.0)(tsx@4.22.4)
       vitest-mock-extended:
-        specifier: ^4.0.0
+        specifier: catalog:testing
         version: 4.0.0(typescript@5.9.3)(vitest@3.2.6(@types/node@25.9.3)(jiti@2.7.0)(supports-color@5.5.0)(tsx@4.22.4))
       yjs:
-        specifier: ^13.6.31
+        specifier: catalog:runtime
         version: 13.6.31
       zod:
         specifier: catalog:validation

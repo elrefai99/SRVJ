@@ -33,6 +33,7 @@ import appModule from './app.module'
 import prisma from './config/prisma'
 import { redisConfig } from './config/redis'
 import { startSubscriber } from './config/subscriber'
+import { mongoDBConfig } from './config/mongoDB'
 const app: Express = express()
 
 const server = http.createServer(app)
@@ -63,31 +64,23 @@ const PORT: number = Number(process.env.PORT) || 9999
 async function startServer() {
      try {
           await Promise.all([
-               prisma.$connect().then(async () => {
-                    console.log(`✅ Success connected to ${process.env.NODE_ENV === 'development' ? 'development' : 'production'} Database`)
-                    server.listen(PORT, () => {
-                         console.log('🌐 Server is running on:', `${process.env.API_LINK as string}`)
-                    })
-               }).catch((err: any) => {
-                    logger.error({
-                         message: 'Prisma connection failed',
-                         error: err.message,
-                         stack: err.stack,
-                    })
-                    process.exit(1)
+               mongoDBConfig(),
+               prisma.$connect().then(() => {
+                    console.log('✅ Success connected with PostgresSQL of SRVJ')
                }),
-               redisConfig().catch((err) => {
-                    logger.error({
-                         message: 'Redis connection failed',
-                         error: err.message,
-                         stack: err.stack,
-                    })
-                    process.exit(1)
-               }),
-               startSubscriber()
-          ])
-     } catch (error) {
-          console.error('❌ Failed to start server:', error)
+               redisConfig(),
+               startSubscriber(),
+          ]).then(() => {
+               server.listen(PORT, () => {
+                    console.log('🌐 Server is running on:', `${process.env.API_LINK as string}`)
+               })
+          })
+     } catch (error: any) {
+          logger.error({
+               message: 'Failed to start server',
+               error: error?.message,
+               stack: error?.stack,
+          })
           process.exit(1)
      }
 }

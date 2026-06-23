@@ -57,7 +57,7 @@
   },
   "devDependencies": {
     "@eslint/js": "catalog:tools",
-    "@modelcontextprotocol/sdk": "^1.29.0",
+    "@modelcontextprotocol/sdk": "catalog:runtime",
     "@mohamed-elrefai/tsconfigs": "catalog:types",
     "@prisma/adapter-neon": "catalog:prisma",
     "@prisma/adapter-pg": "catalog:prisma",
@@ -92,7 +92,7 @@
     "@types/uuid": "catalog:types",
     "@typescript-eslint/eslint-plugin": "catalog:tools",
     "@typescript-eslint/parser": "catalog:tools",
-    "@vitest/coverage-v8": "^4.1.9",
+    "@vitest/coverage-v8": "catalog:testing",
     "bull-arena": "catalog:tools",
     "bullmq": "catalog:tools",
     "eslint": "catalog:tools",
@@ -117,8 +117,8 @@
     "typescript": "catalog:tools",
     "vite-tsconfig-paths": "catalog:testing",
     "vitest": "catalog:testing",
-    "vitest-mock-extended": "^4.0.0",
-    "yjs": "^13.6.31",
+    "vitest-mock-extended": "catalog:testing",
+    "yjs": "catalog:runtime",
     "zod": "catalog:validation"
   }
 }
