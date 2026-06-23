@@ -9,8 +9,10 @@
     "dev:local": "concurrently \" nodemon -L\" \"npx ts-node ./src/MessageQueue/index.ts\"",
     "build": "prisma generate && tsc -p tsconfig.build.json && node scripts/copy-generated.mjs",
     "start": "concurrently \"TS_NODE_BASEURL=./dist node -r tsconfig-paths/register ./dist/src/app.js\" \"TS_NODE_BASEURL=./dist node -r tsconfig-paths/register ./dist/src/MessageQueue/index.js\"",
-    "test": "jest --detectOpenHandles --runInBand",
-    "test:local": "NODE_ENV=development jest",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:cov": "vitest run --coverage",
+    "test:local": "NODE_ENV=test vitest run",
     "test:e2e": "vitest run --reporter=verbose",
     "test:e2e:watch": "vitest --reporter=verbose",
     "taze:local": "npx taze -r",
@@ -18,7 +20,8 @@
     "taze:update": "npx taze major -w",
     "taze:patch": "npx taze patch",
     "compress:ubuntu": "sudo zip -r project.zip .",
-    "gen:app": "gen-import --app-config --lazy --map --module-pattern"
+    "gen:app": "gen-import --app-config --lazy --map --module-pattern",
+    "mcp": "tsx ./mcp/index.ts"
   },
   "prisma": {
     "seed": "ts-node prisma/seeds/seed.ts"
@@ -54,6 +57,7 @@
   },
   "devDependencies": {
     "@eslint/js": "catalog:tools",
+    "@modelcontextprotocol/sdk": "^1.29.0",
     "@mohamed-elrefai/tsconfigs": "catalog:types",
     "@prisma/adapter-neon": "catalog:prisma",
     "@prisma/adapter-pg": "catalog:prisma",
@@ -88,6 +92,7 @@
     "@types/uuid": "catalog:types",
     "@typescript-eslint/eslint-plugin": "catalog:tools",
     "@typescript-eslint/parser": "catalog:tools",
+    "@vitest/coverage-v8": "^4.1.9",
     "bull-arena": "catalog:tools",
     "bullmq": "catalog:tools",
     "eslint": "catalog:tools",
@@ -112,6 +117,7 @@
     "typescript": "catalog:tools",
     "vite-tsconfig-paths": "catalog:testing",
     "vitest": "catalog:testing",
+    "vitest-mock-extended": "^4.0.0",
     "yjs": "^13.6.31",
     "zod": "catalog:validation"
   }
