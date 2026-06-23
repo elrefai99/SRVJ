@@ -2,12 +2,14 @@ import { Tool } from '@modelcontextprotocol/sdk/types.js'
 
 export const GET_LAST_USERS: Tool = {
      name: "get_last_users",
-     description: "Fetch a user from database by ID",
+     description: "Fetch the most recently created users from the database",
      inputSchema: {
           type: "object",
           properties: {
-               id: { type: "string" }
-          },
-          required: ["id"]
+               limit: {
+                    type: "number",
+                    description: "Maximum number of users to return (default 10)"
+               }
+          }
      }
 } as const

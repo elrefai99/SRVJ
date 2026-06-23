@@ -1,8 +1,9 @@
+import '../src/config/dotenv'
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { CallToolRequestSchema, ListToolsRequestSchema } from "@modelcontextprotocol/sdk/types.js";
 import { GET_LAST_USERS } from "./tools/tools";
-import prisma from "../src/config/prisma";
+import { getUsers } from './functions/get.users';
 
 const server = new Server({
      name: "srvj-backend",
@@ -21,15 +22,12 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
      if (request.params.name === "get_last_users") {
           const limit = Number(request.params.arguments?.limit ?? 10);
 
-          const users = await prisma.user.findMany({
-               take: limit,
-               orderBy: { createdAt: "desc" }
-          });
+          const user = await getUsers(limit)
 
           return {
                content: [{
                     type: "text",
-                    text: JSON.stringify(users)
+                    text: JSON.stringify(user)
                }]
           };
      }
