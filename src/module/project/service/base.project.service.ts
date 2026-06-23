@@ -5,6 +5,8 @@ import { tableStatus } from "../../../generated/prisma";
 import { IPayloadProject } from "../@types";
 import { AppError } from "../../../gen-import";
 import jwt from "jsonwebtoken";
+import { diagramModel } from "../../diagram/schema/diagram.schema";
+import { diagramVersionModel } from "../../diagram/schema/diagram.version.schema";
 
 export class BasedProject {
      private redis: cacheService
@@ -22,7 +24,8 @@ export class BasedProject {
                user: payload.user
           })
           const diagram = await this.createDiagram({
-               project: project.project.id,
+               project: project.project.site_id,
+               user: payload.user,
           })
           if (project.success && diagram.success) {
                await invalidateUserProjectsCache(payload.user as number)
@@ -59,7 +62,6 @@ export class BasedProject {
                          })
                     },
                     include: {
-                         diagram: true,
                          members: {
                               take: 5,
                               include: {
@@ -95,8 +97,16 @@ export class BasedProject {
                })
           ]);
 
+          const diagrams = await diagramModel
+               .find({ projectId: { $in: projects.map((project) => project.site_id) } })
+               .lean()
+          const diagramsByProject = new Map(diagrams.map((diagram) => [diagram.projectId, diagram]))
+
           const result = {
-               data: projects,
+               data: projects.map((project) => ({
+                    ...project,
+                    diagram: diagramsByProject.get(project.site_id) ?? null,
+               })),
                pagination: {
                     total,
                     page,
@@ -152,18 +162,16 @@ export class BasedProject {
                          status: tableStatus.delete,
                     },
                })
-               await tx.diagram.deleteMany({
-                    where: {
-                         projectId: project.id,
-                    },
-               })
-               await tx.diagramVersion.deleteMany({
-                    where: {
-                         diagram: { projectId: project.id },
-                    },
-               })
                return project
           })
+
+          const diagrams = await diagramModel.find({ projectId: payload }).select("_id").lean()
+          if (diagrams.length) {
+               await diagramVersionModel.deleteMany({
+                    diagramId: { $in: diagrams.map((diagram) => diagram._id) },
+               })
+               await diagramModel.deleteMany({ projectId: payload })
+          }
 
           await invalidateUserProjectsCache(project.ownerId)
           return { success: true };
@@ -283,23 +291,18 @@ export class BasedProject {
      }
 
      private async createDiagram(paylaod: any) {
-          const diagram = await prisma.diagram.create({
-               data: {
-                    nodes: [],
-                    edges: [],
-                    projectId: paylaod.project,
-               }
+          const diagram = await diagramModel.create({
+               projectId: paylaod.project,
           })
-          await prisma.diagramVersion.create({
-               data: {
-                    version: diagram.version,
-                    nodes: {},
-                    edges: {},
-                    diagramId: diagram.id,
-               }
+          await diagramVersionModel.create({
+               version: diagram.version,
+               diagramId: diagram._id,
+               createdById: paylaod.user,
+          })
+          await prisma.project.update({
+               where: { site_id: paylaod.project },
+               data: { diagram: diagram.site_id },
           })
           return { success: true, diagram }
      }
-
-
 }
