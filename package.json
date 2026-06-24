@@ -95,6 +95,7 @@
     "@vitest/coverage-v8": "catalog:testing",
     "bull-arena": "catalog:tools",
     "bullmq": "catalog:tools",
+    "cookie": "^1.1.1",
     "eslint": "catalog:tools",
     "express-useragent": "catalog:runtime",
     "fs-extra": "catalog:tools",
