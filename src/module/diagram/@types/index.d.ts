@@ -22,3 +22,15 @@ export interface IDiagramVersion extends Document {
 
      createdById?: string;
 }
+
+export interface IPayloadDiagram {
+     siteId?: string;
+     projectId?: string;
+     nodes?: any;
+     edges?: any;
+     metadata?: Record<string, any>;
+     user?: number;
+     versionId?: string;
+     page?: number | string;
+     limit?: number | string;
+}

@@ -266,6 +266,7 @@ export class BasedProject {
                     userId: payload.user as number,
                }
           })
+          await invalidateUserProjectsCache(payload.user as number)
           return { project }
      }
 
