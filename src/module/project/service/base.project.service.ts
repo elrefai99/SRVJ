@@ -120,10 +120,20 @@ export class BasedProject {
      }
 
      public async editService(payload: IPayloadProject) {
-          const project = await prisma.project.update({
+          const existing = await prisma.project.findFirst({
                where: {
                     site_id: payload.project,
                     status: tableStatus.active
+               },
+               select: { ownerId: true }
+          });
+          if (!existing) {
+               return { success: false };
+          }
+
+          await prisma.project.update({
+               where: {
+                    site_id: payload.project
                },
                data: {
                     ...(payload.title !== undefined && {
@@ -138,7 +148,7 @@ export class BasedProject {
                },
           });
 
-          await invalidateUserProjectsCache(project.ownerId)
+          await invalidateUserProjectsCache(existing.ownerId)
           return { success: true };
      }
 
