@@ -15,6 +15,21 @@ export const getUsers = async (payload: any) => {
      return result
 }
 
+export const getUserUsername = async (payload: any) => {
+     const result = await prisma.user.findFirst({
+          where: {
+               username: payload,
+          },
+          select: {
+               id: true,
+               fullname: true,
+               email: true,
+               createdAt: true
+          },
+     });
+     return result
+}
+
 export const totalUsers = async (payload: any) => {
      const result = await prisma.user.count({
           where: {

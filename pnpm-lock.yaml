@@ -22,6 +22,9 @@ catalogs:
       specifier: ^7.8.0
       version: 7.8.0
   runtime:
+    '@modelcontextprotocol/sdk':
+      specifier: ^1.29.0
+      version: 1.29.0
     axios:
       specifier: ^1.13.6
       version: 1.18.0
@@ -62,7 +65,7 @@ catalogs:
       specifier: ^9.0.3
       version: 9.0.3
     mongoose:
-      specifier: ^9.3.1
+      specifier: ^9.7.1
       version: 9.7.1
     morgan:
       specifier: ^1.10.1
@@ -100,10 +103,16 @@ catalogs:
     uuid:
       specifier: ^13.0.2
       version: 13.0.2
+    yjs:
+      specifier: ^13.6.31
+      version: 13.6.31
   testing:
     '@types/supertest':
       specifier: ^6.0.3
       version: 6.0.3
+    '@vitest/coverage-v8':
+      specifier: ^4.1.9
+      version: 4.1.9
     supertest:
       specifier: ^7.2.2
       version: 7.2.2
@@ -113,6 +122,9 @@ catalogs:
     vitest:
       specifier: ^3.2.6
       version: 3.2.6
+    vitest-mock-extended:
+      specifier: ^4.0.0
+      version: 4.0.0
   tools:
     '@eslint/js':
       specifier: ^10.0.1
@@ -302,6 +314,9 @@ importers:
       jsonwebtoken:
         specifier: catalog:runtime
         version: 9.0.3
+      lib0:
+        specifier: ^0.2.117
+        version: 0.2.117
       mongoose:
         specifier: catalog:runtime
         version: 9.7.1
@@ -335,12 +350,18 @@ importers:
       uuid:
         specifier: catalog:runtime
         version: 13.0.2
+      ws:
+        specifier: ^8.21.0
+        version: 8.21.0
+      y-protocols:
+        specifier: ^1.0.7
+        version: 1.0.7(yjs@13.6.31)
     devDependencies:
       '@eslint/js':
         specifier: catalog:tools
         version: 10.0.1(eslint@10.5.0(jiti@2.7.0)(supports-color@5.5.0))
       '@modelcontextprotocol/sdk':
-        specifier: ^1.29.0
+        specifier: catalog:runtime
         version: 1.29.0(zod@3.25.76)
       '@mohamed-elrefai/tsconfigs':
         specifier: catalog:types
@@ -438,6 +459,9 @@ importers:
       '@types/uuid':
         specifier: catalog:types
         version: 11.0.0
+      '@types/ws':
+        specifier: ^8.18.1
+        version: 8.18.1
       '@typescript-eslint/eslint-plugin':
         specifier: catalog:tools
         version: 8.61.0(@typescript-eslint/parser@8.61.0(eslint@10.5.0(jiti@2.7.0)(supports-color@5.5.0))(supports-color@5.5.0)(typescript@5.9.3))(eslint@10.5.0(jiti@2.7.0)(supports-color@5.5.0))(supports-color@5.5.0)(typescript@5.9.3)
@@ -445,7 +469,7 @@ importers:
         specifier: catalog:tools
         version: 8.61.0(eslint@10.5.0(jiti@2.7.0)(supports-color@5.5.0))(supports-color@5.5.0)(typescript@5.9.3)
       '@vitest/coverage-v8':
-        specifier: ^4.1.9
+        specifier: catalog:testing
         version: 4.1.9(vitest@3.2.6(@types/node@25.9.3)(jiti@2.7.0)(supports-color@5.5.0)(tsx@4.22.4))
       bull-arena:
         specifier: catalog:tools
@@ -453,6 +477,9 @@ importers:
       bullmq:
         specifier: catalog:tools
         version: 5.78.0(redis@5.12.1(@opentelemetry/api@1.9.1))(supports-color@5.5.0)
+      cookie:
+        specifier: ^1.1.1
+        version: 1.1.1
       eslint:
         specifier: catalog:tools
         version: 10.5.0(jiti@2.7.0)(supports-color@5.5.0)
@@ -520,10 +547,13 @@ importers:
         specifier: catalog:testing
         version: 3.2.6(@types/node@25.9.3)(jiti@2.7.0)(supports-color@5.5.0)(tsx@4.22.4)
       vitest-mock-extended:
-        specifier: ^4.0.0
+        specifier: catalog:testing
         version: 4.0.0(typescript@5.9.3)(vitest@3.2.6(@types/node@25.9.3)(jiti@2.7.0)(supports-color@5.5.0)(tsx@4.22.4))
+      y-websocket:
+        specifier: ^3.0.0
+        version: 3.0.0(yjs@13.6.31)
       yjs:
-        specifier: ^13.6.31
+        specifier: catalog:runtime
         version: 13.6.31
       zod:
         specifier: catalog:validation
@@ -2341,6 +2371,10 @@ packages:
   cookie@0.7.2:
     resolution: {integrity: sha512-yki5XnKuf750l50uGTllt6kKILY4nQ1eNIQatoXEByZ5dWgnKqbnqmTrBE5B4N7lrMJKQ2ytWMiTO2o0v6Ew/w==}
     engines: {node: '>= 0.6'}
+
+  cookie@1.1.1:
+    resolution: {integrity: sha512-ei8Aos7ja0weRpFzJnEA9UHJ/7XQmqglbRwnf2ATjcB9Wq874VKH9kfjjirM6UhU2/E5fFYadylyhFldcqSidQ==}
+    engines: {node: '>=18'}
 
   cookiejar@2.1.4:
     resolution: {integrity: sha512-LDx6oHrK+PhzLKJU9j5S7/Y3jM/mUHvD/DeI1WQmJn652iPC5Y4TBzC9l+5OMOXlyTTA+SmVUPm0HQUwpD5Jqw==}
@@ -4214,9 +4248,33 @@ packages:
       utf-8-validate:
         optional: true
 
+  ws@8.21.0:
+    resolution: {integrity: sha512-Vsp28b7DRcimFQvrqu2Wek3z1iYxDCWqHYB8Qsnk/S4RfaCQzPGPyBNuVjJV3cd6UiKtUtp6sNM77gWvzcCH+g==}
+    engines: {node: '>=10.0.0'}
+    peerDependencies:
+      bufferutil: ^4.0.1
+      utf-8-validate: '>=5.0.2'
+    peerDependenciesMeta:
+      bufferutil:
+        optional: true
+      utf-8-validate:
+        optional: true
+
   xtend@4.0.2:
     resolution: {integrity: sha512-LKYU1iAXJXUgAXn9URjiu+MWhyUXHsvfp7mcuYm9dSUKK0/CjtrUwFAxD82/mCWbtLsGjFIad0wIsod4zrTAEQ==}
     engines: {node: '>=0.4'}
+
+  y-protocols@1.0.7:
+    resolution: {integrity: sha512-YSVsLoXxO67J6eE/nV4AtFtT3QEotZf5sK5BHxFBXso7VDUT3Tx07IfA6hsu5Q5OmBdMkQVmFZ9QOA7fikWvnw==}
+    engines: {node: '>=16.0.0', npm: '>=8.0.0'}
+    peerDependencies:
+      yjs: ^13.0.0
+
+  y-websocket@3.0.0:
+    resolution: {integrity: sha512-mUHy7AzkOZ834T/7piqtlA8Yk6AchqKqcrCXjKW8J1w2lPtRDjz8W5/CvXz9higKAHgKRKqpI3T33YkRFLkPtg==}
+    engines: {node: '>=16.0.0', npm: '>=8.0.0'}
+    peerDependencies:
+      yjs: ^13.5.6
 
   y18n@5.0.8:
     resolution: {integrity: sha512-0pfFzegeDWJHJIAmTLRP2DwHjdF5s7jo9tuztdQxAhINCdvS+3nGINqPd00AphqJR/0LhANUS6/+7SCb98YOfA==}
@@ -5844,6 +5902,8 @@ snapshots:
   cookie-signature@1.2.2: {}
 
   cookie@0.7.2: {}
+
+  cookie@1.1.1: {}
 
   cookiejar@2.1.4: {}
 
@@ -7850,7 +7910,20 @@ snapshots:
 
   ws@8.20.1: {}
 
+  ws@8.21.0: {}
+
   xtend@4.0.2: {}
+
+  y-protocols@1.0.7(yjs@13.6.31):
+    dependencies:
+      lib0: 0.2.117
+      yjs: 13.6.31
+
+  y-websocket@3.0.0(yjs@13.6.31):
+    dependencies:
+      lib0: 0.2.117
+      y-protocols: 1.0.7(yjs@13.6.31)
+      yjs: 13.6.31
 
   y18n@5.0.8: {}
 

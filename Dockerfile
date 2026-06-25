@@ -27,7 +27,7 @@ FROM node:22
 
 WORKDIR /app
 
-COPY package*.json ./
+COPY package*.json pnpm-lock.yaml pnpm-workspace.yaml ./
 RUN npm install -g pnpm
 RUN pnpm install -f
 RUN npm install -g pm2
