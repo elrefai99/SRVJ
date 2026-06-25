@@ -34,6 +34,8 @@ import prisma from './config/prisma'
 import { redisConfig } from './config/redis'
 import { startSubscriber } from './config/subscriber'
 import { mongoDBConfig } from './config/mongoDB'
+import { attachCollab } from './collab'
+
 const app: Express = express()
 
 const server = http.createServer(app)
@@ -43,6 +45,7 @@ export let ioSocket: SocketIOServer = new SocketIOServer(server, {
      },
 })
 
+attachCollab(server)
 appConfig(app)
 appModule(app)
 

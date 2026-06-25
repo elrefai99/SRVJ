@@ -31,6 +31,7 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@hocuspocus/server": "^4.3.0",
     "axios": "catalog:runtime",
     "bcryptjs": "catalog:runtime",
     "cloudinary": "catalog:runtime",
@@ -53,7 +54,8 @@
     "streamifier": "catalog:runtime",
     "swagger-jsdoc": "catalog:runtime",
     "swagger-ui-express": "catalog:runtime",
-    "uuid": "catalog:runtime"
+    "uuid": "catalog:runtime",
+    "ws": "^8.21.0"
   },
   "devDependencies": {
     "@eslint/js": "catalog:tools",
@@ -90,6 +92,7 @@
     "@types/swagger-jsdoc": "catalog:types",
     "@types/swagger-ui-express": "catalog:types",
     "@types/uuid": "catalog:types",
+    "@types/ws": "^8.18.1",
     "@typescript-eslint/eslint-plugin": "catalog:tools",
     "@typescript-eslint/parser": "catalog:tools",
     "@vitest/coverage-v8": "catalog:testing",
