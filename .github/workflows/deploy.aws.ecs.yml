@@ -4,49 +4,28 @@ on:
   push:
     branches:
       - "**"
-    paths:
-      - "**"
-      - "Dockerfile"
   workflow_dispatch:
-
-env:
-  AWS_REGION: us-east-1
-  ECR_REPOSITORY: egystay
-  ECS_CLUSTER: ${{ secrets.AWS_ECS_CLUSTER }}
-  ECS_SERVICE: ${{ secrets.AWS_ECS_SERVICE }}
 
 jobs:
   deploy:
-    name: Docker build and AWS deploy
+    name: Docker build check
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
       - name: Check Docker build
-        if: github.ref_name == 'dev'
-        run: docker build -t $ECR_REPOSITORY:${{ github.sha }} .
+        run: docker build -t srvj-backend:${{ github.sha }} .
 
       - name: Docker build summary
-        if: github.ref_name == 'dev'
+        if: always()
         run: |
           echo "## Docker Build Check" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "- **Branch**: \`${{ github.ref_name }}\`" >> $GITHUB_STEP_SUMMARY
-          echo "- **Status**: Docker image built successfully" >> $GITHUB_STEP_SUMMARY
-          echo "- **Image Tag**: \`${{ env.ECR_REPOSITORY }}:${{ github.sha }}\`" >> $GITHUB_STEP_SUMMARY
-
-      - name: Deployment summary
-        run: |
-          echo "## 🚀 AWS Deployment Summary" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "- **Status**: ✅ Image pushed to ECR" >> $GITHUB_STEP_SUMMARY
-          echo "- **Registry**: \`${{ steps.login-ecr.outputs.registry }}\`" >> $GITHUB_STEP_SUMMARY
-          echo "- **Repository**: \`${{ env.ECR_REPOSITORY }}\`" >> $GITHUB_STEP_SUMMARY
-          echo "- **Image Tag**: \`${{ github.sha }}\`" >> $GITHUB_STEP_SUMMARY
-          echo "- **Latest Tag**: \`latest\`" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Next Steps:**" >> $GITHUB_STEP_SUMMARY
-          echo "1. Update ECS task definition or App Runner service" >> $GITHUB_STEP_SUMMARY
-          echo "2. Deploy new task/service with the updated image" >> $GITHUB_STEP_SUMMARY
+          echo "- **Image Tag**: \`srvj-backend:${{ github.sha }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- **Status**: ${{ job.status == 'success' && '✅ Docker image built successfully' || '❌ Docker build failed' }}" >> $GITHUB_STEP_SUMMARY
