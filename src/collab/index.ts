@@ -28,10 +28,11 @@ export function attachCollab(server: HttpServer): void {
                     const context = await authorizeDiagramAccess(userId, siteId);
 
                     wss.handleUpgrade(request, socket, head, (ws) => {
-                         collab.handleConnection(ws, request as unknown as Parameters<typeof collab.handleConnection>[1], context);
+                         collab.handleConnection(ws, context);
                     });
-               } catch {
-                    log.warn({ msg: "collab upgrade rejected" });
+               } catch (err) {
+                    const path = new URL(request.url ?? "", "http://internal").pathname;
+                    log.warn({ msg: "collab upgrade rejected", path, reason: err instanceof Error ? err.message : String(err) });
                     socket.write("HTTP/1.1 401 Unauthorized\r\n\r\n");
                     socket.destroy();
                }

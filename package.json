@@ -31,7 +31,6 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
-    "@hocuspocus/server": "^4.3.0",
     "axios": "catalog:runtime",
     "bcryptjs": "catalog:runtime",
     "cloudinary": "catalog:runtime",
@@ -44,6 +43,7 @@
     "express-rate-limit": "catalog:runtime",
     "helmet": "catalog:runtime",
     "jsonwebtoken": "catalog:runtime",
+    "lib0": "^0.2.117",
     "mongoose": "catalog:runtime",
     "morgan": "catalog:runtime",
     "multer": "catalog:runtime",
@@ -55,7 +55,8 @@
     "swagger-jsdoc": "catalog:runtime",
     "swagger-ui-express": "catalog:runtime",
     "uuid": "catalog:runtime",
-    "ws": "^8.21.0"
+    "ws": "^8.21.0",
+    "y-protocols": "^1.0.7"
   },
   "devDependencies": {
     "@eslint/js": "catalog:tools",
@@ -122,6 +123,7 @@
     "vite-tsconfig-paths": "catalog:testing",
     "vitest": "catalog:testing",
     "vitest-mock-extended": "catalog:testing",
+    "y-websocket": "^3.0.0",
     "yjs": "catalog:runtime",
     "zod": "catalog:validation"
   }
