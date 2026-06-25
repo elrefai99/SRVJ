@@ -37,6 +37,39 @@ export const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID as string 
  * when absent, presence is disabled and the editor is single-player.
  */
 export const CRDT_WS_URL = import.meta.env.VITE_CRDT_WS_URL as string | undefined
+
+/**
+ * Base WebSocket URL of the Yjs **document** collaboration server (standard
+ * `y-websocket`), which lives at the `/collab` path on the same host as the REST
+ * API. This value is the *base only* (ends in `/collab`, no id, no trailing
+ * slash): the provider joins `serverUrl + '/' + roomName`, where roomName is the
+ * diagram's `site_id` uuid, so the final handshake URL is
+ * `wss://<host>/collab/<site_id>`. The backend authorizes by validating that
+ * last path segment as a uuid.
+ *
+ * Auth is the existing httpOnly `access_token` cookie (sent automatically by the
+ * browser over TLS — never read in JS), so connect over `wss://` and ensure the
+ * frontend origin is in the backend CORS allowlist, or the upgrade is rejected.
+ *
+ * Resolution order: explicit `VITE_WS_URL` (a base, e.g. `wss://api.example.com`)
+ * with `/collab` appended; otherwise derived from {@link API_BASE_URL}'s origin
+ * (http→ws, https→wss). `undefined` when neither is available — document collab
+ * is then disabled and the editor loads the diagram read-only.
+ */
+function deriveCollabWsUrl(): string | undefined {
+  const explicit = import.meta.env.VITE_WS_URL as string | undefined
+  if (explicit) return `${explicit.replace(/\/+$/, '')}/collab`
+  if (!API_BASE_URL) return undefined
+  try {
+    const url = new URL(API_BASE_URL)
+    const protocol = url.protocol === 'https:' ? 'wss:' : 'ws:'
+    return `${protocol}//${url.host}/collab`
+  } catch {
+    return undefined
+  }
+}
+export const COLLAB_WS_URL = deriveCollabWsUrl()
+
 export const AUTOSAVE_DELAY = 500
 export const MAX_HISTORY = 50
 export const DEFAULT_VARIANT: NodeVariant = 'default'

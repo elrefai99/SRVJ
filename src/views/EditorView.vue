@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted } from 'vue'
+import { computed, onBeforeUnmount, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import ClientOnly from '@/components/ClientOnly.vue'
 import DiagramToolbar from '@/components/DiagramToolbar.vue'
@@ -7,11 +7,13 @@ import DiagramCanvas from '@/components/DiagramCanvas.vue'
 import NodePalette from '@/components/NodePalette.vue'
 import { useDiagramPersistence } from '@/composables/useDiagramPersistence'
 import { useDiagramSync } from '@/composables/useDiagramSync'
+import { useDiagramCollab } from '@/composables/useDiagramCollab'
 import { useKeyboardShortcuts } from '@/composables/useKeyboardShortcuts'
 import { useDarkMode } from '@/composables/useDarkMode'
 import { useSketchMode } from '@/composables/useSketchMode'
 import { useSeo } from '@/composables/useSeo'
 import { useAuthStore } from '@/stores/auth'
+import { COLLAB_WS_URL } from '@/utils/constants'
 
 useSeo({ title: 'Editor | SRVJ', noindex: true })
 
@@ -23,10 +25,15 @@ const diagramId = computed(() => {
   return typeof id === 'string' && id ? id : null
 })
 
-// Backend sync when a diagram id is in the URL; otherwise a local-only canvas
-// persisted to localStorage (the editor stays usable signed out).
+// Persistence paths, chosen at mount:
+//  • live collab — a real-time Yjs session (Hocuspocus) is the *only* writer of
+//    a backend diagram; the REST `PATCH /diagram/:id` autosave is never used.
+//  • REST read   — when collab isn't configured, the diagram still loads (GET)
+//    but is read-only (no autosave).
+//  • local-only  — signed out / no id, persisted to localStorage.
 const localPersistence = useDiagramPersistence()
 const sync = useDiagramSync(() => diagramId.value)
+const collab = useDiagramCollab(() => diagramId.value)
 
 const { init: initDarkMode } = useDarkMode()
 const { init: initSketchMode } = useSketchMode()
@@ -46,18 +53,43 @@ onMounted(async () => {
   await auth.init()
 
   if (diagramId.value && auth.token) {
+    // The live collaboration session (CRDT) is the only writer for a backend
+    // diagram — we never PATCH /diagram/:id. If collab isn't configured, just
+    // load the saved diagram read-only (GET); no autosave.
+    if (COLLAB_WS_URL && (await collab.connect())) return
     await sync.load()
-    sync.start()
   } else {
     localPersistence.start()
   }
 })
+
+onBeforeUnmount(() => collab.destroy())
 </script>
 
 <template>
   <div class="flex h-screen w-screen flex-col overflow-hidden bg-slate-50 dark:bg-slate-900">
     <ClientOnly>
       <DiagramToolbar />
+
+      <!-- Live-collaboration error (no access / session expired): the canvas
+           falls back to the latest saved version, read-only. -->
+      <div
+        v-if="collab.error.value"
+        class="flex items-center gap-2 border-b border-amber-300 bg-amber-50 px-4 py-2 text-sm text-amber-800 dark:border-amber-700/60 dark:bg-amber-900/30 dark:text-amber-200"
+        role="alert"
+      >
+        <div class="i-mdi-alert-circle-outline shrink-0 text-base" aria-hidden="true" />
+        <span class="min-w-0 flex-1">{{ collab.error.value }}</span>
+        <button
+          type="button"
+          class="shrink-0 rounded p-1 hover:bg-amber-100 dark:hover:bg-amber-800/40"
+          aria-label="Dismiss"
+          @click="collab.error.value = null"
+        >
+          <div class="i-mdi-close text-base" aria-hidden="true" />
+        </button>
+      </div>
+
       <main class="relative min-h-0 flex-1">
         <NodePalette />
         <DiagramCanvas />
