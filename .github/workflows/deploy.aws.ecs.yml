@@ -19,7 +19,10 @@ jobs:
         uses: docker/setup-buildx-action@v3
 
       - name: Check Docker build
-        run: docker build -t srvj-backend:${{ github.sha }} .
+        run: |
+          docker build \
+            --build-arg DATABASE_URL=postgresql://postgres:postgres@localhost:5432/postgres \
+            -t srvj-backend:${{ github.sha }} .
 
       - name: Docker build summary
         if: always()
