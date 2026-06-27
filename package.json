@@ -4,6 +4,7 @@
   "main": "index.js",
   "packageManager": "pnpm@11.6.0",
   "scripts": {
+    "format": "eslint . --fix",
     "lint": "eslint .",
     "dev": "concurrently \"NODE_ENV=development nodemon -L\" \"NODE_ENV=development npx ts-node ./src/MessageQueue/index.ts\"",
     "dev:local": "concurrently \" nodemon -L\" \"npx ts-node ./src/MessageQueue/index.ts\"",
