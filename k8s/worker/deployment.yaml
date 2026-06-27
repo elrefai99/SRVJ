@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: srvj-worker
+  namespace: srvj
+  labels:
+    app: srvj-worker
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: srvj-worker
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: srvj-worker
+    spec:
+      terminationGracePeriodSeconds: 60
+      containers:
+        - name: srvj-worker
+          image: srvj-backend:latest
+          imagePullPolicy: IfNotPresent
+          command:
+            - node
+            - -r
+            - tsconfig-paths/register
+            - dist/src/MessageQueue/index.js
+          env:
+            - name: TS_NODE_BASEURL
+              value: /app/dist
+          envFrom:
+            - secretRef:
+                name: srvj-secret
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
