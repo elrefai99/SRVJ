@@ -1,0 +1,29 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: srvj-nginx-config
+  namespace: srvj
+data:
+  proxy-body-size: "75m"
+  proxy-buffering: "off"
+  proxy-read-timeout: "86400"
+  proxy-send-timeout: "86400"
+  keep-alive: "32"
+  use-http2: "true"
+  ssl-protocols: "TLSv1.2 TLSv1.3"
+  ssl-ciphers: "HIGH:!aNULL:!MD5"
+  server-tokens: "false"
+  add-headers: "srvj/custom-headers"
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: srvj-custom-headers
+  namespace: srvj
+data:
+  X-XSS-Protection: "1; mode=block"
+  X-Content-Type-Options: "nosniff"
+  X-Frame-Options: "SAMEORIGIN"
+  Referrer-Policy: "strict-origin-when-cross-origin"
+  Strict-Transport-Security: "max-age=31536000; includeSubDomains; preload"

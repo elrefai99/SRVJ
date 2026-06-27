@@ -1,0 +1,65 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: srvj-api
+  namespace: srvj
+  labels:
+    app: srvj-api
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: srvj-api
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        app: srvj-api
+    spec:
+      terminationGracePeriodSeconds: 30
+      containers:
+        - name: srvj-api
+          image: srvj-backend:latest
+          imagePullPolicy: IfNotPresent
+          command:
+            - node
+            - -r
+            - tsconfig-paths/register
+            - dist/src/app.js
+          env:
+            - name: TS_NODE_BASEURL
+              value: /app/dist
+          envFrom:
+            - secretRef:
+                name: srvj-secret
+          ports:
+            - containerPort: 60459
+          resources:
+            requests:
+              cpu: 200m
+              memory: 256Mi
+            limits:
+              cpu: 1000m
+              memory: 1Gi
+          livenessProbe:
+            httpGet:
+              path: /api/health
+              port: 60459
+            initialDelaySeconds: 20
+            periodSeconds: 15
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: 60459
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            failureThreshold: 3
+          lifecycle:
+            preStop:
+              exec:
+                command: ["/bin/sh", "-c", "sleep 5"]
