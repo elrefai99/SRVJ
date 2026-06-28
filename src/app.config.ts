@@ -3,13 +3,10 @@ import cors from 'cors'
 import cookieParser from 'cookie-parser'
 import morgan from 'morgan'
 import helmet from 'helmet'
+import compression from 'compression'
 import { limiter } from './utils/limit-request'
 import client from 'prom-client'
 import * as useragent from 'express-useragent'
-import { createWriteStream } from 'node:fs'
-import { resolve } from 'node:path'
-
-const morganLogStream = createWriteStream(resolve(process.cwd(), 'logs', 'app.log'), { flags: 'a' })
 
 const register = new client.Registry()
 client.collectDefaultMetrics({ register })
@@ -77,9 +74,10 @@ export default (app: Application) => {
       permittedCrossDomainPolicies: { permittedPolicies: 'none' },
     }),
   )
+  app.use(compression())
   app.use(
     express.json({
-      limit: '30mb',
+      limit: '2mb',
     }),
   )
   app.use(
@@ -89,16 +87,9 @@ export default (app: Application) => {
   )
   app.use(cookieParser())
   app.use('/v0/cdn', express.static('cdn'))
-  app.use(
-    morgan(process.env.NODE_ENV === 'development' ? 'dev' : 'combined', {
-      stream: {
-        write: (message) => {
-          process.stdout.write(message)
-          morganLogStream.write(message)
-        },
-      },
-    }),
-  )
+  if (process.env.NODE_ENV === 'development') {
+    app.use(morgan('dev'))
+  }
   app.use(useragent.express())
   app.set('trust proxy', 1)
   app.use(async (req: Request | any, res: Response, next: NextFunction) => {

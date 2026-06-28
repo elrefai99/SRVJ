@@ -1,9 +1,9 @@
 import { NextFunction, Request, RequestHandler, Response } from "express";
-import { asyncHandler } from "../../utils/api-requesthandler";
-import { AppError } from "../../utils/errors/app-error";
-import { ProjectRole, ProjectVisibility } from "../../generated/prisma";
-import { resolveDiagramAccess, ResolveBy } from "../../module/diagram/service/resolve.access";
-import { ROLE_RANK, ACTION_MIN_ROLE, DiagramAction } from "./role.constant";
+import { asyncHandler } from "../../../utils/api-requesthandler";
+import { AppError } from "../../../utils/errors/app-error";
+import { ProjectRole, ProjectVisibility } from "../../../generated/prisma";
+import { resolveDiagramAccess, ResolveBy } from "../service/resolve.access";
+import { ACTION_MIN_ROLE, DiagramAction, ROLE_RANK } from "./role.constant";
 
 export const authorizeDiagram = (action: DiagramAction): RequestHandler =>
      asyncHandler(async (req: Request, _res: Response, next: NextFunction) => {
