@@ -5,6 +5,7 @@ import { loadPubliceKey } from "../../utils/loadKey";
 import prisma from "../../config/prisma";
 import { AppError } from "../../utils/errors/app-error";
 import { tableStatus } from "../../generated/prisma";
+import { TOKEN_VERSION } from "../../module/authentication/utils/paseto.utils";
 
 export const userMiddleware: RequestHandler = asyncHandler(
      async (req: Request, res: Response, next: NextFunction) => {
@@ -18,6 +19,9 @@ export const userMiddleware: RequestHandler = asyncHandler(
 
           const publicKey = loadPubliceKey("ACCESS_PUBLICE_KEY")
           await V4.verify(token, publicKey).then(async (payload: any) => {
+               if (payload.token_version !== TOKEN_VERSION) {
+                    throw AppError.unauthorized("Invalid or expired token")
+               }
                const user = await prisma.user.findFirst({
                     where: {
                          id: payload.data.user_id,
@@ -36,8 +40,8 @@ export const userMiddleware: RequestHandler = asyncHandler(
                req.user = user
                next()
 
-          }).catch((err) => {
-               throw AppError.unauthorized(`Invalid refresh token: ${err}`)
+          }).catch(() => {
+               throw AppError.unauthorized("Invalid or expired token")
           })
      }
 )

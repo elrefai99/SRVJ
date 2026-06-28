@@ -1,12 +1,14 @@
 import type { Request, Response } from 'express'
-import rateLimit from 'express-rate-limit'
+import rateLimit, { ipKeyGenerator } from 'express-rate-limit'
+
+const clientKey = (req: Request | any): string => ipKeyGenerator(req.ip || req.socket?.remoteAddress || '')
 
 export const limiter = rateLimit({
   windowMs: 5 * 60 * 1000,
   max: 350,
   standardHeaders: true,
   legacyHeaders: false,
-  keyGenerator: (req: Request | any) => req.clientIP,
+  keyGenerator: clientKey,
   handler: (_, res: Response) => {
     res.status(429).json({ code: 429, status: 'Too Many Requests', message: 'Too many requests from this IP, please try again after an 1 min' })
   },
@@ -18,7 +20,7 @@ export const authlimiter = rateLimit({
   skipSuccessfulRequests: true,
   standardHeaders: true,
   legacyHeaders: false,
-  keyGenerator: (req: Request | any) => req.clientIP,
+  keyGenerator: clientKey,
   handler: (_, res: Response) => {
     res.status(429).json({ code: 429, status: 'Too Many Requests', message: 'Too many requests from this IP, please try again after an 1 min' })
   },

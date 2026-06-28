@@ -45,7 +45,7 @@ export const allowedOrigins: string[] = [
 ]
 const corsOptions: object = {
   origin: (origin: any, callback: any) => {
-    if (!origin || origin === 'null' || allowedOrigins.includes(origin)) {
+    if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true)
     } else {
       callback(new Error('Not allowed by CORS'))
@@ -100,8 +100,7 @@ export default (app: Application) => {
     }),
   )
   app.use(useragent.express())
-  app.set('trust proxy', true)
-  app.set("trust proxy", 1);
+  app.set('trust proxy', 1)
   app.use(async (req: Request | any, res: Response, next: NextFunction) => {
     // get langouage of headers
     req.lang =
@@ -126,12 +125,13 @@ export default (app: Application) => {
 
     res.on('finish', () => {
       activeRequests.dec()
+      const routeLabel = req.route ? `${req.baseUrl}${req.route.path}` : req.path
       httpRequestsTotal
-        .labels(req.method, req.path, res.statusCode.toString())
+        .labels(req.method, routeLabel, res.statusCode.toString())
         .inc()
       end({
         method: req.method,
-        route: req.originalUrl,
+        route: routeLabel,
         status: res.statusCode.toString(),
       })
     })
