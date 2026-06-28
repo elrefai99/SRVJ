@@ -122,12 +122,17 @@ export const useProjectsStore = defineStore('projects', {
       }
     },
 
-    /** Invite a collaborator to a project by email. Returns true on success;
-     * the backend emails the invitee a signed accept link. */
-    async inviteToProject(siteId: string, email: string): Promise<boolean> {
+    /** Invite a collaborator to a project by email with a role (EDITOR/VIEWER).
+     * Returns true on success; the backend emails the invitee a signed accept
+     * link. */
+    async inviteToProject(
+      siteId: string,
+      email: string,
+      role: projectsApi.InviteRole,
+    ): Promise<boolean> {
       this.error = null
       try {
-        await projectsApi.inviteToProject(siteId, email, this.token())
+        await projectsApi.inviteToProject(siteId, email, role, this.token())
         return true
       } catch (error) {
         this.error = messageOf(error)

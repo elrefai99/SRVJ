@@ -5,6 +5,7 @@ import type {
   Project,
   ProjectInvite,
   ProjectPayload,
+  ProjectRole,
   SaveDiagramPayload,
 } from '@/types/project'
 
@@ -74,15 +75,25 @@ export function saveDiagram(
   return apiFetch<Diagram>(`/diagram/${diagramSiteId}`, { method: 'PATCH', body: payload, token })
 }
 
+/** Roles an invite can grant. OWNER is reserved (transfer/manage), so invites
+ * only ever hand out EDITOR or VIEWER. */
+export type InviteRole = Extract<ProjectRole, 'EDITOR' | 'VIEWER'>
+
 /**
  * Invite someone to collaborate on a project (owner action). The backend emails
  * the address a signed invite link (the JWT consumed by {@link getInvite}).
- * `projectSiteId` is the project's public `site_id`.
+ * `projectSiteId` is the project's public `site_id`; `role` is the access level
+ * the invitee receives on accepting (EDITOR can edit, VIEWER is read-only).
  */
-export function inviteToProject(projectSiteId: string, email: string, token: string | null) {
+export function inviteToProject(
+  projectSiteId: string,
+  email: string,
+  role: InviteRole,
+  token: string | null,
+) {
   return apiFetch<void>('/project/invite', {
     method: 'POST',
-    body: { email, project: projectSiteId },
+    body: { email, project: projectSiteId, role },
     token,
   })
 }

@@ -71,25 +71,6 @@ onBeforeUnmount(() => collab.destroy())
     <ClientOnly>
       <DiagramToolbar />
 
-      <!-- Live-collaboration error (no access / session expired): the canvas
-           falls back to the latest saved version, read-only. -->
-      <div
-        v-if="collab.error.value"
-        class="flex items-center gap-2 border-b border-amber-300 bg-amber-50 px-4 py-2 text-sm text-amber-800 dark:border-amber-700/60 dark:bg-amber-900/30 dark:text-amber-200"
-        role="alert"
-      >
-        <div class="i-mdi-alert-circle-outline shrink-0 text-base" aria-hidden="true" />
-        <span class="min-w-0 flex-1">{{ collab.error.value }}</span>
-        <button
-          type="button"
-          class="shrink-0 rounded p-1 hover:bg-amber-100 dark:hover:bg-amber-800/40"
-          aria-label="Dismiss"
-          @click="collab.error.value = null"
-        >
-          <div class="i-mdi-close text-base" aria-hidden="true" />
-        </button>
-      </div>
-
       <main class="relative min-h-0 flex-1">
         <NodePalette />
         <DiagramCanvas />
