@@ -4,7 +4,7 @@ export async function invalidateUserProjectsCache(userId: number | string | unde
      if (userId === undefined || userId === null) return;
      try {
           const cache: cacheService = new cacheService();
-          const userProjectsPattern = `*projects:${userId}:*`;
+          const userProjectsPattern = `"projects:${userId}:*`;
           await cache.deleteByPattern(userProjectsPattern);
      } catch (error) {
           console.error('❌ Failed to invalidate user projects cache:', error);

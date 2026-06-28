@@ -84,7 +84,10 @@ export class BasedProject {
                }),
                prisma.project.count({
                     where: {
-                         ownerId: payload.user,
+                         OR: [
+                              { ownerId: payload.user },
+                              { members: { some: { userId: payload.user } } }
+                         ],
                          status: tableStatus.active,
 
                          ...(search && {
@@ -115,7 +118,7 @@ export class BasedProject {
                }
 
           }
-          await this.redis.setData(cacheKey, result)
+          await this.redis.setExData(cacheKey, result, 300)
           return result
      }
 
@@ -296,20 +299,23 @@ export class BasedProject {
      // Private Functions
 
      private async createProject(payload: any) {
-          const project = await prisma.project.create({
-               data: {
-                    title: payload.title,
-                    description: payload.description,
-                    visibility: payload.visibility,
-                    ownerId: payload.user
-               }
-          })
-          await prisma.projectMember.create({
-               data: {
-                    role: "OWNER",
-                    projectId: project.id,
-                    userId: payload.user
-               }
+          const project = await prisma.$transaction(async (tx) => {
+               const project = await tx.project.create({
+                    data: {
+                         title: payload.title,
+                         description: payload.description,
+                         visibility: payload.visibility,
+                         ownerId: payload.user
+                    }
+               })
+               await tx.projectMember.create({
+                    data: {
+                         role: "OWNER",
+                         projectId: project.id,
+                         userId: payload.user
+                    }
+               })
+               return project
           })
           return { success: true, project }
      }

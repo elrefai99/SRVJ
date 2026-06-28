@@ -64,6 +64,7 @@ model Project {
   @@index([title])
   @@index([status])
   @@index([createdAt])
+  @@index([ownerId, status, createdAt])
   @@map("projects")
 }
 
@@ -172,6 +173,8 @@ model InviteProjects {
   @@index([site_id])
   @@index([id])
   @@index([projectId])
+  @@index([email])
+  @@index([email, status])
 }
 
 enum tableStatus {

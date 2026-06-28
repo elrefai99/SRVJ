@@ -48,7 +48,7 @@ export const meMiddleware: RequestHandler = asyncHandler(
                     next(new AppError("User not found", 404))
                     return
                }
-               await redis.setData(cacheKey, user)
+               await redis.setExData(cacheKey, user, 300)
                req.user = user
                next()
 

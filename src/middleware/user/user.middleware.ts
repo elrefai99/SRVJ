@@ -6,6 +6,9 @@ import prisma from "../../config/prisma";
 import { AppError } from "../../utils/errors/app-error";
 import { tableStatus } from "../../generated/prisma";
 import { TOKEN_VERSION } from "../../module/authentication/utils/paseto.utils";
+import { cacheService } from "../../functions/redis/cache.service.fun";
+
+const USER_CACHE_TTL = 300
 
 export const userMiddleware: RequestHandler = asyncHandler(
      async (req: Request, res: Response, next: NextFunction) => {
@@ -17,10 +20,19 @@ export const userMiddleware: RequestHandler = asyncHandler(
                return
           }
 
+          const redis = new cacheService()
+
           const publicKey = loadPubliceKey("ACCESS_PUBLICE_KEY")
           await V4.verify(token, publicKey).then(async (payload: any) => {
                if (payload.token_version !== TOKEN_VERSION) {
                     throw AppError.unauthorized("Invalid or expired token")
+               }
+               const cacheKey = `user:${payload.data.user_id}`
+               const cachedData = await redis.getData(cacheKey)
+               if (cachedData) {
+                    req.user = cachedData
+                    next()
+                    return
                }
                const user = await prisma.user.findFirst({
                     where: {
@@ -30,13 +42,16 @@ export const userMiddleware: RequestHandler = asyncHandler(
                     select: {
                          id: true,
                          fullname: true,
-                         email: true
+                         email: true,
+                         username: true,
+                         avatar: true
                     }
                })
                if (!user) {
                     next(new AppError("User not found", 404))
                     return
                }
+               await redis.setExData(cacheKey, user, USER_CACHE_TTL)
                req.user = user
                next()
 
