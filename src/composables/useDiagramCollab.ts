@@ -99,8 +99,6 @@ export function useDiagramCollab(getSiteId: () => string | null) {
   const { nodes, edges } = storeToRefs(store)
 
   const status = ref<CollabStatus>('disconnected')
-  /** Human-readable reason the live session is unavailable, or `null`. */
-  const error = ref<string | null>(null)
 
   let doc: Y.Doc | null = null
   let provider: WebsocketProvider | null = null
@@ -111,11 +109,12 @@ export function useDiagramCollab(getSiteId: () => string | null) {
   let ready = false
   let applyingRemote = false
   let stopWatch: (() => void) | null = null
-  // Whether we've ever completed an initial server sync. A connection that
-  // closes *before* the first sync means the upgrade was rejected (bad room id,
-  // missing cookie, or no project access) → fall back read-only instead of
-  // letting y-websocket retry forever.
+  // Whether we've ever completed an initial server sync. Used to seed the canvas
+  // from the last saved version exactly once while the live session is still
+  // (re)connecting, so the board isn't blank before the first sync lands.
   let hasSynced = false
+  // Guards the one-time read-only seed (above) across reconnect attempts.
+  let seededFallback = false
 
   /** Pull the whole doc into the store, preserving the local user's selection. */
   function hydrateFromDoc() {
@@ -226,7 +225,6 @@ export function useDiagramCollab(getSiteId: () => string | null) {
 
     provider.on('status', ({ status: next }: { status: CollabStatus }) => {
       status.value = next
-      if (next === 'connected') error.value = null
     })
 
     // The backend seeds the doc from the stored diagram; read it once the first
@@ -241,17 +239,19 @@ export function useDiagramCollab(getSiteId: () => string | null) {
       }
     })
 
-    // A close *before* the first sync means the upgrade was rejected (no access
-    // / expired session / missing cookie — typically code 1006). Stop retrying
-    // and fall back to the last saved diagram, read-only. A close *after* a
-    // successful sync is a transient drop; let y-websocket auto-reconnect.
+    // A close *before* the first sync usually means the upgrade was rejected
+    // (no access / expired session / missing cookie — typically code 1006).
+    // Keep the provider alive so y-websocket keeps retrying the live session
+    // (the user reconnects automatically when they (re)join the board); seed the
+    // canvas once from the last saved version so it isn't blank while we retry.
+    // A close *after* a successful sync is a transient drop; it auto-reconnects.
     provider.on('connection-close', (event: CloseEvent | null) => {
       if (hasSynced) return
-      error.value =
-        'You don’t have access to this diagram, or your session expired. Showing the latest saved version.'
-      console.error('collab: upgrade rejected', event?.code ?? '(no code)')
-      teardownProvider()
-      void loadReadOnly()
+      console.warn('collab: connection closed, retrying', event?.code ?? '(no code)')
+      if (!seededFallback) {
+        seededFallback = true
+        void loadReadOnly()
+      }
     })
 
     // Re-hydrate the store whenever a *remote* peer (or the server) mutates the
@@ -273,6 +273,7 @@ export function useDiagramCollab(getSiteId: () => string | null) {
     stopWatch = null
     ready = false
     hasSynced = false
+    seededFallback = false
     provider?.destroy()
     doc?.destroy()
     provider = null
@@ -287,5 +288,5 @@ export function useDiagramCollab(getSiteId: () => string | null) {
     status.value = 'disconnected'
   }
 
-  return { connect, destroy, status, error }
+  return { connect, destroy, status }
 }

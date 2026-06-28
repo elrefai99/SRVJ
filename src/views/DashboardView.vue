@@ -14,6 +14,7 @@ import {
   type ProjectMember,
   type ProjectVisibility,
 } from '@/types/project'
+import type { InviteRole } from '@/utils/projectsApi'
 
 useSeo({ title: 'Your projects | SRVJ', path: '/dashboard', noindex: true })
 
@@ -41,6 +42,7 @@ const deleting = ref(false)
 // The project being shared (shown in the invite modal), or `null` when closed.
 const inviteTarget = ref<Project | null>(null)
 const inviteEmail = ref('')
+const inviteRole = ref<InviteRole>('EDITOR')
 const inviting = ref(false)
 
 // Transient success toast; auto-dismisses after 3s.
@@ -139,6 +141,7 @@ async function submitEdit() {
 function startInvite(project: Project) {
   inviteTarget.value = project
   inviteEmail.value = ''
+  inviteRole.value = 'EDITOR'
 }
 
 async function submitInvite() {
@@ -146,7 +149,7 @@ async function submitInvite() {
   const email = inviteEmail.value.trim()
   if (!project || !email) return
   inviting.value = true
-  const ok = await projects.inviteToProject(project.site_id, email)
+  const ok = await projects.inviteToProject(project.site_id, email, inviteRole.value)
   inviting.value = false
   if (ok) {
     inviteTarget.value = null
@@ -505,6 +508,17 @@ function formatDate(value: string): string {
               placeholder="collaborator@example.com"
               class="rounded-md border border-slate-300 bg-white px-3 py-2 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-slate-600 dark:bg-slate-900"
             />
+          </label>
+
+          <label class="mt-4 flex flex-col gap-1 text-sm">
+            <span class="font-medium text-slate-600 dark:text-slate-300">Role</span>
+            <select
+              v-model="inviteRole"
+              class="rounded-md border border-slate-300 bg-white px-3 py-2 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-slate-600 dark:bg-slate-900"
+            >
+              <option value="EDITOR">Editor — can view and edit</option>
+              <option value="VIEWER">Viewer — read-only</option>
+            </select>
           </label>
 
           <p
