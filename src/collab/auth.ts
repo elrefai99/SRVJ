@@ -3,10 +3,9 @@ import { parse as parseCookie } from "cookie";
 import { z } from "zod";
 import type { IncomingMessage } from "node:http";
 import type { KeyObject } from "node:crypto";
-import prisma from "../config/prisma";
-import { diagramModel } from "../module/diagram/schema/diagram.schema";
 import { loadPubliceKey } from "../utils/loadKey";
-import { tableStatus, ProjectRole } from "../generated/prisma";
+import { ProjectRole, ProjectVisibility } from "../generated/prisma";
+import { resolveDiagramAccess } from "../module/diagram/service/resolve.access";
 import { COOKIE_NAME_ACCESS } from "./env";
 
 const siteIdSchema = z.string().uuid();
@@ -62,27 +61,15 @@ export function siteIdFromUrl(url?: string): string {
 }
 
 export async function authorizeDiagramAccess(userId: number, siteId: string): Promise<CollabContext> {
-     const diagram = await diagramModel.findOne({ site_id: siteId }).select({ _id: 1, projectId: 1 }).lean();
-     if (!diagram) throw new Error("not found");
+     const access = await resolveDiagramAccess({ diagramSiteId: siteId }, userId);
+     if (!access) throw new Error("not found");
+     if (!access.role && access.visibility !== ProjectVisibility.PUBLIC) throw new Error("forbidden");
 
-     const project = await prisma.project.findFirst({
-          where: { site_id: diagram.projectId, status: tableStatus.active },
-          select: {
-               id: true,
-               ownerId: true,
-               members: {
-                    where: { userId, status: tableStatus.active },
-                    select: { role: true },
-               },
-          },
-     });
-     if (!project) throw new Error("not found");
-
-     const base = { userId, diagramId: String(diagram._id), siteId, projectId: project.id };
-
-     if (project.ownerId === userId) return { ...base, role: ProjectRole.OWNER };
-
-     const member = project.members[0];
-     if (!member) throw new Error("forbidden");
-     return { ...base, role: member.role };
+     return {
+          userId: access.userId,
+          diagramId: access.diagramId,
+          siteId: access.siteId,
+          projectId: access.projectId,
+          role: access.role ?? ProjectRole.VIEWER,
+     };
 }

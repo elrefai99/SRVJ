@@ -43,6 +43,7 @@ export let ioSocket: SocketIOServer = new SocketIOServer(server, {
      cors: {
           origin: allowedOrigins,
      },
+     destroyUpgrade: false,
 })
 
 attachCollab(server)
