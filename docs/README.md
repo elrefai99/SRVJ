@@ -8,15 +8,18 @@ each technology was chosen** for that domain.
 
 | Domain | Base path | Doc |
 |--------|-----------|-----|
-| Authentication | `/api/v1/auth` | [authentication.md](./authentication.md) |
-| User | `/api/v1/user` | [user.md](./user.md) |
-| Project | `/api/v1/project` | [project.md](./project.md) |
-| Notifications | `/api/v1/notification` | [notifications.md](./notifications.md) |
-| Emails (tracking) | `/api/v1/emails` | [emails.md](./emails.md) |
-| Diagram | `/api/v1/diagram` | [diagram.md](./diagram.md) |
+| Authentication | `/api/v1/auth` | [authentication.md](./authentication/authentication.md) |
+| User | `/api/v1/user` | [user.md](./user/user.md) |
+| Project | `/api/v1/project` | [project.md](./project/project.md) |
+| Notifications | `/api/v1/notification` | [notifications.md](./notifications/notifications.md) |
+| Emails (tracking) | `/api/v1/emails` | [emails.md](./emails/emails.md) |
+| Diagram | `/api/v1/diagram` | [diagram.md](./diagram/diagram.md) |
 
 Operational endpoints outside the domain routers: `GET /api/health`, `GET /metrics`
 (Prometheus, guarded by `METRICS_TOKEN`).
+
+**Full file-by-file map of `src/` (bootstrap, config, collab, workers, middleware, utils):**
+[codebase.md](./codebase.md).
 
 ## Global stack and why
 
