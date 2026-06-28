@@ -135,7 +135,7 @@ describe('refreshController', () => {
      })
 
      it('responds 200 and sets access_token cookie when token is valid', async () => {
-          vi.mocked(V4.verify).mockResolvedValue({ data: { user_id: 1 } } as any)
+          vi.mocked(V4.verify).mockResolvedValue({ data: { user_id: 1 }, token_version: 2 } as any)
           vi.mocked(prisma.user.findFirst).mockResolvedValue({ id: 1 } as any)
 
           const r = makeRes()
@@ -143,6 +143,7 @@ describe('refreshController', () => {
 
           expect(r.status).toHaveBeenCalledWith(200)
           expect(r.cookie).toHaveBeenCalledWith('access_token', 'mock-token', expect.any(Object))
+          expect(r.cookie).toHaveBeenCalledWith('refresh_token', 'mock-token', expect.any(Object))
      })
 
      it('rejects with 401 AppError when token verification fails', async () => {

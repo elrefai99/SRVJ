@@ -3,6 +3,8 @@ import { loadPrivateKey } from '../../../utils/loadKey'
 
 export type TokenType = 'access' | 'refresh' | 'forget_password' | 'pending'
 
+export const TOKEN_VERSION = 2
+
 export const token_PASETO = async (payload: any, type: TokenType, expiresIn?: string): Promise<string> => {
   switch (type) {
     case 'access':
@@ -11,7 +13,7 @@ export const token_PASETO = async (payload: any, type: TokenType, expiresIn?: st
         {
           data: { user_id: payload.data.user_id },
           site: 'SRVJ',
-          token_version: 2,
+          token_version: TOKEN_VERSION,
           access_device: payload.access_device,
         },
         privateKey,
@@ -24,7 +26,7 @@ export const token_PASETO = async (payload: any, type: TokenType, expiresIn?: st
         {
           data: { user_id: payload.data.user_id },
           site: 'SRVJ',
-          token_version: 2,
+          token_version: TOKEN_VERSION,
           access_device: payload.access_device,
         },
         privateKeyRefresh,
@@ -37,7 +39,7 @@ export const token_PASETO = async (payload: any, type: TokenType, expiresIn?: st
         {
           data: { user_id: payload.data.user_id },
           site: 'SRVJ',
-          token_version: 2,
+          token_version: TOKEN_VERSION,
           access_device: payload.access_device,
         },
         privateKeyForgetPassword,
@@ -50,7 +52,7 @@ export const token_PASETO = async (payload: any, type: TokenType, expiresIn?: st
         {
           data: { user_id: payload.data.user_id },
           site: 'SRVJ',
-          token_version: 2,
+          token_version: TOKEN_VERSION,
           access_device: payload.access_device,
         },
         privateKeyPending,

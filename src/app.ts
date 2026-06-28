@@ -35,6 +35,7 @@ import { redisConfig } from './config/redis'
 import { startSubscriber } from './config/subscriber'
 import { mongoDBConfig } from './config/mongoDB'
 import { attachCollab } from './collab'
+import { errorHandler } from './utils/errors/errorHandler'
 
 const app: Express = express()
 
@@ -55,7 +56,12 @@ app.get('/api/health', (_req: Request, res: Response) => {
      res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() })
 })
 
-app.get('/metrics', async (_req: Request, res: Response) => {
+app.get('/metrics', async (req: Request, res: Response) => {
+     const metricsToken = process.env.METRICS_TOKEN
+     if (metricsToken && req.headers.authorization !== `Bearer ${metricsToken}`) {
+          res.status(401).json({ code: 401, status: 'Unauthorized', message: 'Unauthorized' })
+          return
+     }
      res.set('Content-Type', client.register.contentType)
      res.end(await client.register.metrics())
 })
@@ -63,6 +69,8 @@ app.get('/metrics', async (_req: Request, res: Response) => {
 app.use(async (_req: Request, res: Response) => {
      res.status(404).send('This is not the API route you are looking for')
 })
+
+app.use(errorHandler)
 const PORT: number = Number(process.env.PORT) || 9999
 
 async function startServer() {

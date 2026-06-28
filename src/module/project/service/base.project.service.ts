@@ -123,7 +123,8 @@ export class BasedProject {
           const existing = await prisma.project.findFirst({
                where: {
                     site_id: payload.project,
-                    status: tableStatus.active
+                    status: tableStatus.active,
+                    ownerId: payload.user
                },
                select: { ownerId: true }
           });
@@ -152,11 +153,23 @@ export class BasedProject {
           return { success: true };
      }
 
-     public async deleteService(payload: string) {
+     public async deleteService(payload: { project: string; user: number }) {
+          const owned = await prisma.project.findFirst({
+               where: {
+                    site_id: payload.project,
+                    status: tableStatus.active,
+                    ownerId: payload.user
+               },
+               select: { id: true }
+          })
+          if (!owned) {
+               return { success: false };
+          }
+
           const project = await prisma.$transaction(async (tx) => {
                const project = await tx.project.update({
                     where: {
-                         site_id: payload,
+                         site_id: payload.project,
                          status: tableStatus.active
                     },
                     data: {
@@ -175,12 +188,12 @@ export class BasedProject {
                return project
           })
 
-          const diagrams = await diagramModel.find({ projectId: payload }).select("_id").lean()
+          const diagrams = await diagramModel.find({ projectId: payload.project }).select("_id").lean()
           if (diagrams.length) {
                await diagramVersionModel.deleteMany({
                     diagramId: { $in: diagrams.map((diagram) => diagram._id) },
                })
-               await diagramModel.deleteMany({ projectId: payload })
+               await diagramModel.deleteMany({ projectId: payload.project })
           }
 
           await invalidateUserProjectsCache(project.ownerId)
