@@ -1,4 +1,4 @@
-import { ProjectRole } from "../../generated/prisma";
+import { ProjectRole } from "../../../generated/prisma";
 
 export const ROLE_RANK: Record<ProjectRole, number> = {
      VIEWER: 1,

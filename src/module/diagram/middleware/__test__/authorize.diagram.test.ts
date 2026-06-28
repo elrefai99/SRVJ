@@ -1,12 +1,12 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import type { Request, Response, NextFunction } from "express";
+import { authorizeDiagram } from "../authorize.diagram";
 
 const resolveDiagramAccess = vi.fn();
 vi.mock("../../../module/diagram/service/resolve.access", () => ({
      resolveDiagramAccess: (...args: unknown[]) => resolveDiagramAccess(...args),
 }));
 
-import { authorizeDiagram } from "../authorize.diagram";
 
 const baseAccess = {
      userId: 1,
