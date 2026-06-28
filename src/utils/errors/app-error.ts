@@ -18,6 +18,10 @@ export class AppError extends Error {
     return new AppError(message, 401)
   }
 
+  static forbidden(message = 'Forbidden'): AppError {
+    return new AppError(message, 403)
+  }
+
   static notFound(message = 'Resource not found'): AppError {
     return new AppError(message, 404)
   }

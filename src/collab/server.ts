@@ -7,6 +7,7 @@ import { WebSocket } from "ws";
 import { loadDocument, storeDocument } from "./persistence";
 import { createLogger } from "../utils/logger";
 import { COLLAB_DEBOUNCE, COLLAB_MAX_DEBOUNCE } from "./env";
+import { canWriteDiagram } from "./role";
 import type { CollabContext } from "./auth";
 
 const log = createLogger("collab");
@@ -135,7 +136,27 @@ function getRoom(context: CollabContext): Room {
      return room;
 }
 
-function messageListener(room: Room, conn: WebSocket, message: Uint8Array): void {
+function readSyncGated(
+     decoder: decoding.Decoder,
+     encoder: encoding.Encoder,
+     doc: Y.Doc,
+     conn: WebSocket,
+     canWrite: boolean,
+): void {
+     const messageType = decoding.readVarUint(decoder);
+     switch (messageType) {
+          case syncProtocol.messageYjsSyncStep1:
+               syncProtocol.readSyncStep1(decoder, encoder, doc);
+               break;
+          case syncProtocol.messageYjsSyncStep2:
+          case syncProtocol.messageYjsUpdate:
+               if (!canWrite) break;
+               syncProtocol.readUpdate(decoder, doc, conn);
+               break;
+     }
+}
+
+function messageListener(room: Room, conn: WebSocket, message: Uint8Array, canWrite: boolean): void {
      try {
           const decoder = decoding.createDecoder(message);
           const messageType = decoding.readVarUint(decoder);
@@ -143,7 +164,7 @@ function messageListener(room: Room, conn: WebSocket, message: Uint8Array): void
                case MESSAGE_SYNC: {
                     const encoder = encoding.createEncoder();
                     encoding.writeVarUint(encoder, MESSAGE_SYNC);
-                    syncProtocol.readSyncMessage(decoder, encoder, room.doc, conn);
+                    readSyncGated(decoder, encoder, room.doc, conn, canWrite);
                     if (encoding.length(encoder) > 1) send(room, conn, encoding.toUint8Array(encoder));
                     break;
                }
@@ -157,7 +178,7 @@ function messageListener(room: Room, conn: WebSocket, message: Uint8Array): void
      }
 }
 
-async function setupConnection(conn: WebSocket, room: Room): Promise<void> {
+async function setupConnection(conn: WebSocket, room: Room, canWrite: boolean): Promise<void> {
      conn.binaryType = "arraybuffer";
      room.conns.set(conn, new Set<number>());
 
@@ -182,7 +203,7 @@ async function setupConnection(conn: WebSocket, room: Room): Promise<void> {
      conn.on("pong", () => {
           alive = true;
      });
-     conn.on("message", (data: ArrayBuffer) => messageListener(room, conn, new Uint8Array(data)));
+     conn.on("message", (data: ArrayBuffer) => messageListener(room, conn, new Uint8Array(data), canWrite));
      conn.on("close", () => {
           closeConn(room, conn);
           clearInterval(pingInterval);
@@ -206,6 +227,6 @@ async function setupConnection(conn: WebSocket, room: Room): Promise<void> {
 
 export const collab = {
      handleConnection(conn: WebSocket, context: CollabContext): void {
-          void setupConnection(conn, getRoom(context));
+          void setupConnection(conn, getRoom(context), canWriteDiagram(context.role));
      },
 };
