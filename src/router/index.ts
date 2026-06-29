@@ -21,7 +21,7 @@ export const routes: RouteRecordRaw[] = [
     meta: { guestOnly: true },
   },
   {
-    path: '/el/demo',
+    path: '/app/demo',
     name: 'demo',
     component: () => import('@/views/DemoView.vue'),
   },

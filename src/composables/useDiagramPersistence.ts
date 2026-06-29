@@ -10,18 +10,18 @@ import { AUTOSAVE_DELAY, STORAGE_KEY } from '@/utils/constants'
  *  - `load()` restores a previously saved diagram (call once on startup).
  *  - a debounced watcher auto-saves whenever nodes or edges change.
  */
-export function useDiagramPersistence() {
+export function useDiagramPersistence(key: string = STORAGE_KEY) {
   const store = useDiagramStore()
   const { nodes, edges } = storeToRefs(store)
 
   let timer: ReturnType<typeof setTimeout> | undefined
 
   function save() {
-    storage.set<DiagramSnapshot>(STORAGE_KEY, store.snapshot)
+    storage.set<DiagramSnapshot>(key, store.snapshot)
   }
 
   function load(): boolean {
-    const saved = storage.get<DiagramSnapshot>(STORAGE_KEY)
+    const saved = storage.get<DiagramSnapshot>(key)
     if (!saved || !Array.isArray(saved.nodes) || !Array.isArray(saved.edges)) {
       return false
     }

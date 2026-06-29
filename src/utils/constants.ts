@@ -13,6 +13,9 @@ export const SITE_DESCRIPTION =
   'SRVJ is a free, browser-based diagram editor and whiteboard — flowcharts, ERDs, mind maps and sticky notes on one infinite canvas.'
 export const DIAGRAM_VERSION = 3
 export const STORAGE_KEY = 'srvj:diagram'
+// Separate key so the public pen-only demo canvas never collides with the
+// signed-out editor's local diagram.
+export const DEMO_STORAGE_KEY = 'srvj:demo'
 export const THEME_STORAGE_KEY = 'srvj:theme'
 export const SKETCH_STORAGE_KEY = 'srvj:sketch'
 export const AUTH_TOKEN_STORAGE_KEY = 'srvj:auth-token'
