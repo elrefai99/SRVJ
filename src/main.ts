@@ -1,5 +1,6 @@
 import { ViteSSG } from 'vite-ssg'
 import { createPinia } from 'pinia'
+import { inject as injectAnalytics } from '@vercel/analytics'
 import App from './App.vue'
 import { routes } from './router'
 import { useAuthStore } from './stores/auth'
@@ -36,6 +37,10 @@ export const createApp = ViteSSG(
     // Then: signed-out users can't reach `requiresAuth` routes, and signed-in
     // users can't reach the `guestOnly` Home.
     if (isClient) {
+      // Vercel Web Analytics — browser-only (uses `window`), so behind the
+      // `isClient` guard to stay out of the SSG Node render pass.
+      injectAnalytics()
+
       router.beforeEach(async (to) => {
         const auth = useAuthStore(pinia)
         await auth.init()
