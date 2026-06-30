@@ -48,6 +48,14 @@ export const routes: RouteRecordRaw[] = [
     component: () => import('@/views/InviteView.vue'),
   },
   {
+    // Set a new password from an emailed reset link. Reachable signed-out (the
+    // user can't sign in — that's the point), so unguarded. The reset JWT may
+    // arrive in the path segment or as a `?token=` query param.
+    path: '/app/reset-password/:token?',
+    name: 'reset-password',
+    component: () => import('@/views/ResetPasswordView.vue'),
+  },
+  {
     path: '/:pathMatch(.*)*',
     name: 'not-found',
     component: () => import('@/views/NotFoundView.vue'),
