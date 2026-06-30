@@ -95,6 +95,23 @@ export class BaseAuth {
 
           return { success: true, error: false, message: "Success fetch user account, success login", data: user }
      }
+     public async forgetPasswordService(payload: string): Promise<any> {
+          const user = await prisma.user.findFirst({
+               where: {
+                    email: payload.toLowerCase(),
+                    status: tableStatus.active
+               },
+               select: {
+                    id: true,
+                    fullname: true
+               }
+          })
+          if (!user) {
+               return { error: true, message: "user not founded" }
+          }
+          return user
+
+     }
 
      public async googleService(payload: any): Promise<any> {
           const token = await this.google_data(payload)

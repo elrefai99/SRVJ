@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { googleController, loginController, logoutConrtoller, refreshController, registerController } from "./auth.controller";
+import { forgetPasswordController, googleController, loginController, logoutConrtoller, refreshController, registerController, resetPasswordController } from "./auth.controller";
 import { LoginDTO, RegisterDTO } from "./DTO/index.dto";
 import { validateDTO } from "../../middleware/validateDTO";
 import { authlimiter } from "../../utils/limit-request";
@@ -11,5 +11,7 @@ router.post('/login', authlimiter, validateDTO(LoginDTO), loginController)
 router.post('/logout', logoutConrtoller)
 router.post('/refresh', authlimiter, refreshController)
 router.post('/google', authlimiter, googleController)
+router.post('/forgot-password', authlimiter, forgetPasswordController)
+router.post('/reset-password', authlimiter, resetPasswordController)
 
 export default router

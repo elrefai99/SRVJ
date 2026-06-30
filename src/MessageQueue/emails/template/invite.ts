@@ -161,16 +161,6 @@ export const inviteTemp = (payload: IPayload_invite) => {
                     </table>
                   </td>
                 </tr>
-
-                <tr>
-                  <td class="px" style="padding:24px 40px 40px 40px;">
-                    <p style="margin:0; font-family:'Helvetica Neue',Arial,sans-serif; font-size:13px; line-height:20px; color:#71717a;">
-                      If the button doesn't work, copy and paste this link into your browser:<br>
-                      <a href="${payload.acceptUrl}" target="_blank" style="color:#a1a1aa; word-break:break-all;">${payload.acceptUrl}</a>
-                    </p>
-                  </td>
-                </tr>
-
               </table>
             </td>
           </tr>
