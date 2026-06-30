@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { onBeforeUnmount, onMounted, watch } from 'vue'
 import { storeToRefs } from 'pinia'
+import { Analytics } from '@vercel/analytics/vue'
 import { useAuthStore } from '@/stores/auth'
 import { useNotifications } from '@/composables/useNotifications'
 
@@ -41,5 +42,6 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
+  <Analytics />
   <RouterView />
 </template>
