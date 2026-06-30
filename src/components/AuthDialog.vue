@@ -17,15 +17,26 @@ function onAuthSuccess() {
   if (route.name === "home") router.push({ name: "dashboard" });
 }
 
-type Mode = "login" | "register";
+type Mode = "login" | "register" | "forgot";
 const mode = ref<Mode>("login");
 const form = reactive({ fullname: "", email: "", password: "" });
 const emailInput = ref<HTMLInputElement | null>(null);
 const googleButton = ref<HTMLElement | null>(null);
+/** Set after a reset email is requested, so we swap the form for a confirmation. */
+const resetSent = ref(false);
 
 const isRegister = computed(() => mode.value === "register");
-const title = computed(() => (isRegister.value ? "Create your account" : "Welcome back"));
-const submitLabel = computed(() => (isRegister.value ? "Sign up" : "Sign in"));
+const isForgot = computed(() => mode.value === "forgot");
+const title = computed(() =>
+  isForgot.value
+    ? "Reset your password"
+    : isRegister.value
+      ? "Create your account"
+      : "Welcome back"
+);
+const submitLabel = computed(() =>
+  isForgot.value ? "Send reset link" : isRegister.value ? "Sign up" : "Sign in"
+);
 
 async function onGoogleCredential(credential: string) {
   try {
@@ -56,6 +67,7 @@ watch(
     form.fullname = "";
     form.email = "";
     form.password = "";
+    resetSent.value = false;
     auth.error = null;
     nextTick(() => {
       emailInput.value?.focus();
@@ -66,11 +78,17 @@ watch(
 
 function switchMode(next: Mode) {
   mode.value = next;
+  resetSent.value = false;
   auth.error = null;
 }
 
 async function onSubmit() {
   try {
+    if (isForgot.value) {
+      await auth.requestPasswordReset(form.email);
+      resetSent.value = true;
+      return;
+    }
     if (isRegister.value) {
       await auth.register({
         fullname: form.fullname,
@@ -108,9 +126,11 @@ async function onSubmit() {
             </h2>
             <p class="mt-0.5 text-sm text-slate-400">
               {{
-                isRegister
-                  ? "Sign up to sync your work."
-                  : "Sign in to your SRVJ account."
+                isForgot
+                  ? "We'll email you a link to set a new password."
+                  : isRegister
+                    ? "Sign up to sync your work."
+                    : "Sign in to your SRVJ account."
               }}
             </p>
           </div>
@@ -124,7 +144,7 @@ async function onSubmit() {
           </button>
         </div>
 
-        <div class="mb-4 flex rounded-lg p-1 bg-white/2">
+        <div v-if="!isForgot" class="mb-4 flex rounded-lg p-1 bg-white/2">
           <button
             type="button"
             class="flex-1 rounded-md px-3 py-1.5 text-sm font-medium transition-colors"
@@ -151,7 +171,33 @@ async function onSubmit() {
           </button>
         </div>
 
-        <form class="flex flex-col gap-3" @submit.prevent="onSubmit">
+        <!-- Reset-email confirmation: replaces the form once a link is sent. -->
+        <div v-if="isForgot && resetSent" class="flex flex-col gap-4">
+          <p
+            class="flex items-start gap-2 rounded-md bg-emerald-900/30 px-3 py-2.5 text-sm text-emerald-300"
+          >
+            <span class="i-mdi-email-check-outline mt-0.5 shrink-0" aria-hidden="true" />
+            <span>
+              If an account exists for
+              <span class="font-medium text-emerald-200">{{ form.email }}</span>, a
+              password-reset link is on its way. Check your inbox.
+            </span>
+          </p>
+          <button
+            type="button"
+            class="inline-flex items-center justify-center gap-1.5 text-sm font-medium text-slate-300 hover:text-white"
+            @click="switchMode('login')"
+          >
+            <span class="i-mdi-arrow-left" aria-hidden="true" />
+            Back to sign in
+          </button>
+        </div>
+
+        <form
+          v-if="!(isForgot && resetSent)"
+          class="flex flex-col gap-3"
+          @submit.prevent="onSubmit"
+        >
           <label v-if="isRegister" class="flex flex-col gap-1 text-sm">
             <span class="font-medium text-slate-300">Full name</span>
             <input
@@ -177,8 +223,18 @@ async function onSubmit() {
             />
           </label>
 
-          <label class="flex flex-col gap-1 text-sm">
-            <span class="font-medium text-slate-300">Password</span>
+          <label v-if="!isForgot" class="flex flex-col gap-1 text-sm">
+            <div class="flex items-center justify-between">
+              <span class="font-medium text-slate-300">Password</span>
+              <button
+                v-if="!isRegister"
+                type="button"
+                class="text-xs font-medium text-indigo-400 hover:text-indigo-300"
+                @click="switchMode('forgot')"
+              >
+                Forgot password?
+              </button>
+            </div>
             <input
               v-model="form.password"
               type="password"
@@ -209,9 +265,19 @@ async function onSubmit() {
             />
             {{ auth.loading ? "Please wait…" : submitLabel }}
           </button>
+
+          <button
+            v-if="isForgot"
+            type="button"
+            class="inline-flex items-center justify-center gap-1.5 text-sm font-medium text-slate-400 hover:text-slate-200"
+            @click="switchMode('login')"
+          >
+            <span class="i-mdi-arrow-left" aria-hidden="true" />
+            Back to sign in
+          </button>
         </form>
 
-        <div class="my-4 flex items-center gap-3" aria-hidden="true">
+        <div v-if="!isForgot" class="my-4 flex items-center gap-3" aria-hidden="true">
           <span class="h-px flex-1 bg-slate-700" />
           <span class="text-xs font-medium uppercase tracking-wide text-slate-500">or</span>
           <span class="h-px flex-1 bg-slate-700" />
@@ -221,7 +287,7 @@ async function onSubmit() {
              purely visual and the real (transparent) GIS button is overlaid on
              top — so the click opens Google's account-chooser popup and returns
              an ID token via onGoogleCredential. -->
-        <div v-if="google.isConfigured" class="group relative">
+        <div v-if="!isForgot && google.isConfigured" class="group relative">
           <div
             class="inline-flex w-full items-center justify-center gap-2.5 rounded-lg border border-white/10 bg-[#1f1f1f] px-3 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors group-hover:bg-[#2a2a2a]"
           >
@@ -235,7 +301,7 @@ async function onSubmit() {
           />
         </div>
         <button
-          v-else
+          v-else-if="!isForgot"
           type="button"
           :disabled="auth.loading"
           class="inline-flex w-full items-center justify-center gap-2.5 rounded-lg border border-white/10 bg-[#1f1f1f] px-3 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#2a2a2a] disabled:cursor-not-allowed disabled:opacity-60"

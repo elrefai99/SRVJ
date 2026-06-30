@@ -1,11 +1,12 @@
 <script setup lang="ts">
-import { nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { nextTick, ref, watch } from 'vue'
 import { useNotifications } from '@/composables/useNotifications'
 
 /**
- * Notifications widget for the in-app header. Opens a live SSE feed
- * (`/notification/stream`) on mount, seeds it with the existing list, and shows
- * the feed in a dropdown with an unread badge + a connection status dot.
+ * Notifications widget for the in-app header. Renders the shared notification
+ * feed (unread badge + connection status dot) in a dropdown. The live SSE feed
+ * is opened/closed app-wide from `App.vue` based on auth state — the bell only
+ * reads that shared state and drives pagination / mark-seen.
  */
 const {
   notifications,
@@ -15,9 +16,6 @@ const {
   loadingList,
   loadingMore,
   hasNextPage,
-  connect,
-  disconnect,
-  fetchList,
   loadMore,
   markAllRead,
   markSeen,
@@ -75,12 +73,6 @@ watch([open, loadingList], () => {
 function relativeTime(ts: number): string {
   return new Date(ts).toLocaleTimeString()
 }
-
-onMounted(() => {
-  void fetchList()
-  void connect()
-})
-onBeforeUnmount(() => disconnect())
 </script>
 
 <template>

@@ -219,6 +219,43 @@ export const useAuthStore = defineStore('auth', {
     },
 
     /**
+     * Start the forgot-password flow: ask the backend to email a reset link
+     * (carrying a short-lived JWT) to `email`. Always resolves on a 2xx; the
+     * caller shows a neutral "check your inbox" message regardless of whether the
+     * address exists, so the endpoint can't be used to probe for accounts.
+     */
+    async requestPasswordReset(email: string) {
+      this.loading = true
+      this.error = null
+      try {
+        await apiFetch('/auth/forgot-password', { method: 'POST', body: { email } })
+      } catch (error) {
+        this.error = messageOf(error)
+        throw error
+      } finally {
+        this.loading = false
+      }
+    },
+
+    /**
+     * Complete a password reset: POST the reset JWT (from the emailed link) plus
+     * the chosen `password`. The backend validates/expires the token server-side.
+     * Leaves the user signed out — they sign in with the new password afterwards.
+     */
+    async resetPassword(token: string, password: string) {
+      this.loading = true
+      this.error = null
+      try {
+        await apiFetch('/auth/reset-password', { method: 'POST', body: { token, password } })
+      } catch (error) {
+        this.error = messageOf(error)
+        throw error
+      } finally {
+        this.loading = false
+      }
+    },
+
+    /**
      * Exchange the httpOnly refresh cookie for a fresh access token. Returns
      * the new token, or `null` if the session can't be renewed (the refresh
      * cookie is missing/expired) — in which case the session is cleared so the
