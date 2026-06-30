@@ -1,3 +1,4 @@
+export { resetPasswordController } from "./controller/reset.password.controller";
 export { forgetPasswordController } from "./controller/forget.password.controller";
 export { googleController } from "./controller/google.controller";
 export { logoutConrtoller } from "./controller/logout.controller";

@@ -34,6 +34,12 @@ catalogs:
     cloudinary:
       specifier: ^2.6.1
       version: 2.10.0
+    compression:
+      specifier: ^1.8.1
+      version: 1.8.1
+    cookie:
+      specifier: ^1.1.1
+      version: 1.1.1
     cookie-parser:
       specifier: ^1.4.7
       version: 1.4.7
@@ -64,6 +70,9 @@ catalogs:
     jsonwebtoken:
       specifier: ^9.0.3
       version: 9.0.3
+    lib0:
+      specifier: ^0.2.117
+      version: 0.2.117
     mongoose:
       specifier: ^9.7.1
       version: 9.7.1
@@ -103,6 +112,15 @@ catalogs:
     uuid:
       specifier: ^13.0.2
       version: 13.0.2
+    ws:
+      specifier: ^8.21.0
+      version: 8.21.0
+    y-protocols:
+      specifier: ^1.0.7
+      version: 1.0.7
+    y-websocket:
+      specifier: ^3.0.0
+      version: 3.0.0
     yjs:
       specifier: ^13.6.31
       version: 13.6.31
@@ -196,6 +214,9 @@ catalogs:
     '@types/bull-arena':
       specifier: ^3.0.10
       version: 3.0.10
+    '@types/compression':
+      specifier: ^1.8.1
+      version: 1.8.1
     '@types/cookie-parser':
       specifier: ^1.4.10
       version: 1.4.10
@@ -259,6 +280,9 @@ catalogs:
     '@types/uuid':
       specifier: ^11.0.0
       version: 11.0.0
+    '@types/ws':
+      specifier: ^8.18.1
+      version: 8.18.1
   validation:
     zod:
       specifier: ^3.25.67
@@ -288,7 +312,7 @@ importers:
         specifier: catalog:runtime
         version: 2.10.0
       compression:
-        specifier: ^1.8.1
+        specifier: catalog:runtime
         version: 1.8.1
       concurrently:
         specifier: catalog:tools
@@ -318,7 +342,7 @@ importers:
         specifier: catalog:runtime
         version: 9.0.3
       lib0:
-        specifier: ^0.2.117
+        specifier: catalog:runtime
         version: 0.2.117
       mongoose:
         specifier: catalog:runtime
@@ -354,10 +378,10 @@ importers:
         specifier: catalog:runtime
         version: 13.0.2
       ws:
-        specifier: ^8.21.0
+        specifier: catalog:runtime
         version: 8.21.0
       y-protocols:
-        specifier: ^1.0.7
+        specifier: catalog:runtime
         version: 1.0.7(yjs@13.6.31)
     devDependencies:
       '@eslint/js':
@@ -397,7 +421,7 @@ importers:
         specifier: catalog:types
         version: 3.0.10(supports-color@5.5.0)
       '@types/compression':
-        specifier: ^1.8.1
+        specifier: catalog:types
         version: 1.8.1
       '@types/cookie-parser':
         specifier: catalog:types
@@ -466,7 +490,7 @@ importers:
         specifier: catalog:types
         version: 11.0.0
       '@types/ws':
-        specifier: ^8.18.1
+        specifier: catalog:types
         version: 8.18.1
       '@typescript-eslint/eslint-plugin':
         specifier: catalog:tools
@@ -484,7 +508,7 @@ importers:
         specifier: catalog:tools
         version: 5.78.0(redis@5.12.1(@opentelemetry/api@1.9.1))(supports-color@5.5.0)
       cookie:
-        specifier: ^1.1.1
+        specifier: catalog:runtime
         version: 1.1.1
       eslint:
         specifier: catalog:tools
@@ -556,7 +580,7 @@ importers:
         specifier: catalog:testing
         version: 4.0.0(typescript@5.9.3)(vitest@3.2.6(@types/node@25.9.3)(jiti@2.7.0)(supports-color@5.5.0)(tsx@4.22.4))
       y-websocket:
-        specifier: ^3.0.0
+        specifier: catalog:runtime
         version: 3.0.0(yjs@13.6.31)
       yjs:
         specifier: catalog:runtime
