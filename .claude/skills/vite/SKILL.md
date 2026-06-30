@@ -1,6 +1,6 @@
 ---
 name: vite
-description: Work with the Vite build/dev setup in this Vue 3 portfolio — plugins (vue, auto-import, components, UnoCSS, custom sitemap), the auto-import system, dev vs build commands, and the Netlify/Docker output. Use when editing vite.config.ts, adding plugins, debugging build/dev/HMR issues, or configuring auto-imports, sitemap, or deploy output.
+description: Work with the Vite build/dev setup in this Vue 3 portfolio — plugins (vue, auto-import, components, UnoCSS, custom sitemap), the auto-import system, dev vs build commands, and the Vercel/Docker output. Use when editing vite.config.ts, adding plugins, debugging build/dev/HMR issues, or configuring auto-imports, sitemap, or deploy output.
 ---
 
 # Vite for this project
@@ -52,7 +52,7 @@ When adding a plugin, place it sensibly in this chain (e.g. transforms before Un
 ## Build output & deployment
 
 - Output goes to `dist/`.
-- **Netlify SPA routing**: `build` copies `_dist_redirects` → `dist/_redirects`. If you add routes that need server-side fallback, that file is the place. `build-only` does NOT copy it — use full `build` for a deploy-accurate bundle.
+- **Vercel SPA routing & redirects**: `vercel.json` (repo root) holds the SPA fallback (`rewrites` → `/index.html`) and `/github`, `/gh` redirects. Vercel serves existing static files first, so pre-rendered routes (`dashboard.html`) win over the catch-all rewrite. Add new server-side fallbacks/redirects there.
 - **Docker**: multi-stage Dockerfile runs `npm run build` in the builder stage and serves `dist/` via Nginx; dev stage runs `vite --host`.
 
 ## Conventions & gotchas
