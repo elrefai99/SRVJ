@@ -1,11 +1,13 @@
 import { Resend } from 'resend';
 import prisma from '../../config/prisma';
 
-export const resendFunction = async (to: string, html: string, subject: string, uuid: string) => {
+type formType = "auth" | "invite" | "user"
+
+export const resendFunction = async (to: string, html: string, subject: string, uuid: string, type: formType) => {
      const resend = new Resend(process.env.RESEND_API as string);
      try {
           const { data, error } = await resend.emails.send({
-               from: "SRVJ <srvj@elrefai.me>",
+               from: `SRVJ <srvj${type == "auth" ? ".auth" : type == "invite" ? ".invite" : type == "user" ? ".user" : ""}@elrefai.me>`,
                to,
                subject,
                html,
