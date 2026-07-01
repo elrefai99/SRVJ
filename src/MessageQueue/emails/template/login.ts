@@ -1,6 +1,11 @@
 import { IPayload_login } from "./@types"
+import { escapeHtml } from "../../../utils/escapeHtml"
 
 export const loginTemp = (payload: IPayload_login) => {
+  const firstName = escapeHtml(payload.firstName)
+  const device = escapeHtml(payload.device)
+  const location = escapeHtml(payload.location)
+  const ipAddress = escapeHtml(payload.ipAddress)
   return `
 <!DOCTYPE html>
 <html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
@@ -90,7 +95,7 @@ export const loginTemp = (payload: IPayload_login) => {
                 <tr>
                   <td class="px" style="padding:16px 40px 0 40px;">
                     <p class="text-secondary" style="margin:0; font-family:'Helvetica Neue',Arial,sans-serif; font-size:15px; line-height:24px; color:#a1a1aa;">
-                      Hi ${payload.firstName}, we noticed a new sign-in to your SRVJ account. If this was you, you can safely ignore this email.
+                      Hi ${firstName}, we noticed a new sign-in to your SRVJ account. If this was you, you can safely ignore this email.
                     </p>
                   </td>
                 </tr>
@@ -108,15 +113,15 @@ export const loginTemp = (payload: IPayload_login) => {
                             </tr>
                             <tr>
                               <td style="padding:6px 0; font-family:'Helvetica Neue',Arial,sans-serif; font-size:13px; color:#71717a;">Device</td>
-                              <td align="right" style="padding:6px 0; font-family:'Helvetica Neue',Arial,sans-serif; font-size:13px; color:#e4e4e7;">${payload.device}</td>
+                              <td align="right" style="padding:6px 0; font-family:'Helvetica Neue',Arial,sans-serif; font-size:13px; color:#e4e4e7;">${device}</td>
                             </tr>
                             <tr>
                               <td style="padding:6px 0; font-family:'Helvetica Neue',Arial,sans-serif; font-size:13px; color:#71717a;">Location</td>
-                              <td align="right" style="padding:6px 0; font-family:'Helvetica Neue',Arial,sans-serif; font-size:13px; color:#e4e4e7;">${payload.location}</td>
+                              <td align="right" style="padding:6px 0; font-family:'Helvetica Neue',Arial,sans-serif; font-size:13px; color:#e4e4e7;">${location}</td>
                             </tr>
                             <tr>
                               <td style="padding:6px 0; font-family:'Helvetica Neue',Arial,sans-serif; font-size:13px; color:#71717a;">IP address</td>
-                              <td align="right" style="padding:6px 0; font-family:'Helvetica Neue',Arial,sans-serif; font-size:13px; color:#e4e4e7;">${payload.ipAddress}</td>
+                              <td align="right" style="padding:6px 0; font-family:'Helvetica Neue',Arial,sans-serif; font-size:13px; color:#e4e4e7;">${ipAddress}</td>
                             </tr>
                           </table>
                         </td>
@@ -162,15 +167,6 @@ export const loginTemp = (payload: IPayload_login) => {
                     <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
                       <tr><td style="border-top:1px solid #2a2a2e; font-size:0; line-height:0;">&nbsp;</td></tr>
                     </table>
-                  </td>
-                </tr>
-
-                <tr>
-                  <td class="px" style="padding:24px 40px 40px 40px;">
-                    <p style="margin:0; font-family:'Helvetica Neue',Arial,sans-serif; font-size:13px; line-height:20px; color:#71717a;">
-                      If the button doesn't work, copy and paste this link into your browser:<br>
-                      <a href="${payload.secureAccountUrl}" target="_blank" style="color:#a1a1aa; word-break:break-all;">${payload.secureAccountUrl}</a>
-                    </p>
                   </td>
                 </tr>
 

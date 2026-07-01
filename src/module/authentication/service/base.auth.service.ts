@@ -81,42 +81,68 @@ export class BaseAuth {
                select: {
                     id: true,
                     password: true,
-                    fullname: true
+                    fullname: true,
+                    sessionVersion: true
                }
           })
 
           if (!user) {
-               return { success: false, error: true, message: "this user account already exist", data: null }
+               return { success: false, error: true, message: "Invalid email or password", data: null }
           }
           const check_password = await bcrypt.compare(payload.password, user.password)
           if (!check_password) {
-               return { success: false, error: true, message: "this user account already exist", data: null }
+               return { success: false, error: true, message: "Invalid email or password", data: null }
           }
 
           return { success: true, error: false, message: "Success fetch user account, success login", data: user }
      }
+     public async forgetPasswordService(payload: string): Promise<any> {
+          const user = await prisma.user.findFirst({
+               where: {
+                    email: payload.toLowerCase(),
+                    status: tableStatus.active
+               },
+               select: {
+                    id: true,
+                    fullname: true
+               }
+          })
+          if (!user) {
+               return { error: true, message: "user not founded" }
+          }
+          return user
+
+     }
 
      public async googleService(payload: any): Promise<any> {
           const token = await this.google_data(payload)
-          if (!token) {
-               return { success: false, error: true, message: "this token already exist", data: null }
+          if (!token || !token.email || !token.email_verified || !token.sub) {
+               return { success: false, error: true, message: "Invalid Google credential", data: null }
           }
 
+          const email = token.email.toLowerCase()
           const user = await prisma.user.findFirst({
                where: {
-                    email: token.email?.toLowerCase(),
-                    googleId: token.sub,
+                    email,
                     status: tableStatus.active
                },
                select: {
                     id: true,
                     fullname: true,
-                    email: true
+                    email: true,
+                    googleId: true,
+                    sessionVersion: true
                }
           })
 
           if (user) {
-               return { success: true, error: false, message: "Success create new account", data: { id: user?.id, email: user?.email, fullname: user?.fullname, login: true } }
+               if (!user.googleId) {
+                    await prisma.user.update({
+                         where: { id: user.id },
+                         data: { googleId: token.sub }
+                    })
+               }
+               return { success: true, error: false, message: "Success create new account", data: { id: user.id, email: user.email, fullname: user.fullname, login: true } }
           }
 
           const fullname: string = `${token.given_name} ${token.family_name}`

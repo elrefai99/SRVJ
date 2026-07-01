@@ -22,9 +22,12 @@ client.on('error', (err: any) => console.log('Redis Client Error', err))
 
 if (process.env.NODE_ENV !== 'development') {
   process.on('SIGTERM', async () => {
-    await client.disconnect()
-    console.log('Redis connection closed')
-    process.exit(0)
+    try {
+      await client.disconnect()
+      console.log('Redis connection closed')
+    } catch (err) {
+      console.error('Error closing Redis connection', err)
+    }
   })
 }
 

@@ -6,6 +6,7 @@ import { V4 } from "paseto";
 import { loadPubliceKey } from "../../../utils/loadKey";
 import { tableStatus } from "../../../generated/prisma";
 import { cacheService } from "../../../functions/redis/cache.service.fun";
+import { TOKEN_VERSION } from "../../authentication/utils/paseto.utils";
 
 export const meMiddleware: RequestHandler = asyncHandler(
      async (req: Request, res: Response, next: NextFunction) => {
@@ -20,9 +21,15 @@ export const meMiddleware: RequestHandler = asyncHandler(
 
           const publicKey = loadPubliceKey("ACCESS_PUBLICE_KEY")
           await V4.verify(token, publicKey).then(async (payload: any) => {
+               if (payload.token_version !== TOKEN_VERSION) {
+                    throw AppError.unauthorized("Invalid or expired token")
+               }
                const cacheKey = `user:${payload.data.user_id}`
                const cachedData = await redis.getData(cacheKey)
                if (cachedData) {
+                    if (payload.session_version !== undefined && payload.session_version !== cachedData.sessionVersion) {
+                         throw AppError.unauthorized("Session has been revoked, please login again")
+                    }
                     req.user = cachedData
                     next()
                     return
@@ -37,19 +44,23 @@ export const meMiddleware: RequestHandler = asyncHandler(
                          fullname: true,
                          email: true,
                          username: true,
-                         avatar: true
+                         avatar: true,
+                         sessionVersion: true
                     }
                })
                if (!user) {
                     next(new AppError("User not found", 404))
                     return
                }
-               await redis.setData(cacheKey, user)
+               if (payload.session_version !== undefined && payload.session_version !== user.sessionVersion) {
+                    throw AppError.unauthorized("Session has been revoked, please login again")
+               }
+               await redis.setExData(cacheKey, user, 300)
                req.user = user
                next()
 
-          }).catch((err) => {
-               throw AppError.unauthorized(`Invalid refresh token: ${err}`)
+          }).catch(() => {
+               throw AppError.unauthorized("Invalid or expired token")
           })
      }
 )

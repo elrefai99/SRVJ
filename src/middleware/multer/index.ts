@@ -2,15 +2,16 @@ import { Request } from "express";
 import multer from "multer";
 import { AppError } from "../../utils/errors/app-error";
 
-// Keep uploads in memory and stream them straight to Cloudinary.
-// The deployed host (Render) has an ephemeral filesystem and no writable
-// `cdn/` folder, so writing to disk first fails with ENOENT.
 const multerStorage = multer.memoryStorage();
 
 // Custom file filter function
 function fileFilter(_req: Request, file: any, callback: any) {
      if (file.fieldname !== "img") {
-          const error = new AppError("Unexpected field. Expected 'img'.", 404);
+          const error = new AppError("Unexpected field. Expected 'img'.", 400);
+          return callback(error, false);
+     }
+     if (!file.mimetype || !file.mimetype.startsWith("image/")) {
+          const error = new AppError("Only image uploads are allowed.", 400);
           return callback(error, false);
      }
      callback(null, true);
@@ -21,31 +22,7 @@ export const uploadAvatar: any = multer({
      storage: multerStorage,
      fileFilter: fileFilter,
      limits: {
-          fileSize: 75 * 1024 * 1024,
+          fileSize: 5 * 1024 * 1024,
+          files: 1,
      },
 }).single("img")
-
-export const medical_historyImage: any = multer({
-     storage: multerStorage,
-     limits: {
-          fileSize: 75 * 1024 * 1024,
-     },
-}).fields([
-     {
-          name: 'images',
-     },
-])
-
-export const uploadMultiImage: any = multer({
-     storage: multerStorage,
-     limits: {
-          fileSize: 75 * 1024 * 1024,
-     },
-}).fields([
-     {
-          name: 'mainImage',
-     },
-     {
-          name: 'multiImage',
-     },
-])

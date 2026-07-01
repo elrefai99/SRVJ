@@ -151,21 +151,23 @@ describe('acceptInvitesController', () => {
      })
 })
 
-describe('getInvitesController', () => {
-     it('responds 401 when no token is provided', async () => {
-          const r = makeRes()
-          await getInvitesController(makeReq({ query: {} }), r, next)
+describe('getInviteDTO', () => {
+     it('rejects a request body with no token (enforced by validateDTO before the controller runs)', async () => {
+          const { getInviteDTO } = await import('../DTO')
+          const result = getInviteDTO.safeParse({})
 
-          expect(r.status).toHaveBeenCalledWith(401)
+          expect(result.success).toBe(false)
      })
+})
 
+describe('getInvitesController', () => {
      it('responds 403 when token is expired', async () => {
           vi.mocked(BasedProject).mockImplementation(() => ({
                getInvitesService: vi.fn().mockResolvedValue({ token: true }),
           } as any))
 
           const r = makeRes()
-          await getInvitesController(makeReq({ query: { token: 'expired-token' } }), r, next)
+          await getInvitesController(makeReq({ body: { token: 'expired-token' } }), r, next)
 
           expect(r.status).toHaveBeenCalledWith(403)
      })
@@ -177,7 +179,7 @@ describe('getInvitesController', () => {
           } as any))
 
           const r = makeRes()
-          await getInvitesController(makeReq({ query: { token: 'valid-token' } }), r, next)
+          await getInvitesController(makeReq({ body: { token: 'valid-token' } }), r, next)
 
           expect(r.status).toHaveBeenCalledWith(200)
           expect(r.json).toHaveBeenCalledWith(expect.objectContaining({ data: invite }))

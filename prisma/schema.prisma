@@ -20,7 +20,8 @@ model User {
 
   avatar String?
 
-  status tableStatus @default(active)
+  status         tableStatus @default(active)
+  sessionVersion Int         @default(1) @map("session_version")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -64,6 +65,7 @@ model Project {
   @@index([title])
   @@index([status])
   @@index([createdAt])
+  @@index([ownerId, status, createdAt])
   @@map("projects")
 }
 
@@ -172,6 +174,8 @@ model InviteProjects {
   @@index([site_id])
   @@index([id])
   @@index([projectId])
+  @@index([email])
+  @@index([email, status])
 }
 
 enum tableStatus {

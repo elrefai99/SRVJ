@@ -45,4 +45,7 @@ else
   exit 1
 fi
 
-echo "done."
+echo "🧹 Clearing Redis..."
+node scripts/clear-redis.js
+
+echo "✅ ✅ done."

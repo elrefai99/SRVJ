@@ -197,6 +197,10 @@ The diagram document store uses **Mongoose 8**. `diagram.schema.ts` (`diagramMod
 `src/module/diagram/@types/index.d.ts`. The connection is opened by `mongoDBConfig()` in the app and
 a separate `mongoose.connect()` in the worker process — both read `MONGODB_URI`.
 
+## Scripts (`scripts/`)
+- `copy-generated.mjs` — copies `src/generated/` into `dist/src/` post-build (tsc excludes it).
+- `removeFiles.ts` — utility for cleaning up files; invoked via the `removeFiles` npm script.
+
 ## Utilities (`src/utils/`)
 - `logger.ts` — pino. Use `createLogger("Context")` for module-scoped child loggers over the raw
   `logger`. Sensitive paths (auth headers, cookies, `*.password`, `*.token`, `*.secret`) are

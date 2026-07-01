@@ -3,13 +3,10 @@ import cors from 'cors'
 import cookieParser from 'cookie-parser'
 import morgan from 'morgan'
 import helmet from 'helmet'
+import compression from 'compression'
 import { limiter } from './utils/limit-request'
 import client from 'prom-client'
 import * as useragent from 'express-useragent'
-import { createWriteStream } from 'node:fs'
-import { resolve } from 'node:path'
-
-const morganLogStream = createWriteStream(resolve(process.cwd(), 'logs', 'app.log'), { flags: 'a' })
 
 const register = new client.Registry()
 client.collectDefaultMetrics({ register })
@@ -45,14 +42,14 @@ export const allowedOrigins: string[] = [
 ]
 const corsOptions: object = {
   origin: (origin: any, callback: any) => {
-    if (!origin || origin === 'null' || allowedOrigins.includes(origin)) {
+    if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true)
     } else {
       callback(new Error('Not allowed by CORS'))
     }
   },
   credentials: true,
-  optionsSuccessState: 200,
+  optionsSuccessStatus: 200,
 }
 
 export default (app: Application) => {
@@ -77,9 +74,10 @@ export default (app: Application) => {
       permittedCrossDomainPolicies: { permittedPolicies: 'none' },
     }),
   )
+  app.use(compression())
   app.use(
     express.json({
-      limit: '30mb',
+      limit: '2mb',
     }),
   )
   app.use(
@@ -89,19 +87,11 @@ export default (app: Application) => {
   )
   app.use(cookieParser())
   app.use('/v0/cdn', express.static('cdn'))
-  app.use(
-    morgan(process.env.NODE_ENV === 'development' ? 'dev' : 'combined', {
-      stream: {
-        write: (message) => {
-          process.stdout.write(message)
-          morganLogStream.write(message)
-        },
-      },
-    }),
-  )
+  if (process.env.NODE_ENV === 'development') {
+    app.use(morgan('dev'))
+  }
   app.use(useragent.express())
-  app.set('trust proxy', true)
-  app.set("trust proxy", 1);
+  app.set('trust proxy', 1)
   app.use(async (req: Request | any, res: Response, next: NextFunction) => {
     // get langouage of headers
     req.lang =
@@ -111,12 +101,7 @@ export default (app: Application) => {
         : ('en' as string)
     req.mobileApp =
       req.headers.app === 'app' ? 'app' : (req.headers.app as string)
-    req.clientIP =
-      req.headers['cf-connecting-ip'] ||
-      req.headers['x-real-ip'] ||
-      req.headers['x-forwarded-for'] ||
-      req.socket.remoteAddress ||
-      ('' as string)
+    req.clientIP = req.ip || req.socket.remoteAddress || ('' as string)
 
     if (req.path === '/metrics') {
       return next()
@@ -126,12 +111,13 @@ export default (app: Application) => {
 
     res.on('finish', () => {
       activeRequests.dec()
+      const routeLabel = req.route ? `${req.baseUrl}${req.route.path}` : req.path
       httpRequestsTotal
-        .labels(req.method, req.path, res.statusCode.toString())
+        .labels(req.method, routeLabel, res.statusCode.toString())
         .inc()
       end({
         method: req.method,
-        route: req.originalUrl,
+        route: routeLabel,
         status: res.statusCode.toString(),
       })
     })

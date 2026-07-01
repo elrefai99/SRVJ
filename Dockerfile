@@ -5,12 +5,14 @@ FROM node:22 AS builder
 
 WORKDIR /app
 
-ARG DATABASE_URL
-ENV DATABASE_URL=${DATABASE_URL}
+# `prisma generate` only reads the schema to emit client types — it never
+# opens a DB connection — so a placeholder satisfies prisma.config.ts's
+# env("DATABASE_URL") without ever putting a real credential in an image layer.
+ENV DATABASE_URL="postgresql://build:build@localhost:5432/build"
 
 COPY package*.json pnpm-lock.yaml pnpm-workspace.yaml ./
 RUN npm install -g pnpm
-RUN pnpm install -f
+RUN pnpm install --frozen-lockfile
 
 COPY . .
 
@@ -28,17 +30,19 @@ FROM node:22
 WORKDIR /app
 
 COPY package*.json pnpm-lock.yaml pnpm-workspace.yaml ./
-RUN npm install -g pnpm
-RUN pnpm install -f
-RUN npm install -g pm2
+RUN npm install -g pnpm pm2
+RUN pnpm install --prod --frozen-lockfile
 
-COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/node_modules/@prisma/client ./node_modules/@prisma/client
-COPY --from=builder /app/prisma ./prisma
+COPY --from=builder --chown=node:node /app/dist ./dist
+COPY --from=builder --chown=node:node /app/node_modules/@prisma/client ./node_modules/@prisma/client
+COPY --from=builder --chown=node:node /app/prisma ./prisma
+COPY --chown=node:node ecosystem.config.cjs ./
+COPY --chown=node:node package.json ./dist/package.json
 
-COPY package.json ./dist/package.json
-COPY . .
+RUN mkdir -p /app/logs && chown -R node:node /app/logs
+
+USER node
 
 EXPOSE 60459
 
-CMD ["pm2-runtime", "start", "ecosystem.config.js"]
+CMD ["pm2-runtime", "start", "ecosystem.config.cjs"]

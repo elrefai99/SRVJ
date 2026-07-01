@@ -84,7 +84,10 @@ export class BasedProject {
                }),
                prisma.project.count({
                     where: {
-                         ownerId: payload.user,
+                         OR: [
+                              { ownerId: payload.user },
+                              { members: { some: { userId: payload.user } } }
+                         ],
                          status: tableStatus.active,
 
                          ...(search && {
@@ -115,7 +118,7 @@ export class BasedProject {
                }
 
           }
-          await this.redis.setData(cacheKey, result)
+          await this.redis.setExData(cacheKey, result, 300)
           return result
      }
 
@@ -123,7 +126,8 @@ export class BasedProject {
           const existing = await prisma.project.findFirst({
                where: {
                     site_id: payload.project,
-                    status: tableStatus.active
+                    status: tableStatus.active,
+                    ownerId: payload.user
                },
                select: { ownerId: true }
           });
@@ -152,11 +156,23 @@ export class BasedProject {
           return { success: true };
      }
 
-     public async deleteService(payload: string) {
+     public async deleteService(payload: { project: string; user: number }) {
+          const owned = await prisma.project.findFirst({
+               where: {
+                    site_id: payload.project,
+                    status: tableStatus.active,
+                    ownerId: payload.user
+               },
+               select: { id: true }
+          })
+          if (!owned) {
+               return { success: false };
+          }
+
           const project = await prisma.$transaction(async (tx) => {
                const project = await tx.project.update({
                     where: {
-                         site_id: payload,
+                         site_id: payload.project,
                          status: tableStatus.active
                     },
                     data: {
@@ -175,12 +191,12 @@ export class BasedProject {
                return project
           })
 
-          const diagrams = await diagramModel.find({ projectId: payload }).select("_id").lean()
+          const diagrams = await diagramModel.find({ projectId: payload.project }).select("_id").lean()
           if (diagrams.length) {
                await diagramVersionModel.deleteMany({
                     diagramId: { $in: diagrams.map((diagram) => diagram._id) },
                })
-               await diagramModel.deleteMany({ projectId: payload })
+               await diagramModel.deleteMany({ projectId: payload.project })
           }
 
           await invalidateUserProjectsCache(project.ownerId)
@@ -236,6 +252,7 @@ export class BasedProject {
 
           const invite = await prisma.inviteProjects.findFirst({
                where: {
+                    site_id: decoded.site_id as string,
                     email: decoded.email as string,
                     status: tableStatus.inactive
                },
@@ -283,20 +300,23 @@ export class BasedProject {
      // Private Functions
 
      private async createProject(payload: any) {
-          const project = await prisma.project.create({
-               data: {
-                    title: payload.title,
-                    description: payload.description,
-                    visibility: payload.visibility,
-                    ownerId: payload.user
-               }
-          })
-          await prisma.projectMember.create({
-               data: {
-                    role: "OWNER",
-                    projectId: project.id,
-                    userId: payload.user
-               }
+          const project = await prisma.$transaction(async (tx) => {
+               const project = await tx.project.create({
+                    data: {
+                         title: payload.title,
+                         description: payload.description,
+                         visibility: payload.visibility,
+                         ownerId: payload.user
+                    }
+               })
+               await tx.projectMember.create({
+                    data: {
+                         role: "OWNER",
+                         projectId: project.id,
+                         userId: payload.user
+                    }
+               })
+               return project
           })
           return { success: true, project }
      }

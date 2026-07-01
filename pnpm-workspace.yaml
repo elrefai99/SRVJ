@@ -8,7 +8,6 @@ catalogs:
     bcryptjs: "^3.0.3"
     cookie-parser: "^1.4.7"
     cors: "^2.8.6"
-    crypto-js: "^4.2.0"
     dotenv: "^17.3.1"
     express: "^5.2.1"
     express-rate-limit: "^8.3.1"
@@ -16,15 +15,12 @@ catalogs:
     mongoose: "^9.7.1"
     morgan: "^1.10.1"
     sharp: "^0.34.5"
-    swagger-jsdoc: "^6.2.8"
-    swagger-ui-express: "^5.0.1"
     express-useragent: "^2.1.0"
-    request-ip: "^3.3.0"
     pino: "^9.7.0"
     pino-pretty: "^13.0.0"
     uuid: "^13.0.2"
     cloudinary: "^2.6.1"
-    multer: "^2.0.0"
+    multer: "^2.2.0"
     streamifier: "^0.1.1"
     jsonwebtoken: "^9.0.3"
     pg: "^8.21.0"
@@ -32,6 +28,12 @@ catalogs:
     google-auth-library: "^10.7.0"
     "@modelcontextprotocol/sdk": "^1.29.0"
     yjs: "^13.6.31"
+    compression: "^1.8.1"
+    lib0: "^0.2.117"
+    ws: "^8.21.0"
+    y-protocols: "^1.0.7"
+    y-websocket: "^3.0.0"
+    cookie: "^1.1.1"
 
   types:
     "@mohamed-elrefai/tsconfigs": "^1.0.2"
@@ -40,7 +42,6 @@ catalogs:
     "@types/bull-arena": "^3.0.10"
     "@types/cookie-parser": "^1.4.10"
     "@types/cors": "^2.8.19"
-    "@types/crypto-js": "^4.2.2"
     "@types/dotenv": "^8.2.3"
     "@types/express": "^5.0.6"
     "@types/express-rate-limit": "^6.0.2"
@@ -49,16 +50,15 @@ catalogs:
     "@types/morgan": "^1.9.10"
     "@types/node": "^25.5.0"
     "@types/sharp": "^0.32.0"
-    "@types/swagger-jsdoc": "^6.0.4"
-    "@types/swagger-ui-express": "^4.1.8"
     "@types/express-useragent": "^1.0.5"
-    "@types/request-ip": "^0.0.41"
     "@types/uuid": "^11.0.0"
     "@types/multer": "^2.0.0"
     "@types/streamifier": "^0.1.2"
     "@types/fs-extra": "^11.0.4"
     "@types/jsonwebtoken": "^9.0.10"
     "@types/pg": "^8.20.0"
+    "@types/compression": "^1.8.1"
+    "@types/ws": "^8.18.1"
 
   prisma:
     prisma: "^7.8.0"
@@ -103,6 +103,9 @@ catalogs:
     "socket.io": "^4.8.3"
     "@socket.io/redis-adapter": "^8.3.0"
     "@socket.io/redis-emitter": "^5.1.0"
+
+overrides:
+  shell-quote: ">=1.8.4"
 
 allowBuilds:
   '@prisma/engines': true

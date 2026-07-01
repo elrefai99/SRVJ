@@ -23,3 +23,17 @@ export const editProjectDTO = z.object({
      visibility: z.enum(['PRIVATE', 'PUBLIC', 'UNLISTED']).optional()
 })
 export type editProjectDTO = z.infer<typeof editProjectDTO>
+
+export const getInviteDTO = z.object({
+     token: z.string().min(1, 'token is required'),
+})
+export type getInviteDTO = z.infer<typeof getInviteDTO>
+
+export const inviteProjectDTO = z.object({
+     email: z
+          .string()
+          .email('Email must be a valid email address')
+          .max(100, 'Email must not exceed 100 characters'),
+     project: z.string().uuid('project must be a valid id'),
+})
+export type inviteProjectDTO = z.infer<typeof inviteProjectDTO>

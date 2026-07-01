@@ -1,6 +1,8 @@
 import { IPayload_register } from "./@types"
+import { escapeHtml } from "../../../utils/escapeHtml"
 
 export const registerTemp = (payload: IPayload_register) => {
+  const firstName = escapeHtml(payload.firstName)
   return `<!DOCTYPE html>
 <html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
 <head>
@@ -82,7 +84,7 @@ export const registerTemp = (payload: IPayload_register) => {
                 <tr>
                   <td class="px" style="padding:40px 40px 0 40px;">
                     <h1 class="text-primary" style="margin:0; font-family:'Helvetica Neue',Arial,sans-serif; font-size:24px; line-height:32px; font-weight:600; color:#f4f4f5;">
-                      Welcome, ${payload.firstName}
+                      Welcome, ${firstName}
                     </h1>
                   </td>
                 </tr>
@@ -124,15 +126,6 @@ export const registerTemp = (payload: IPayload_register) => {
                     <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
                       <tr><td style="border-top:1px solid #2a2a2e; font-size:0; line-height:0;">&nbsp;</td></tr>
                     </table>
-                  </td>
-                </tr>
-
-                <tr>
-                  <td class="px" style="padding:24px 40px 40px 40px;">
-                    <p style="margin:0; font-family:'Helvetica Neue',Arial,sans-serif; font-size:13px; line-height:20px; color:#71717a;">
-                      If the button doesn't work, copy and paste this link into your browser:<br>
-                      <a href="${payload.dashboardUrl}" target="_blank" style="color:#a1a1aa; word-break:break-all;">${payload.dashboardUrl}</a>
-                    </p>
                   </td>
                 </tr>
 

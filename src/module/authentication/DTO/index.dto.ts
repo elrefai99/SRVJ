@@ -16,6 +16,7 @@ export const RegisterDTO = z.object({
           .max(50, 'Name must not exceed 50 characters'),
      email: z
           .string()
+          .email('Email must be a valid email address')
           .max(100, 'Email must not exceed 100 characters'),
      password: passwordSchema,
 })
@@ -29,3 +30,8 @@ export const LoginDTO = z.object({
      password: passwordSchema,
 })
 export type LoginDTO = z.infer<typeof LoginDTO>
+
+export const GoogleLoginDTO = z.object({
+     credential: z.string().min(1, 'credential is required'),
+})
+export type GoogleLoginDTO = z.infer<typeof GoogleLoginDTO>
