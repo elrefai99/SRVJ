@@ -34,13 +34,17 @@ export const refreshController: RequestHandler = asyncHandler(
                     },
                     select: {
                          id: true,
+                         sessionVersion: true,
                     }
                })
                if (!user) {
                     throw AppError.notFound("User not found")
                }
+               if (payload.session_version !== undefined && payload.session_version !== user.sessionVersion) {
+                    throw AppError.unauthorized("Session has been revoked, please login again")
+               }
 
-               const token_data = { data: { user_id: user.id }, access_device: req.useragent?.browser }
+               const token_data = { data: { user_id: user.id, session_version: user.sessionVersion }, access_device: req.useragent?.browser }
                const token: string = await token_PASETO(token_data, "access")
                const refresh_token: string = await token_PASETO(token_data, "refresh")
                res.cookie("access_token", token, { httpOnly: true, secure: true, sameSite: "none", maxAge: 1000 * 60 * 60 * 24 * 2 });

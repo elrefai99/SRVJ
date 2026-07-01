@@ -49,7 +49,7 @@ const corsOptions: object = {
     }
   },
   credentials: true,
-  optionsSuccessState: 200,
+  optionsSuccessStatus: 200,
 }
 
 export default (app: Application) => {
@@ -101,12 +101,7 @@ export default (app: Application) => {
         : ('en' as string)
     req.mobileApp =
       req.headers.app === 'app' ? 'app' : (req.headers.app as string)
-    req.clientIP =
-      req.headers['cf-connecting-ip'] ||
-      req.headers['x-real-ip'] ||
-      req.headers['x-forwarded-for'] ||
-      req.socket.remoteAddress ||
-      ('' as string)
+    req.clientIP = req.ip || req.socket.remoteAddress || ('' as string)
 
     if (req.path === '/metrics') {
       return next()

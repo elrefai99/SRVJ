@@ -6,6 +6,9 @@ on:
       - "**"
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   deploy:
     name: Docker build check
@@ -20,9 +23,7 @@ jobs:
 
       - name: Check Docker build
         run: |
-          docker build \
-            --build-arg DATABASE_URL=postgresql://postgres:postgres@localhost:5432/postgres \
-            -t srvj-backend:${{ github.sha }} .
+          docker build -t srvj-backend:${{ github.sha }} .
 
       - name: Docker build summary
         if: always()

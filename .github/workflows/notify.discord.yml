@@ -5,17 +5,26 @@ on:
     branches:
       - "**"
 
+permissions:
+  contents: read
+
 jobs:
   notify:
     runs-on: ubuntu-latest
     steps:
       - name: Send Discord Notification Lesoll Server
+        env:
+          GH_ACTOR: ${{ github.actor }}
+          GH_BRANCH: ${{ github.ref_name }}
+          GH_COMMIT_MSG: ${{ github.event.head_commit.message }}
+          DISCORD_WEBHOOK_SRVJ: ${{ secrets.DISCORD_WEBHOOK_SRVJ }}
         run: |
-          curl -H "Content-Type: application/json" \
-               -X POST \
-               -d "{
-                    \"avatar_url\": \" https://github.com/${{ github.actor }}.png \",
-                    \"username\": \" ${{ github.actor }} \",
-                    \"content\": \" Admin: @elrefai99 \nServer: **SRVJ Server*** \nNew push in branch: **${{ github.ref_name }}** \nCommit: **${{ github.event.head_commit.message }}**\"
-                  }" \
-               ${{ secrets.DISCORD_WEBHOOK_SRVJ }}
+          payload=$(jq -n \
+            --arg avatar "https://github.com/${GH_ACTOR}.png" \
+            --arg username "$GH_ACTOR" \
+            --arg content "Admin: @elrefai99
+          Server: **SRVJ Server**
+          New push in branch: **${GH_BRANCH}**
+          Commit: **${GH_COMMIT_MSG}**" \
+            '{avatar_url: $avatar, username: $username, content: $content}')
+          curl -H "Content-Type: application/json" -X POST -d "$payload" "$DISCORD_WEBHOOK_SRVJ"

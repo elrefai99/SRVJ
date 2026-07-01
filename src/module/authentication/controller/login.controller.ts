@@ -23,6 +23,7 @@ export const loginController: RequestHandler = asyncHandler(
           const token_data = {
                data: {
                     user_id: result?.data.id,
+                    session_version: result?.data.sessionVersion,
                     status: "active",
                     account: "normal"
                },

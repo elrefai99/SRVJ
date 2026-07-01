@@ -1,7 +1,7 @@
 import { NextFunction, Request, RequestHandler, Response } from "express";
 import { asyncHandler } from "../../../utils/api-requesthandler";
 import { generateUUID } from "../../../utils/uuid";
-import { forgetPasswordToken } from "../utils/jwt";
+import { token_PASETO } from "../utils/paseto.utils";
 import { addJobToQueue } from "../../../MessageQueue/emails/Queue/queue.email";
 import { BaseAuth } from "../service/base.auth.service";
 import { getLocation } from "../../../utils/getLocation";
@@ -18,19 +18,17 @@ export const forgetPasswordController: RequestHandler = asyncHandler(
                return
           }
           const generate_uuid = generateUUID()
-          const token = forgetPasswordToken({
-               email,
-               expiresIn: '5 Min',
-               device: req.useragent?.browser as string,
-               uuid: generate_uuid as string
-          })
+          const token = await token_PASETO(
+               { data: { user_id: result.id }, access_device: req.useragent?.browser, nonce: generate_uuid },
+               "forget_password",
+          )
           const email_body = {
                type: "forgatePassword",
                subject: "Reset your SRVJ password",
                email,
                emailBody: {
                     resetUrl: `${process.env.NODE_ENV == "development" ? process.env.SITE_URL_TEST : process.env.SITE_URL_LIVE}/app/reset-password/${token}`,
-                    expiresIn: '5 Min',
+                    expiresIn: '15 Min',
                     firstName: result?.fullname,
                     ipAddress: req.clientIP,
                     location: getLocation(req),

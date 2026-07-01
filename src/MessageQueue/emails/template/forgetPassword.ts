@@ -1,7 +1,11 @@
 import { IPayload_forgetPassword } from "./@types"
+import { escapeHtml } from "../../../utils/escapeHtml"
 
 export const forgetPasswordTemp = (payload: IPayload_forgetPassword) => {
-  console.log(payload);
+  const firstName = escapeHtml(payload.firstName)
+  const device = escapeHtml(payload.device)
+  const location = escapeHtml(payload.location)
+  const ipAddress = escapeHtml(payload.ipAddress)
 
   return `
 <!DOCTYPE html>
@@ -92,7 +96,7 @@ export const forgetPasswordTemp = (payload: IPayload_forgetPassword) => {
                 <tr>
                   <td class="px" style="padding:16px 40px 0 40px;">
                     <p class="text-secondary" style="margin:0; font-family:'Helvetica Neue',Arial,sans-serif; font-size:15px; line-height:24px; color:#a1a1aa;">
-                      Hi ${payload.firstName}, we received a request to reset the password for your SRVJ account. Click the button below to choose a new one. If you didn't make this request, you can safely ignore this email.
+                      Hi ${firstName}, we received a request to reset the password for your SRVJ account. Click the button below to choose a new one. If you didn't make this request, you can safely ignore this email.
                     </p>
                   </td>
                 </tr>
@@ -106,15 +110,15 @@ export const forgetPasswordTemp = (payload: IPayload_forgetPassword) => {
                           <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
                             <tr>
                               <td style="padding:6px 0; font-family:'Helvetica Neue',Arial,sans-serif; font-size:13px; color:#71717a;">Device</td>
-                              <td align="right" style="padding:6px 0; font-family:'Helvetica Neue',Arial,sans-serif; font-size:13px; color:#e4e4e7;">${payload.device}</td>
+                              <td align="right" style="padding:6px 0; font-family:'Helvetica Neue',Arial,sans-serif; font-size:13px; color:#e4e4e7;">${device}</td>
                             </tr>
                             <tr>
                               <td style="padding:6px 0; font-family:'Helvetica Neue',Arial,sans-serif; font-size:13px; color:#71717a;">Location</td>
-                              <td align="right" style="padding:6px 0; font-family:'Helvetica Neue',Arial,sans-serif; font-size:13px; color:#e4e4e7;">${payload.location}</td>
+                              <td align="right" style="padding:6px 0; font-family:'Helvetica Neue',Arial,sans-serif; font-size:13px; color:#e4e4e7;">${location}</td>
                             </tr>
                             <tr>
                               <td style="padding:6px 0; font-family:'Helvetica Neue',Arial,sans-serif; font-size:13px; color:#71717a;">IP address</td>
-                              <td align="right" style="padding:6px 0; font-family:'Helvetica Neue',Arial,sans-serif; font-size:13px; color:#e4e4e7;">${payload.ipAddress}</td>
+                              <td align="right" style="padding:6px 0; font-family:'Helvetica Neue',Arial,sans-serif; font-size:13px; color:#e4e4e7;">${ipAddress}</td>
                             </tr>
                           </table>
                         </td>
