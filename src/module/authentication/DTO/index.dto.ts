@@ -30,3 +30,8 @@ export const LoginDTO = z.object({
      password: passwordSchema,
 })
 export type LoginDTO = z.infer<typeof LoginDTO>
+
+export const GoogleLoginDTO = z.object({
+     credential: z.string().min(1, 'credential is required'),
+})
+export type GoogleLoginDTO = z.infer<typeof GoogleLoginDTO>

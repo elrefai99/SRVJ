@@ -81,7 +81,8 @@ export class BaseAuth {
                select: {
                     id: true,
                     password: true,
-                    fullname: true
+                    fullname: true,
+                    sessionVersion: true
                }
           })
 
@@ -129,7 +130,8 @@ export class BaseAuth {
                     id: true,
                     fullname: true,
                     email: true,
-                    googleId: true
+                    googleId: true,
+                    sessionVersion: true
                }
           })
 

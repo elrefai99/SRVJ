@@ -25,3 +25,7 @@ export const loadPubliceKey = (envKey: string): KeyObject => {
      }
      return createPublicKey(normalizePem(pem))
 }
+
+export const derivePublicKeyFromPrivate = (envKey: string): KeyObject => {
+     return createPublicKey(loadPrivateKey(envKey))
+}

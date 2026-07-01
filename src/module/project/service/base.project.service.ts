@@ -252,6 +252,7 @@ export class BasedProject {
 
           const invite = await prisma.inviteProjects.findFirst({
                where: {
+                    site_id: decoded.site_id as string,
                     email: decoded.email as string,
                     status: tableStatus.inactive
                },

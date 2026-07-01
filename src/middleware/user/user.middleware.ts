@@ -30,6 +30,9 @@ export const userMiddleware: RequestHandler = asyncHandler(
                const cacheKey = `user:${payload.data.user_id}`
                const cachedData = await redis.getData(cacheKey)
                if (cachedData) {
+                    if (payload.session_version !== undefined && payload.session_version !== cachedData.sessionVersion) {
+                         throw AppError.unauthorized("Session has been revoked, please login again")
+                    }
                     req.user = cachedData
                     next()
                     return
@@ -44,12 +47,16 @@ export const userMiddleware: RequestHandler = asyncHandler(
                          fullname: true,
                          email: true,
                          username: true,
-                         avatar: true
+                         avatar: true,
+                         sessionVersion: true
                     }
                })
                if (!user) {
                     next(new AppError("User not found", 404))
                     return
+               }
+               if (payload.session_version !== undefined && payload.session_version !== user.sessionVersion) {
+                    throw AppError.unauthorized("Session has been revoked, please login again")
                }
                await redis.setExData(cacheKey, user, USER_CACHE_TTL)
                req.user = user

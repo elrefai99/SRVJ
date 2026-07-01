@@ -1,6 +1,8 @@
 import { IPayload_register } from "./@types"
+import { escapeHtml } from "../../../utils/escapeHtml"
 
 export const registerTemp = (payload: IPayload_register) => {
+  const firstName = escapeHtml(payload.firstName)
   return `<!DOCTYPE html>
 <html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
 <head>
@@ -82,7 +84,7 @@ export const registerTemp = (payload: IPayload_register) => {
                 <tr>
                   <td class="px" style="padding:40px 40px 0 40px;">
                     <h1 class="text-primary" style="margin:0; font-family:'Helvetica Neue',Arial,sans-serif; font-size:24px; line-height:32px; font-weight:600; color:#f4f4f5;">
-                      Welcome, ${payload.firstName}
+                      Welcome, ${firstName}
                     </h1>
                   </td>
                 </tr>

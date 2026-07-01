@@ -2,6 +2,7 @@ import { invalidateUserProjectsCache } from "../../../functions/redis/cache.inva
 import { diagramModel } from "../schema/diagram.schema";
 import { diagramVersionModel } from "../schema/diagram.version.schema";
 import { IPayloadDiagram } from "../@types";
+import { invalidateRoom } from "../../../collab/server";
 
 export class BasedDiagram {
      public async getDiagramService(payload: IPayloadDiagram): Promise<any> {
@@ -50,6 +51,7 @@ export class BasedDiagram {
                createdById: payload.user !== undefined ? String(payload.user) : undefined,
           })
 
+          await invalidateRoom(diagram.site_id, { nodes: diagram.nodes, edges: diagram.edges, metadata: diagram.metadata })
           await invalidateUserProjectsCache(payload.user)
           return { success: true, error: false, message: "Success update diagram", data: diagram }
      }
@@ -134,6 +136,7 @@ export class BasedDiagram {
                createdById: payload.user !== undefined ? String(payload.user) : undefined,
           })
 
+          await invalidateRoom(diagram.site_id, { nodes: diagram.nodes, edges: diagram.edges, metadata: diagram.metadata })
           await invalidateUserProjectsCache(payload.user)
           return { success: true, error: false, message: "Success restore version", data: diagram }
      }

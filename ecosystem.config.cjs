@@ -4,7 +4,7 @@ module.exports = {
      apps: [
           {
                name: 'srvj-api',
-               script: './dist/app.js',
+               script: './dist/src/app.js',
                instances: 1,
                exec_mode: 'fork',
                max_memory_restart: '1G',
@@ -23,7 +23,7 @@ module.exports = {
           },
           {
                name: 'srvj-worker',
-               script: './dist/MessageQueue/index.js',
+               script: './dist/src/MessageQueue/index.js',
                instances: 1,
                exec_mode: 'fork',
                max_memory_restart: '512M',

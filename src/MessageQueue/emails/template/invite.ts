@@ -1,6 +1,12 @@
 import { IPayload_invite } from "./@types"
+import { escapeHtml } from "../../../utils/escapeHtml"
 
 export const inviteTemp = (payload: IPayload_invite) => {
+  const firstName = escapeHtml(payload.firstName)
+  const inviterName = escapeHtml(payload.inviterName)
+  const boardName = escapeHtml(payload.boardName)
+  const workspaceName = escapeHtml(payload.workspaceName)
+  const role = escapeHtml(payload.role)
   return `
      <!DOCTYPE html>
 <html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
@@ -11,7 +17,7 @@ export const inviteTemp = (payload: IPayload_invite) => {
   <meta name="x-apple-disable-message-reformatting">
   <meta name="color-scheme" content="dark">
   <meta name="supported-color-schemes" content="dark">
-  <title>${payload.inviterName} invited you to a whiteboard</title>
+  <title>${inviterName} invited you to a whiteboard</title>
   <!--[if mso]>
   <noscript>
     <xml>
@@ -38,13 +44,13 @@ export const inviteTemp = (payload: IPayload_invite) => {
       .px { padding-left: 24px !important; padding-right: 24px !important; }
     }
   </style>
-               <img src="${process.env.API_LINK}/api/v1/emails/opened?uuid = ${payload.uuid} " width="1" height="1" style="display: none; " />
+               <img src="${process.env.API_LINK}/api/v1/emails/opened?uuid=${payload.uuid}" width="1" height="1" style="display: none;" />
 </head>
 <body class="body-bg" style="margin:0; padding:0; background-color:#0a0a0b;">
 
   <!-- Preheader -->
   <div style="display:none; font-size:1px; color:#0a0a0b; line-height:1px; max-height:0; max-width:0; opacity:0; overflow:hidden; mso-hide:all;">
-    ${payload.inviterName} invited you to collaborate on "${payload.boardName}". Open the whiteboard to get started.&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;
+    ${inviterName} invited you to collaborate on "${boardName}". Open the whiteboard to get started.&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;
   </div>
 
   <table role="presentation" class="body-bg" width="100%" cellpadding="0" cellspacing="0" style="background-color:#0a0a0b;">
@@ -87,7 +93,7 @@ export const inviteTemp = (payload: IPayload_invite) => {
                 <tr>
                   <td class="px" style="padding:16px 40px 0 40px;">
                     <p class="text-secondary" style="margin:0; font-family:'Helvetica Neue',Arial,sans-serif; font-size:15px; line-height:24px; color:#a1a1aa;">
-                      Hi ${payload.firstName}, ${payload.inviterName} invited you to join a whiteboard on SRVJ. Open it to start collaborating in real time.
+                      Hi ${firstName}, ${inviterName} invited you to join a whiteboard on SRVJ. Open it to start collaborating in real time.
                     </p>
                   </td>
                 </tr>
@@ -101,19 +107,19 @@ export const inviteTemp = (payload: IPayload_invite) => {
                           <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
                             <tr>
                               <td style="padding:6px 0; font-family:'Helvetica Neue',Arial,sans-serif; font-size:13px; color:#71717a;">Whiteboard</td>
-                              <td align="right" style="padding:6px 0; font-family:'Helvetica Neue',Arial,sans-serif; font-size:13px; color:#e4e4e7;">${payload.boardName}</td>
+                              <td align="right" style="padding:6px 0; font-family:'Helvetica Neue',Arial,sans-serif; font-size:13px; color:#e4e4e7;">${boardName}</td>
                             </tr>
                             <tr>
                               <td style="padding:6px 0; font-family:'Helvetica Neue',Arial,sans-serif; font-size:13px; color:#71717a;">Invited by</td>
-                              <td align="right" style="padding:6px 0; font-family:'Helvetica Neue',Arial,sans-serif; font-size:13px; color:#e4e4e7;">${payload.inviterName}</td>
+                              <td align="right" style="padding:6px 0; font-family:'Helvetica Neue',Arial,sans-serif; font-size:13px; color:#e4e4e7;">${inviterName}</td>
                             </tr>
                             <tr>
                               <td style="padding:6px 0; font-family:'Helvetica Neue',Arial,sans-serif; font-size:13px; color:#71717a;">Workspace</td>
-                              <td align="right" style="padding:6px 0; font-family:'Helvetica Neue',Arial,sans-serif; font-size:13px; color:#e4e4e7;">${payload.workspaceName}</td>
+                              <td align="right" style="padding:6px 0; font-family:'Helvetica Neue',Arial,sans-serif; font-size:13px; color:#e4e4e7;">${workspaceName}</td>
                             </tr>
                             <tr>
                               <td style="padding:6px 0; font-family:'Helvetica Neue',Arial,sans-serif; font-size:13px; color:#71717a;">Your access</td>
-                              <td align="right" style="padding:6px 0; font-family:'Helvetica Neue',Arial,sans-serif; font-size:13px; color:#e4e4e7;">${payload.role}</td>
+                              <td align="right" style="padding:6px 0; font-family:'Helvetica Neue',Arial,sans-serif; font-size:13px; color:#e4e4e7;">${role}</td>
                             </tr>
                           </table>
                         </td>
@@ -169,7 +175,7 @@ export const inviteTemp = (payload: IPayload_invite) => {
           <tr>
             <td style="padding:28px 24px 0 24px;">
               <p style="margin:0 0 6px 0; font-family:'Helvetica Neue',Arial,sans-serif; font-size:12px; line-height:18px; color:#52525b; text-align:center;">
-                You received this email because ${payload.inviterName} invited you to collaborate on SRVJ. If you weren't expecting this, you can safely ignore it.
+                You received this email because ${inviterName} invited you to collaborate on SRVJ. If you weren't expecting this, you can safely ignore it.
               </p>
               <p style="margin:0; font-family:'Helvetica Neue',Arial,sans-serif; font-size:12px; line-height:18px; color:#52525b; text-align:center;">
                 &copy; ${new Date().getFullYear()} SRVJ. All rights reserved.

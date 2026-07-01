@@ -15,8 +15,22 @@ const log = createLogger("collab");
 const MESSAGE_SYNC = 0;
 const MESSAGE_AWARENESS = 1;
 const PING_TIMEOUT = 30000;
+const RATE_LIMIT_WINDOW_MS = 10000;
+const RATE_LIMIT_MAX_MESSAGES = 200;
 
 const rooms = new Map<string, Room>();
+const rateLimitState = new WeakMap<WebSocket, { windowStart: number; count: number }>();
+
+function isRateLimited(conn: WebSocket): boolean {
+     const now = Date.now();
+     const state = rateLimitState.get(conn);
+     if (!state || now - state.windowStart >= RATE_LIMIT_WINDOW_MS) {
+          rateLimitState.set(conn, { windowStart: now, count: 1 });
+          return false;
+     }
+     state.count += 1;
+     return state.count > RATE_LIMIT_MAX_MESSAGES;
+}
 
 function send(room: Room, conn: WebSocket, message: Uint8Array): void {
      if (conn.readyState !== WebSocket.CONNECTING && conn.readyState !== WebSocket.OPEN) {
@@ -203,8 +217,16 @@ async function setupConnection(conn: WebSocket, room: Room, canWrite: boolean): 
      conn.on("pong", () => {
           alive = true;
      });
-     conn.on("message", (data: ArrayBuffer) => messageListener(room, conn, new Uint8Array(data), canWrite));
+     conn.on("message", (data: ArrayBuffer) => {
+          if (isRateLimited(conn)) {
+               log.warn({ msg: "collab connection rate-limited", diagramId: room.diagramId });
+               closeConn(room, conn);
+               return;
+          }
+          messageListener(room, conn, new Uint8Array(data), canWrite);
+     });
      conn.on("close", () => {
+          rateLimitState.delete(conn);
           closeConn(room, conn);
           clearInterval(pingInterval);
      });
@@ -230,3 +252,23 @@ export const collab = {
           void setupConnection(conn, getRoom(context), canWriteDiagram(context.role));
      },
 };
+
+export async function invalidateRoom(siteId: string, freshDiagram: { nodes?: unknown; edges?: unknown; metadata?: unknown }): Promise<void> {
+     const room = rooms.get(siteId);
+     if (!room) return;
+
+     await room.ready;
+     room.doc.transact(() => {
+          const nodes = room.doc.getArray("nodes");
+          const edges = room.doc.getArray("edges");
+          const metadata = room.doc.getMap("metadata");
+          nodes.delete(0, nodes.length);
+          edges.delete(0, edges.length);
+          metadata.clear();
+          if (Array.isArray(freshDiagram.nodes) && freshDiagram.nodes.length) nodes.push(freshDiagram.nodes);
+          if (Array.isArray(freshDiagram.edges) && freshDiagram.edges.length) edges.push(freshDiagram.edges);
+          if (freshDiagram.metadata && typeof freshDiagram.metadata === "object") {
+               for (const [key, value] of Object.entries(freshDiagram.metadata)) metadata.set(key, value);
+          }
+     });
+}

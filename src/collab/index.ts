@@ -38,8 +38,10 @@ function rejectHandshake(socket: Duplex, status: number, message: string): void 
      socket.destroy();
 }
 
+const MAX_COLLAB_MESSAGE_BYTES = 1 * 1024 * 1024;
+
 export function attachCollab(server: HttpServer): void {
-     const wss = new WebSocketServer({ noServer: true });
+     const wss = new WebSocketServer({ noServer: true, maxPayload: MAX_COLLAB_MESSAGE_BYTES });
 
      server.on("upgrade", (request, socket, head) => {
           if (!request.url || !request.url.startsWith(COLLAB_PATH_PREFIX)) return;
