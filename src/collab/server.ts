@@ -9,6 +9,7 @@ import { createLogger } from "../utils/logger";
 import { COLLAB_DEBOUNCE, COLLAB_MAX_DEBOUNCE } from "./env";
 import { canWriteDiagram } from "./role";
 import type { CollabContext } from "./auth";
+import { onRemoteUpdate, publishCollabUpdate, REMOTE_ORIGIN } from "./redis";
 
 const log = createLogger("collab");
 
@@ -20,6 +21,11 @@ const RATE_LIMIT_MAX_MESSAGES = 200;
 
 const rooms = new Map<string, Room>();
 const rateLimitState = new WeakMap<WebSocket, { windowStart: number; count: number }>();
+
+onRemoteUpdate((siteId, update) => {
+     const room = rooms.get(siteId);
+     if (room) Y.applyUpdate(room.doc, update, REMOTE_ORIGIN);
+});
 
 function isRateLimited(conn: WebSocket): boolean {
      const now = Date.now();
@@ -89,12 +95,15 @@ class Room {
                log.error({ msg: "collab load failed", diagramId: this.diagramId, error: err instanceof Error ? err.message : String(err) });
           });
 
-          this.doc.on("update", (update: Uint8Array) => {
+          this.doc.on("update", (update: Uint8Array, origin: unknown) => {
                const encoder = encoding.createEncoder();
                encoding.writeVarUint(encoder, MESSAGE_SYNC);
                syncProtocol.writeUpdate(encoder, update);
                broadcast(this, encoding.toUint8Array(encoder));
                this.schedulePersist();
+               if (origin !== REMOTE_ORIGIN) {
+                    void publishCollabUpdate(this.siteId, update);
+               }
           });
 
           this.awareness.on(
@@ -252,6 +261,10 @@ export const collab = {
           void setupConnection(conn, getRoom(context), canWriteDiagram(context.role));
      },
 };
+
+export async function shutdownCollab(): Promise<void> {
+     await Promise.all(Array.from(rooms.values()).map((room) => room.persist()));
+}
 
 export async function invalidateRoom(siteId: string, freshDiagram: { nodes?: unknown; edges?: unknown; metadata?: unknown }): Promise<void> {
      const room = rooms.get(siteId);
