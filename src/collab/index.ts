@@ -8,6 +8,9 @@ import { COLLAB_PATH_PREFIX } from "./env";
 import { allowedOrigins } from "../app.config";
 import { createLogger } from "../utils/logger";
 
+export { shutdownCollab } from "./server";
+export { connectCollabRedis, disconnectCollabRedis } from "./redis";
+
 const log = createLogger("collab");
 
 const CLOSE_INVALID_ID = 4400;

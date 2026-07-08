@@ -2,10 +2,20 @@ import * as Y from "yjs";
 import { diagramYDocModel } from "../module/diagram/schema/diagram.ydoc.schema";
 import { diagramModel } from "../module/diagram/schema/diagram.schema";
 
+function toBytes(state: unknown): Uint8Array | null {
+     if (!state) return null;
+     if (state instanceof Uint8Array) return state;
+     const buffer = (state as { buffer?: unknown }).buffer;
+     if (buffer instanceof Uint8Array) return buffer;
+     if (Array.isArray(buffer) || buffer instanceof ArrayBuffer) return new Uint8Array(buffer);
+     return null;
+}
+
 export async function loadDocument(diagramId: string, doc: Y.Doc): Promise<void> {
      const snapshot = await diagramYDocModel.findOne({ diagramId }).select({ state: 1 }).lean();
-     if (snapshot?.state) {
-          Y.applyUpdate(doc, new Uint8Array(snapshot.state));
+     const bytes = toBytes(snapshot?.state);
+     if (bytes && bytes.length > 0) {
+          Y.applyUpdate(doc, bytes);
           return;
      }
 
