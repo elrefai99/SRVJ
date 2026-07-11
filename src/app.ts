@@ -34,7 +34,7 @@ import prisma from './config/prisma'
 import { redisConfig } from './config/redis'
 import { startSubscriber } from './config/subscriber'
 import { mongoDBConfig } from './config/mongoDB'
-import { attachCollab } from './collab'
+import { attachCollab, connectCollabRedis, shutdownCollab, disconnectCollabRedis } from './collab'
 import { errorHandler } from './utils/errors/errorHandler'
 
 const app: Express = express()
@@ -82,6 +82,7 @@ async function startServer() {
                }),
                redisConfig(),
                startSubscriber(),
+               connectCollabRedis(),
           ]).then(() => {
                server.listen(PORT, () => {
                     console.log('🌐 Server is running on:', `${process.env.API_LINK as string}`)
@@ -97,7 +98,25 @@ async function startServer() {
      }
 }
 
+let shuttingDown = false
+async function gracefulShutdown(signal: string) {
+     if (shuttingDown) return
+     shuttingDown = true
+     console.log(`${signal} received, flushing collaboration state...`)
+     const forceExit = setTimeout(() => process.exit(0), 15000)
+     forceExit.unref()
+     try {
+          await shutdownCollab()
+          await disconnectCollabRedis()
+     } catch (error: any) {
+          logger.error({ message: 'Graceful shutdown error', error: error?.message, stack: error?.stack })
+     }
+     server.close(() => process.exit(0))
+}
+
 if (process.env.NODE_ENV !== 'test') {
+     process.on('SIGTERM', () => void gracefulShutdown('SIGTERM'))
+     process.on('SIGINT', () => void gracefulShutdown('SIGINT'))
      startServer()
 }
 

@@ -45,6 +45,8 @@ function tokenFromRequest(request: IncomingMessage): string | undefined {
      }
      const authHeader = request.headers.authorization;
      if (authHeader && authHeader.startsWith("Bearer ")) return authHeader.slice(7);
+     const queryToken = new URL(request.url ?? "", "http://internal").searchParams.get("token");
+     if (queryToken) return queryToken;
      return undefined;
 }
 

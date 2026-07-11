@@ -3,7 +3,7 @@ import type { Request, Response, NextFunction } from "express";
 import { authorizeDiagram } from "../authorize.diagram";
 
 const resolveDiagramAccess = vi.fn();
-vi.mock("../../../module/diagram/service/resolve.access", () => ({
+vi.mock("../../service/resolve.access", () => ({
      resolveDiagramAccess: (...args: unknown[]) => resolveDiagramAccess(...args),
 }));
 
