@@ -1,10 +1,6 @@
 import { NextFunction, Request, RequestHandler, Response } from "express";
-import { asyncHandler } from "../../../utils/api-requesthandler";
+import { addJobToQueue, asyncHandler, BaseAuth, getLocation, token_PASETO } from "../../../gen-import";
 import { generateUUID } from "../../../utils/uuid";
-import { token_PASETO } from "../utils/paseto.utils";
-import { addJobToQueue } from "../../../MessageQueue/emails/Queue/queue.email";
-import { BaseAuth } from "../service/base.auth.service";
-import { getLocation } from "../../../utils/getLocation";
 
 export const forgetPasswordController: RequestHandler = asyncHandler(
      async (req: Request, res: Response, _next: NextFunction) => {

@@ -1,10 +1,5 @@
 import { NextFunction, Request, RequestHandler, Response } from "express";
-import { asyncHandler } from "../../../utils/api-requesthandler";
-import { BaseAuth } from "../service/base.auth.service";
-import { token_PASETO } from "../utils/paseto.utils";
-import { addJobToQueue } from "../../../MessageQueue/emails/Queue/queue.email";
-import { formatLoginTime } from "../utils/formatLoginTime";
-import { getLocation } from "../../../utils/getLocation";
+import { addJobToQueue, asyncHandler, BaseAuth, formatLoginTime, getLocation, token_PASETO } from "../../../gen-import";
 
 
 export const googleController: RequestHandler = asyncHandler(

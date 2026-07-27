@@ -114,3 +114,6 @@ allowBuilds:
   msgpackr-extract: true
   prisma: true
   sharp: true
+
+minimumReleaseAgeExclude:
+  - gen-import@1.10.11

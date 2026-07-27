@@ -1,7 +1,7 @@
 {
   "totalFiles": 110,
   "totalExports": 462,
-  "totalImportEdges": 208,
+  "totalImportEdges": 207,
   "files": [
     {
       "file": "src/MessageQueue/emails/Queue/queue.email.ts",
@@ -1759,7 +1759,6 @@
         }
       ],
       "importedBy": [
-        "src/module/authentication/controller/login.controller.ts",
         "src/module/project/service/base.project.service.ts"
       ],
       "importsFrom": []
@@ -2086,8 +2085,7 @@
         "src/module/authentication/utils/paseto.utils.ts",
         "src/module/authentication/utils/formatLoginTime.ts",
         "src/utils/getLocation.ts",
-        "src/MessageQueue/emails/Queue/queue.email.ts",
-        "src/gen-import.ts"
+        "src/MessageQueue/emails/Queue/queue.email.ts"
       ]
     },
     {

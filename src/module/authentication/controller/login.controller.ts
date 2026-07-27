@@ -1,11 +1,6 @@
 import { NextFunction, Request, RequestHandler, Response } from "express";
-import { asyncHandler } from "../../../utils/api-requesthandler";
+import { addJobToQueue, asyncHandler, BaseAuth, formatLoginTime, getLocation, token_PASETO } from "../../../gen-import";
 import { LoginDTO } from "../DTO/index.dto";
-import { BaseAuth } from "../service/base.auth.service";
-import { token_PASETO } from "../utils/paseto.utils";
-import { formatLoginTime } from "../utils/formatLoginTime";
-import { getLocation } from "../../../utils/getLocation";
-import { addJobToQueue } from "../../../MessageQueue/emails/Queue/queue.email";
 
 export const loginController: RequestHandler = asyncHandler(
      async (req: Request, res: Response, _next: NextFunction) => {
