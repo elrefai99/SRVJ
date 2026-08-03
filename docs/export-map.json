@@ -1,7 +1,7 @@
 {
   "totalFiles": 110,
   "totalExports": 462,
-  "totalImportEdges": 207,
+  "totalImportEdges": 189,
   "files": [
     {
       "file": "src/MessageQueue/emails/Queue/queue.email.ts",
@@ -16,9 +16,6 @@
         }
       ],
       "importedBy": [
-        "src/module/authentication/controller/forget.password.controller.ts",
-        "src/module/authentication/controller/google.controller.ts",
-        "src/module/authentication/controller/login.controller.ts",
         "src/module/authentication/controller/register.controller.ts",
         "src/module/project/controller/invites.controller.ts"
       ],
@@ -40,12 +37,7 @@
         "src/MessageQueue/worker.emails.ts"
       ],
       "importsFrom": [
-        "src/MessageQueue/emails/template/login.ts",
-        "src/MessageQueue/emails/template/register.ts",
-        "src/MessageQueue/provider/resend.ts",
-        "src/utils/uuid.ts",
-        "src/MessageQueue/emails/template/invite.ts",
-        "src/MessageQueue/emails/template/forgetPassword.ts"
+        "src/gen-import.ts"
       ]
     },
     {
@@ -56,9 +48,7 @@
           "kind": "value"
         }
       ],
-      "importedBy": [
-        "src/MessageQueue/emails/jobs/job.process.emails.ts"
-      ],
+      "importedBy": [],
       "importsFrom": [
         "src/utils/escapeHtml.ts"
       ]
@@ -71,9 +61,7 @@
           "kind": "value"
         }
       ],
-      "importedBy": [
-        "src/MessageQueue/emails/jobs/job.process.emails.ts"
-      ],
+      "importedBy": [],
       "importsFrom": [
         "src/utils/escapeHtml.ts"
       ]
@@ -86,9 +74,7 @@
           "kind": "value"
         }
       ],
-      "importedBy": [
-        "src/MessageQueue/emails/jobs/job.process.emails.ts"
-      ],
+      "importedBy": [],
       "importsFrom": [
         "src/utils/escapeHtml.ts"
       ]
@@ -101,9 +87,7 @@
           "kind": "value"
         }
       ],
-      "importedBy": [
-        "src/MessageQueue/emails/jobs/job.process.emails.ts"
-      ],
+      "importedBy": [],
       "importsFrom": [
         "src/utils/escapeHtml.ts"
       ]
@@ -143,21 +127,6 @@
       ],
       "importsFrom": [
         "src/module/Notifications/shared/redis.ts",
-        "src/config/prisma.ts"
-      ]
-    },
-    {
-      "file": "src/MessageQueue/provider/resend.ts",
-      "exports": [
-        {
-          "name": "resendFunction",
-          "kind": "value"
-        }
-      ],
-      "importedBy": [
-        "src/MessageQueue/emails/jobs/job.process.emails.ts"
-      ],
-      "importsFrom": [
         "src/config/prisma.ts"
       ]
     },
@@ -473,8 +442,8 @@
       ],
       "importedBy": [
         "src/MessageQueue/notifications/jobs/job.process.notification.ts",
-        "src/MessageQueue/provider/resend.ts",
         "src/app.ts",
+        "src/functions/provider/resend.ts",
         "src/middleware/user/user.middleware.ts",
         "src/module/Notifications/controller/list.controller.ts",
         "src/module/Notifications/controller/publish.controller.ts",
@@ -524,6 +493,19 @@
       "importsFrom": [
         "src/module/Notifications/shared/redis.ts",
         "src/module/Notifications/utils/client.ts"
+      ]
+    },
+    {
+      "file": "src/functions/provider/resend.ts",
+      "exports": [
+        {
+          "name": "resendFunction",
+          "kind": "value"
+        }
+      ],
+      "importedBy": [],
+      "importsFrom": [
+        "src/config/prisma.ts"
       ]
     },
     {
@@ -1759,6 +1741,10 @@
         }
       ],
       "importedBy": [
+        "src/MessageQueue/emails/jobs/job.process.emails.ts",
+        "src/module/authentication/controller/forget.password.controller.ts",
+        "src/module/authentication/controller/google.controller.ts",
+        "src/module/authentication/controller/login.controller.ts",
         "src/module/project/service/base.project.service.ts"
       ],
       "importsFrom": []
@@ -2044,12 +2030,8 @@
       ],
       "importedBy": [],
       "importsFrom": [
-        "src/utils/api-requesthandler.ts",
-        "src/utils/uuid.ts",
-        "src/module/authentication/utils/paseto.utils.ts",
-        "src/MessageQueue/emails/Queue/queue.email.ts",
-        "src/module/authentication/service/base.auth.service.ts",
-        "src/utils/getLocation.ts"
+        "src/gen-import.ts",
+        "src/utils/uuid.ts"
       ]
     },
     {
@@ -2062,12 +2044,7 @@
       ],
       "importedBy": [],
       "importsFrom": [
-        "src/utils/api-requesthandler.ts",
-        "src/module/authentication/service/base.auth.service.ts",
-        "src/module/authentication/utils/paseto.utils.ts",
-        "src/MessageQueue/emails/Queue/queue.email.ts",
-        "src/module/authentication/utils/formatLoginTime.ts",
-        "src/utils/getLocation.ts"
+        "src/gen-import.ts"
       ]
     },
     {
@@ -2080,12 +2057,8 @@
       ],
       "importedBy": [],
       "importsFrom": [
-        "src/module/authentication/DTO/index.dto.ts",
-        "src/module/authentication/service/base.auth.service.ts",
-        "src/module/authentication/utils/paseto.utils.ts",
-        "src/module/authentication/utils/formatLoginTime.ts",
-        "src/utils/getLocation.ts",
-        "src/MessageQueue/emails/Queue/queue.email.ts"
+        "src/gen-import.ts",
+        "src/module/authentication/DTO/index.dto.ts"
       ]
     },
     {
@@ -2163,9 +2136,6 @@
         }
       ],
       "importedBy": [
-        "src/module/authentication/controller/forget.password.controller.ts",
-        "src/module/authentication/controller/google.controller.ts",
-        "src/module/authentication/controller/login.controller.ts",
         "src/module/authentication/controller/register.controller.ts"
       ],
       "importsFrom": [
@@ -2182,10 +2152,7 @@
           "kind": "value"
         }
       ],
-      "importedBy": [
-        "src/module/authentication/controller/google.controller.ts",
-        "src/module/authentication/controller/login.controller.ts"
-      ],
+      "importedBy": [],
       "importsFrom": []
     },
     {
@@ -2206,9 +2173,6 @@
       ],
       "importedBy": [
         "src/middleware/user/user.middleware.ts",
-        "src/module/authentication/controller/forget.password.controller.ts",
-        "src/module/authentication/controller/google.controller.ts",
-        "src/module/authentication/controller/login.controller.ts",
         "src/module/authentication/controller/refresh.controller.ts",
         "src/module/authentication/controller/register.controller.ts",
         "src/module/authentication/controller/reset.password.controller.ts",
@@ -2869,8 +2833,6 @@
         "src/module/Notifications/controller/publish.controller.ts",
         "src/module/Notifications/controller/seen.controller.ts",
         "src/module/Notifications/controller/stream.controller.ts",
-        "src/module/authentication/controller/forget.password.controller.ts",
-        "src/module/authentication/controller/google.controller.ts",
         "src/module/authentication/controller/logout.controller.ts",
         "src/module/authentication/controller/refresh.controller.ts",
         "src/module/authentication/controller/register.controller.ts",
@@ -2976,11 +2938,7 @@
           "kind": "value"
         }
       ],
-      "importedBy": [
-        "src/module/authentication/controller/forget.password.controller.ts",
-        "src/module/authentication/controller/google.controller.ts",
-        "src/module/authentication/controller/login.controller.ts"
-      ],
+      "importedBy": [],
       "importsFrom": []
     },
     {
@@ -3058,7 +3016,6 @@
         }
       ],
       "importedBy": [
-        "src/MessageQueue/emails/jobs/job.process.emails.ts",
         "src/module/authentication/controller/forget.password.controller.ts"
       ],
       "importsFrom": []

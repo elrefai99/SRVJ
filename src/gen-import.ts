@@ -27,7 +27,7 @@ export declare const loginTemp: typeof import('./MessageQueue/emails/template/lo
 export declare const registerTemp: typeof import('./MessageQueue/emails/template/register').registerTemp;
 export declare const getPostgresConnectionString: typeof import('./config/postgres-url').getPostgresConnectionString;
 export declare const prisma: typeof import('./config/prisma').default;
-export declare const resendFunction: typeof import('./MessageQueue/provider/resend').resendFunction;
+export declare const resendFunction: typeof import('./functions/provider/resend').resendFunction;
 export declare const generateUUID: typeof import('./utils/uuid').generateUUID;
 export declare const sendEmail: typeof import('./MessageQueue/emails/jobs/job.process.emails').sendEmail;
 export declare const jobProcessor: typeof import('./MessageQueue/emails/jobs/job.process.emails').jobProcessor;
@@ -162,7 +162,7 @@ Object.defineProperty(module.exports, 'loginTemp', { get() { return require('./M
 Object.defineProperty(module.exports, 'registerTemp', { get() { return require('./MessageQueue/emails/template/register').registerTemp }, enumerable: true, configurable: true });
 Object.defineProperty(module.exports, 'getPostgresConnectionString', { get() { return require('./config/postgres-url').getPostgresConnectionString }, enumerable: true, configurable: true });
 Object.defineProperty(module.exports, 'prisma', { get() { return require('./config/prisma').default }, enumerable: true, configurable: true });
-Object.defineProperty(module.exports, 'resendFunction', { get() { return require('./MessageQueue/provider/resend').resendFunction }, enumerable: true, configurable: true });
+Object.defineProperty(module.exports, 'resendFunction', { get() { return require('./functions/provider/resend').resendFunction }, enumerable: true, configurable: true });
 Object.defineProperty(module.exports, 'generateUUID', { get() { return require('./utils/uuid').generateUUID }, enumerable: true, configurable: true });
 Object.defineProperty(module.exports, 'sendEmail', { get() { return require('./MessageQueue/emails/jobs/job.process.emails').sendEmail }, enumerable: true, configurable: true });
 Object.defineProperty(module.exports, 'jobProcessor', { get() { return require('./MessageQueue/emails/jobs/job.process.emails').jobProcessor }, enumerable: true, configurable: true });
