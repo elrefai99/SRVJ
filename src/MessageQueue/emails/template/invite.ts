@@ -7,6 +7,8 @@ export const inviteTemp = (payload: IPayload_invite) => {
   const boardName = escapeHtml(payload.boardName)
   const workspaceName = escapeHtml(payload.workspaceName)
   const role = escapeHtml(payload.role)
+
+  console.log(payload)
   return `
      <!DOCTYPE html>
 <html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">

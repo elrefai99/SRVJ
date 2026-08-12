@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { validateDTO } from "../../middleware/validateDTO";
 import { acceptInvitesController, createController, deleteController, editController, getController, getInvitesController, invitesController } from "./project.controller";
-import { createProjectDTO, editProjectDTO, getInviteDTO, inviteProjectDTO } from "./DTO";
+import { createProjectDTO, editProjectDTO, inviteProjectDTO } from "./DTO";
 import { userMiddleware } from "../../middleware/user/user.middleware";
 
 const router: Router = Router()
@@ -12,7 +12,7 @@ router.put('/edit/:id', userMiddleware, validateDTO(editProjectDTO), editControl
 router.delete('/delete/:id', userMiddleware, deleteController)
 router.post('/invite', userMiddleware, validateDTO(inviteProjectDTO), invitesController)
 router.patch('/invite/accept/:id', userMiddleware, acceptInvitesController)
-router.post('/invite/get', validateDTO(getInviteDTO), getInvitesController)
+router.get('/invite/get', getInvitesController)
 
 export default router
 
