@@ -5,7 +5,7 @@ import { getInviteDTO } from "../DTO";
 
 export const getInvitesController: RequestHandler = asyncHandler(
      async (req: Request, res: Response, _next: NextFunction) => {
-          const { token } = req.body as getInviteDTO
+          const { token } = req.query as getInviteDTO
 
           const based_project = new BasedProject()
           const result = await based_project.getInvitesService(token)

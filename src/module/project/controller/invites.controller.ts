@@ -22,7 +22,7 @@ export const invitesController: RequestHandler = asyncHandler(
                     workspaceName: "SRVJ",
                     role: "All",
                     expiresIn: "6h",
-                    acceptUrl: `${process.env.NODE_ENV == "development" ? process.env.SITE_URL_TEST : process.env.SITE_URL_LIVE}/app/invite/${token}`
+                    acceptUrl: `${process.env.NODE_ENV == "development" ? process.env.SITE_URL_TEST : process.env.SITE_URL_TEST}/app/invite/${token}`
                }
           }
           await addJobToQueue("invite", emailBody)
