@@ -24,7 +24,7 @@ export async function resolveDiagramAccess(
      const diagram = await diagramModel
           .findOne(diagramQuery)
           .select({ _id: 1, site_id: 1, projectId: 1 })
-          .lean();
+          .read("secondaryPreferred")
      if (!diagram) return null;
 
      const project = await prisma.project.findFirst({

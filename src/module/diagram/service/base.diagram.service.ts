@@ -6,7 +6,7 @@ import { invalidateRoom } from "../../../collab/server";
 
 export class BasedDiagram {
      public async getDiagramService(payload: IPayloadDiagram): Promise<any> {
-          const diagram: any = await diagramModel.findOne({ site_id: payload.siteId }).lean()
+          const diagram: any = await diagramModel.findOne({ site_id: payload.siteId }).read("secondaryPreferred")
           if (!diagram) {
                return { success: false, error: true, message: "Diagram not found", data: null }
           }
@@ -27,7 +27,7 @@ export class BasedDiagram {
      }
 
      public async updateDiagramService(payload: IPayloadDiagram): Promise<any> {
-          const diagram = await diagramModel.findOne({ projectId: payload.projectId })
+          const diagram = await diagramModel.findOne({ projectId: payload.projectId }).read("secondaryPreferred")
           if (!diagram) {
                return { success: false, error: true, message: "Diagram not found", data: null }
           }
@@ -57,7 +57,7 @@ export class BasedDiagram {
      }
 
      public async getVersionsService(payload: IPayloadDiagram): Promise<any> {
-          const diagram = await diagramModel.findOne({ projectId: payload.projectId }).select("_id").lean()
+          const diagram = await diagramModel.findOne({ projectId: payload.projectId }).select("_id").read("secondaryPreferred")
           if (!diagram) {
                return { success: false, error: true, message: "Diagram not found", data: null }
           }
@@ -91,7 +91,7 @@ export class BasedDiagram {
      }
 
      public async getVersionService(payload: IPayloadDiagram): Promise<any> {
-          const diagram = await diagramModel.findOne({ projectId: payload.projectId }).select("_id").lean()
+          const diagram = await diagramModel.findOne({ projectId: payload.projectId }).select("_id").read("secondaryPreferred")
           if (!diagram) {
                return { success: false, error: true, message: "Diagram not found", data: null }
           }
@@ -107,7 +107,7 @@ export class BasedDiagram {
      }
 
      public async restoreVersionService(payload: IPayloadDiagram): Promise<any> {
-          const diagram = await diagramModel.findOne({ projectId: payload.projectId })
+          const diagram = await diagramModel.findOne({ projectId: payload.projectId }).read("secondaryPreferred")
           if (!diagram) {
                return { success: false, error: true, message: "Diagram not found", data: null }
           }

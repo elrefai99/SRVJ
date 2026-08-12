@@ -12,14 +12,14 @@ function toBytes(state: unknown): Uint8Array | null {
 }
 
 export async function loadDocument(diagramId: string, doc: Y.Doc): Promise<void> {
-     const snapshot = await diagramYDocModel.findOne({ diagramId }).select({ state: 1 }).lean();
+     const snapshot = await diagramYDocModel.findOne({ diagramId }).select({ state: 1 }).read("secondaryPreferred")
      const bytes = toBytes(snapshot?.state);
      if (bytes && bytes.length > 0) {
           Y.applyUpdate(doc, bytes);
           return;
      }
 
-     const diagram = await diagramModel.findById(diagramId).select({ nodes: 1, edges: 1, metadata: 1 }).lean();
+     const diagram = await diagramModel.findById(diagramId).select({ nodes: 1, edges: 1, metadata: 1 }).read("secondaryPreferred")
      if (!diagram) return;
 
      doc.transact(() => {
