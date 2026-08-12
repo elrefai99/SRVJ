@@ -13,6 +13,8 @@ export const getInvitesController: RequestHandler = asyncHandler(
                res.status(403).json({ code: 403, status: "Forbidden", message: "This token has expired. Please request a new one", });
                return
           }
+          console.log(result);
+
           res.status(200).json({ code: 200, status: "OK", data: result?.invite })
           return
      }

@@ -33,7 +33,7 @@ export class BasedProject {
           }
      }
 
-     public async getService(payload: any) {
+     public async getService(payload: IPayloadProject) {
           const cacheKey = `projects:${payload.user}:${payload.page || 1}:${payload.limit || 10}:${payload.search || ""}`
           const cachedData = await this.redis.getData(cacheKey)
           if (cachedData) {
@@ -204,15 +204,6 @@ export class BasedProject {
      }
 
      public async inviteService(payload: any): Promise<any> {
-          await prisma.user.findFirst({
-               where: {
-                    email: payload.email,
-                    status: tableStatus.active
-               },
-               select: {
-                    id: true
-               }
-          })
           const project = await prisma.project.findFirst({
                where: {
                     site_id: payload.project,

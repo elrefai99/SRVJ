@@ -7,4 +7,8 @@ export interface IPayloadProject {
      public readonly user?: number
      public readonly project?: string
      public readonly oldProject?: any
-} 
+     public readonly search?: string
+     public readonly limit?: string
+     public readonly page?: string
+}
+
