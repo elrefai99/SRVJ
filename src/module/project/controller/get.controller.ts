@@ -1,14 +1,15 @@
 import { NextFunction, Request, RequestHandler, Response } from "express";
 import { asyncHandler } from "../../../utils/api-requesthandler";
 import { BasedProject } from "../service/base.project.service";
+import { IPayloadProject } from "../@types";
 
 export const getController: RequestHandler = asyncHandler(
   async (req: Request, res: Response, _next: NextFunction) => {
-    const payload = {
+    const payload: IPayloadProject = {
       user: req.user?.id,
-      page: req.query.page,
-      limit: req.query.limit,
-      search: req.query.search
+      page: req.query.page as string,
+      limit: req.query.limit as string,
+      search: req.query.search as string
     }
     const based_project: BasedProject = new BasedProject()
     const result = await based_project.getService(payload)
