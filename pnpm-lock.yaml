@@ -157,8 +157,8 @@ catalogs:
       specifier: ^11.3.5
       version: 11.4.0
     gen-import:
-      specifier: ^1.11.11
-      version: 1.11.11
+      specifier: ^2.1.11
+      version: 2.1.11
     globals:
       specifier: ^17.4.0
       version: 17.7.0
@@ -479,7 +479,7 @@ importers:
         version: 11.4.0
       gen-import:
         specifier: catalog:tools
-        version: 1.11.11
+        version: 2.1.11
       globals:
         specifier: catalog:tools
         version: 17.7.0
@@ -2533,8 +2533,8 @@ packages:
     resolution: {integrity: sha512-zV/5HKTfCeKWnxG0Dmrw51hEWFGfcF2xiXqcA3+J90WDuP0SvoiSO5ORvcBsifmx/FoIjgQN3oNOGaQ5PhLFkg==}
     engines: {node: '>=18'}
 
-  gen-import@1.11.11:
-    resolution: {integrity: sha512-RKtgIJVQY+DhHtP0gt0CuUi/pgwoQzcgvRDyb6YahjP5epi1XHNrye/M+wP/c0uRTKqYam6CNmrBP1WrMfthBQ==}
+  gen-import@2.1.11:
+    resolution: {integrity: sha512-aOuq+UqeKy/keUXFRSdYkNzXzW0ljMC1UxpF8PZsikLhQQyOsIUPAJEb2pP5an25nRF2Hq/A6vcEDEVpIqzMFA==}
     engines: {node: '>=16'}
     hasBin: true
 
@@ -6027,7 +6027,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  gen-import@1.11.11:
+  gen-import@2.1.11:
     dependencies:
       boxen: 8.0.1
       chalk: 5.6.2
