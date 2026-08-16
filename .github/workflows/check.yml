@@ -33,3 +33,12 @@ jobs:
         env:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/postgres
         run: pnpm build
+
+  docker:
+    needs: build
+    uses: ./.github/workflows/deploy.aws.ecs.yml
+
+  notify:
+    needs: docker
+    uses: ./.github/workflows/notify.discord.yml
+    secrets: inherit

@@ -1,24 +1,41 @@
 name: Notify Discord
 
 on:
-  workflow_run:
-    workflows:
-      - Test Build TypeScript Project
-      - check docker build
-    types:
-      - completed
+  workflow_call:
+
+permissions:
+  contents: read
 
 jobs:
   notify:
     runs-on: ubuntu-latest
     steps:
-      - name: Send Discord Notification Me Server
+      - name: Send Discord notification
+        env:
+          GH_ACTOR: ${{ github.actor }}
+          GH_BRANCH: ${{ github.ref_name }}
+          GH_COMMIT_MSG: ${{ github.event.head_commit.message || github.sha }}
+          GH_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          DISCORD_WEBHOOK_SRVJ: ${{ secrets.DISCORD_WEBHOOK_SRVJ }}
         run: |
-          curl -H "Content-Type: application/json" \
-               -X POST \
-               -d "{
-                    \"avatar_url\": \" https://github.com/${{ github.actor }}.png \",
-                    \"username\": \" ${{ github.actor }} \",
-                    \"content\": \" Check Build TypeScript Project: Done \n Build and push Docker: Done \n Deploy to EC2: Done \n S3 Backup: Done \nServer: **${{project_name}} Server*** \nNew push in branch: **${{ github.ref_name }}** \nCommit: **${{ github.event.head_commit.message }}**\"
-                  }" \
-               ${{ secrets.DISCORD_WEBHOOK_SRVJ }}
+          if [ -z "$DISCORD_WEBHOOK_SRVJ" ]; then
+            echo "::error::DISCORD_WEBHOOK_SRVJ secret is not configured"
+            exit 1
+          fi
+
+          payload=$(jq -n \
+            --arg avatar "https://github.com/${GH_ACTOR}.png" \
+            --arg username "$GH_ACTOR" \
+            --arg content "TypeScript build: Passed
+          Docker build: Passed
+          Server: **SRVJ Server**
+          Branch: **${GH_BRANCH}**
+          Commit: **${GH_COMMIT_MSG}**
+          Run: ${GH_RUN_URL}" \
+            '{avatar_url: $avatar, username: $username, content: $content}')
+
+          curl --fail-with-body --silent --show-error \
+            -H "Content-Type: application/json" \
+            -X POST \
+            -d "$payload" \
+            "$DISCORD_WEBHOOK_SRVJ"
