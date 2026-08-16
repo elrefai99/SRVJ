@@ -1,12 +1,6 @@
 import { NextFunction, Request, RequestHandler, Response } from "express";
 import { V4 } from "paseto";
-import { asyncHandler } from "../../utils/api-requesthandler";
-import { loadPubliceKey } from "../../utils/loadKey";
-import prisma from "../../config/prisma";
-import { AppError } from "../../utils/errors/app-error";
-import { tableStatus } from "../../generated/prisma";
-import { TOKEN_VERSION } from "../../module/authentication/utils/paseto.utils";
-import { cacheService } from "../../functions/redis/cache.service.fun";
+import { AppError, asyncHandler, BaseUser, cacheService, loadPubliceKey, TOKEN_VERSION } from "../../gen-import";
 
 const USER_CACHE_TTL = 300
 
@@ -37,20 +31,9 @@ export const userMiddleware: RequestHandler = asyncHandler(
                     next()
                     return
                }
-               const user = await prisma.user.findFirst({
-                    where: {
-                         id: payload.data.user_id,
-                         status: tableStatus.active,
-                    },
-                    select: {
-                         id: true,
-                         fullname: true,
-                         email: true,
-                         username: true,
-                         avatar: true,
-                         sessionVersion: true
-                    }
-               })
+               const based_user = new BaseUser()
+               const user = await based_user.user_profile(payload.data.user_id as number)
+
                if (!user) {
                     next(new AppError("User not found", 404))
                     return

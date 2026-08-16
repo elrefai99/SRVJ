@@ -4,29 +4,16 @@ import bcrypt from "bcryptjs"
 import { avatarProfile } from "../../../functions/upload/avatar.image.fun";
 import { OAuth2Client } from "google-auth-library";
 import { tableStatus } from "../../../generated/prisma";
+import { BaseUser } from "../../user/Service/base.user.service";
 
 export class BaseAuth {
      private API_KEY_SALT: number
      private GOOGLE_CLIENT: OAuth2Client
+     private baseUser: BaseUser
      constructor() {
           this.API_KEY_SALT = Number(process.env.API_KEY_SALT)
           this, this.GOOGLE_CLIENT = new OAuth2Client(process.env.GOOGLE_CLIENT_ID as string);
-     }
-
-     private async check_user(payload: { email: string }): Promise<any> {
-          const user = await prisma.user.findFirst({
-               where: {
-                    email: payload.email.toLowerCase(),
-                    status: tableStatus.active
-               },
-               select: {
-                    id: true,
-               }
-          })
-          if (!user) {
-               return { status: false, data: null }
-          }
-          return { status: true, data: { id: user.id } }
+          this.baseUser = new BaseUser()
      }
 
      private async google_data(payload: any) {
@@ -40,7 +27,7 @@ export class BaseAuth {
      }
 
      public async create_user(payload: RegisterDTO): Promise<any> {
-          const user = await this.check_user({ email: payload.email })
+          const user = await this.baseUser.user_profile_email({ email: payload.email })
 
           if (user.status) {
                return { success: false, error: true, message: "this user account already exist", data: null }
@@ -73,18 +60,7 @@ export class BaseAuth {
      }
 
      public async login_service(payload: LoginDTO): Promise<any> {
-          const user: any = await prisma.user.findFirst({
-               where: {
-                    email: payload.email.toLowerCase(),
-                    status: tableStatus.active
-               },
-               select: {
-                    id: true,
-                    password: true,
-                    fullname: true,
-                    sessionVersion: true
-               }
-          })
+          const user = await this.baseUser.user_profile_email({ email: payload.email })
 
           if (!user) {
                return { success: false, error: true, message: "Invalid email or password", data: null }
@@ -96,17 +72,10 @@ export class BaseAuth {
 
           return { success: true, error: false, message: "Success fetch user account, success login", data: user }
      }
+
      public async forgetPasswordService(payload: string): Promise<any> {
-          const user = await prisma.user.findFirst({
-               where: {
-                    email: payload.toLowerCase(),
-                    status: tableStatus.active
-               },
-               select: {
-                    id: true,
-                    fullname: true
-               }
-          })
+          const user = await this.baseUser.user_profile_email({ email: payload })
+
           if (!user) {
                return { error: true, message: "user not founded" }
           }
@@ -121,19 +90,7 @@ export class BaseAuth {
           }
 
           const email = token.email.toLowerCase()
-          const user = await prisma.user.findFirst({
-               where: {
-                    email,
-                    status: tableStatus.active
-               },
-               select: {
-                    id: true,
-                    fullname: true,
-                    email: true,
-                    googleId: true,
-                    sessionVersion: true
-               }
-          })
+          const user = await this.baseUser.user_profile_email({ email: email })
 
           if (user) {
                if (!user.googleId) {

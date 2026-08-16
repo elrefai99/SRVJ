@@ -1,18 +1,17 @@
 name: Notify Discord
 
 on:
-  push:
-    branches:
-      - "**"
-
-permissions:
-  contents: read
+  workflow_run:
+    workflows:
+      - Test Build TypeScript Project
+    types:
+      - completed
 
 jobs:
   notify:
     runs-on: ubuntu-latest
     steps:
-      - name: Send Discord Notification Lesoll Server
+      - name: Send Discord Notification Me Server
         env:
           GH_ACTOR: ${{ github.actor }}
           GH_BRANCH: ${{ github.ref_name }}

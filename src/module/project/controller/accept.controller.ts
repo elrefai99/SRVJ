@@ -1,6 +1,6 @@
 import { NextFunction, Request, RequestHandler, Response } from "express";
 import { asyncHandler } from "../../../utils/api-requesthandler";
-import { addNotificationJobToQueue } from "../../../MessageQueue/notifications/Queue/queue.notification";
+import { addNotificationJobToQueue } from "../../../MessageQueue/Queue/queue.notification";
 import { NotificationPayload } from "../../Notifications/@types";
 import { BasedProject } from "../service/base.project.service";
 

@@ -3,7 +3,7 @@ import { asyncHandler } from "../../../utils/api-requesthandler";
 import { RegisterDTO } from "../DTO/index.dto";
 import { BaseAuth } from "../service/base.auth.service";
 import { token_PASETO } from "../utils/paseto.utils";
-import { addJobToQueue } from "../../..//MessageQueue/emails/Queue/queue.email";
+import { addJobToQueue } from "../../../MessageQueue/Queue/queue.email";
 
 export const registerController: RequestHandler = asyncHandler(
      async (req: Request, res: Response, _next: NextFunction) => {

@@ -2,7 +2,7 @@ import type { Request, RequestHandler, Response } from 'express'
 import { v4 as uuidv4 } from 'uuid'
 import { asyncHandler } from '../../../utils/api-requesthandler'
 import { NotificationPayload } from '../@types';
-import { addNotificationJobToQueue } from '../../../MessageQueue/notifications/Queue/queue.notification';
+import { addNotificationJobToQueue } from '../../../MessageQueue/Queue/queue.notification';
 import { AppError } from '../../../utils/errors/app-error';
 import prisma from '../../../config/prisma';
 import { tableStatus } from '../../../generated/prisma';

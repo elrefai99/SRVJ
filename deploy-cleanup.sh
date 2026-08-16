@@ -1,12 +1,20 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# clean all data in cache
+echo "🧹 Clearing Redis..."
+node scripts/clear-redis.js
+
 REMOVED=(
   "k8s"
   "docs"
   ".claude"
   ".agents"
   ".cursor"
+  "mcp"
+  ".husky"
+  ".github"
+  "script"
   ".github"
   "nginx"
   "Dockerfile"
@@ -44,8 +52,5 @@ else
   echo "       (on Render the RENDER env var is detected automatically)"
   exit 1
 fi
-
-echo "🧹 Clearing Redis..."
-node scripts/clear-redis.js
 
 echo "✅ ✅ done."
