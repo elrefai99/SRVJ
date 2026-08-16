@@ -1,5 +1,5 @@
 import { IPayload_register } from "./@types"
-import { escapeHtml } from "../../../utils/escapeHtml"
+import { escapeHtml } from "../../utils/escapeHtml"
 
 export const registerTemp = (payload: IPayload_register) => {
   const firstName = escapeHtml(payload.firstName)

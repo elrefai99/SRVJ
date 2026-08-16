@@ -1,5 +1,5 @@
 import { IPayload_login } from "./@types"
-import { escapeHtml } from "../../../utils/escapeHtml"
+import { escapeHtml } from "../../utils/escapeHtml"
 
 export const loginTemp = (payload: IPayload_login) => {
   const firstName = escapeHtml(payload.firstName)

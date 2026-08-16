@@ -1,5 +1,5 @@
 import { IPayload_forgetPassword } from "./@types"
-import { escapeHtml } from "../../../utils/escapeHtml"
+import { escapeHtml } from "../../utils/escapeHtml"
 
 export const forgetPasswordTemp = (payload: IPayload_forgetPassword) => {
   const firstName = escapeHtml(payload.firstName)
