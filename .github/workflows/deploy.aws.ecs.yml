@@ -1,13 +1,11 @@
-name: Deploy to AWS
+name: check docker build
 
 on:
-  push:
-    branches:
-      - "**"
-  workflow_dispatch:
-
-permissions:
-  contents: read
+  workflow_run:
+    workflows:
+      - Test Build TypeScript Project
+    types:
+      - completed
 
 jobs:
   deploy:
