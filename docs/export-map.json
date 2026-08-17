@@ -1,10 +1,10 @@
 {
   "totalFiles": 111,
-  "totalExports": 604,
-  "totalImportEdges": 189,
+  "totalExports": 471,
+  "totalImportEdges": 184,
   "files": [
     {
-      "file": "src/MessageQueue/emails/Queue/queue.email.ts",
+      "file": "src/MessageQueue/Queue/queue.email.ts",
       "exports": [
         {
           "name": "addJobToQueue",
@@ -22,7 +22,25 @@
       "importsFrom": []
     },
     {
-      "file": "src/MessageQueue/emails/jobs/job.process.emails.ts",
+      "file": "src/MessageQueue/Queue/queue.notification.ts",
+      "exports": [
+        {
+          "name": "addNotificationJobToQueue",
+          "kind": "value"
+        },
+        {
+          "name": "queue",
+          "kind": "value"
+        }
+      ],
+      "importedBy": [
+        "src/module/Notifications/controller/publish.controller.ts",
+        "src/module/project/controller/accept.controller.ts"
+      ],
+      "importsFrom": []
+    },
+    {
+      "file": "src/MessageQueue/jobs/job.process.emails.ts",
       "exports": [
         {
           "name": "sendEmail",
@@ -41,77 +59,7 @@
       ]
     },
     {
-      "file": "src/MessageQueue/emails/template/forgetPassword.ts",
-      "exports": [
-        {
-          "name": "forgetPasswordTemp",
-          "kind": "value"
-        }
-      ],
-      "importedBy": [],
-      "importsFrom": [
-        "src/utils/escapeHtml.ts"
-      ]
-    },
-    {
-      "file": "src/MessageQueue/emails/template/invite.ts",
-      "exports": [
-        {
-          "name": "inviteTemp",
-          "kind": "value"
-        }
-      ],
-      "importedBy": [],
-      "importsFrom": [
-        "src/utils/escapeHtml.ts"
-      ]
-    },
-    {
-      "file": "src/MessageQueue/emails/template/login.ts",
-      "exports": [
-        {
-          "name": "loginTemp",
-          "kind": "value"
-        }
-      ],
-      "importedBy": [],
-      "importsFrom": [
-        "src/utils/escapeHtml.ts"
-      ]
-    },
-    {
-      "file": "src/MessageQueue/emails/template/register.ts",
-      "exports": [
-        {
-          "name": "registerTemp",
-          "kind": "value"
-        }
-      ],
-      "importedBy": [],
-      "importsFrom": [
-        "src/utils/escapeHtml.ts"
-      ]
-    },
-    {
-      "file": "src/MessageQueue/notifications/Queue/queue.notification.ts",
-      "exports": [
-        {
-          "name": "addNotificationJobToQueue",
-          "kind": "value"
-        },
-        {
-          "name": "queue",
-          "kind": "value"
-        }
-      ],
-      "importedBy": [
-        "src/module/Notifications/controller/publish.controller.ts",
-        "src/module/project/controller/accept.controller.ts"
-      ],
-      "importsFrom": []
-    },
-    {
-      "file": "src/MessageQueue/notifications/jobs/job.process.notification.ts",
+      "file": "src/MessageQueue/jobs/job.process.notification.ts",
       "exports": [
         {
           "name": "sendNotification",
@@ -126,8 +74,59 @@
         "src/MessageQueue/worker.notification.ts"
       ],
       "importsFrom": [
-        "src/module/Notifications/shared/redis.ts",
-        "src/config/prisma.ts"
+        "src/gen-import.ts"
+      ]
+    },
+    {
+      "file": "src/MessageQueue/template/forgetPassword.ts",
+      "exports": [
+        {
+          "name": "forgetPasswordTemp",
+          "kind": "value"
+        }
+      ],
+      "importedBy": [],
+      "importsFrom": [
+        "src/utils/escapeHtml.ts"
+      ]
+    },
+    {
+      "file": "src/MessageQueue/template/invite.ts",
+      "exports": [
+        {
+          "name": "inviteTemp",
+          "kind": "value"
+        }
+      ],
+      "importedBy": [],
+      "importsFrom": [
+        "src/utils/escapeHtml.ts"
+      ]
+    },
+    {
+      "file": "src/MessageQueue/template/login.ts",
+      "exports": [
+        {
+          "name": "loginTemp",
+          "kind": "value"
+        }
+      ],
+      "importedBy": [],
+      "importsFrom": [
+        "src/utils/escapeHtml.ts"
+      ]
+    },
+    {
+      "file": "src/MessageQueue/template/register.ts",
+      "exports": [
+        {
+          "name": "registerTemp",
+          "kind": "value"
+        }
+      ],
+      "importedBy": [],
+      "importsFrom": [
+        "src/utils/escapeHtml.ts"
       ]
     },
     {
@@ -441,10 +440,8 @@
         }
       ],
       "importedBy": [
-        "src/MessageQueue/notifications/jobs/job.process.notification.ts",
         "src/app.ts",
         "src/functions/provider/resend.ts",
-        "src/middleware/user/user.middleware.ts",
         "src/module/Notifications/controller/list.controller.ts",
         "src/module/Notifications/controller/publish.controller.ts",
         "src/module/Notifications/controller/seen.controller.ts",
@@ -534,7 +531,6 @@
       ],
       "importedBy": [
         "src/functions/redis/cache.invalidation.ts",
-        "src/middleware/user/user.middleware.ts",
         "src/module/authentication/controller/reset.password.controller.ts",
         "src/module/project/service/base.project.service.ts",
         "src/module/user/Middleware/me.middleware.ts",
@@ -594,581 +590,6 @@
       ]
     },
     {
-      "file": "src/gen-app-config.ts",
-      "exports": [
-        {
-          "name": "TokenType",
-          "kind": "value"
-        },
-        {
-          "name": "IDiagramYDoc",
-          "kind": "value"
-        },
-        {
-          "name": "DiagramAction",
-          "kind": "value"
-        },
-        {
-          "name": "DiagramAccess",
-          "kind": "value"
-        },
-        {
-          "name": "ResolveBy",
-          "kind": "value"
-        },
-        {
-          "name": "CollabIdentity",
-          "kind": "value"
-        },
-        {
-          "name": "CollabContext",
-          "kind": "value"
-        },
-        {
-          "name": "AuthenticatedUser",
-          "kind": "value"
-        },
-        {
-          "name": "addJobToQueue",
-          "kind": "value"
-        },
-        {
-          "name": "queue",
-          "kind": "value"
-        },
-        {
-          "name": "escapeHtml",
-          "kind": "value"
-        },
-        {
-          "name": "forgetPasswordTemp",
-          "kind": "value"
-        },
-        {
-          "name": "inviteTemp",
-          "kind": "value"
-        },
-        {
-          "name": "loginTemp",
-          "kind": "value"
-        },
-        {
-          "name": "registerTemp",
-          "kind": "value"
-        },
-        {
-          "name": "getPostgresConnectionString",
-          "kind": "value"
-        },
-        {
-          "name": "prisma",
-          "kind": "value"
-        },
-        {
-          "name": "resendFunction",
-          "kind": "value"
-        },
-        {
-          "name": "addNotificationJobToQueue",
-          "kind": "value"
-        },
-        {
-          "name": "redis",
-          "kind": "value"
-        },
-        {
-          "name": "subscriber",
-          "kind": "value"
-        },
-        {
-          "name": "connectRedis",
-          "kind": "value"
-        },
-        {
-          "name": "connectSubscriber",
-          "kind": "value"
-        },
-        {
-          "name": "sendNotification",
-          "kind": "value"
-        },
-        {
-          "name": "jobNotificationProcessor",
-          "kind": "value"
-        },
-        {
-          "name": "prismaMock",
-          "kind": "value"
-        },
-        {
-          "name": "limiter",
-          "kind": "value"
-        },
-        {
-          "name": "authlimiter",
-          "kind": "value"
-        },
-        {
-          "name": "allowedOrigins",
-          "kind": "value"
-        },
-        {
-          "name": "app_config",
-          "kind": "value"
-        },
-        {
-          "name": "redisConfig",
-          "kind": "value"
-        },
-        {
-          "name": "cacheService",
-          "kind": "value"
-        },
-        {
-          "name": "loadPrivateKey",
-          "kind": "value"
-        },
-        {
-          "name": "loadPubliceKey",
-          "kind": "value"
-        },
-        {
-          "name": "derivePublicKeyFromPrivate",
-          "kind": "value"
-        },
-        {
-          "name": "TOKEN_VERSION",
-          "kind": "value"
-        },
-        {
-          "name": "token_PASETO",
-          "kind": "value"
-        },
-        {
-          "name": "asyncHandler",
-          "kind": "value"
-        },
-        {
-          "name": "AppError",
-          "kind": "value"
-        },
-        {
-          "name": "userMiddleware",
-          "kind": "value"
-        },
-        {
-          "name": "validateDTO",
-          "kind": "value"
-        },
-        {
-          "name": "publishNotificationDTO",
-          "kind": "value"
-        },
-        {
-          "name": "listController",
-          "kind": "value"
-        },
-        {
-          "name": "publishController",
-          "kind": "value"
-        },
-        {
-          "name": "seenController",
-          "kind": "value"
-        },
-        {
-          "name": "clients",
-          "kind": "value"
-        },
-        {
-          "name": "streamController",
-          "kind": "value"
-        },
-        {
-          "name": "notification_module",
-          "kind": "value"
-        },
-        {
-          "name": "RegisterDTO",
-          "kind": "value"
-        },
-        {
-          "name": "LoginDTO",
-          "kind": "value"
-        },
-        {
-          "name": "GoogleLoginDTO",
-          "kind": "value"
-        },
-        {
-          "name": "generateUUID",
-          "kind": "value"
-        },
-        {
-          "name": "logoutConrtoller",
-          "kind": "value"
-        },
-        {
-          "name": "refreshController",
-          "kind": "value"
-        },
-        {
-          "name": "cloudinary",
-          "kind": "value"
-        },
-        {
-          "name": "avatarProfile",
-          "kind": "value"
-        },
-        {
-          "name": "BaseAuth",
-          "kind": "value"
-        },
-        {
-          "name": "registerController",
-          "kind": "value"
-        },
-        {
-          "name": "resetPasswordController",
-          "kind": "value"
-        },
-        {
-          "name": "updateDiagramDTO",
-          "kind": "value"
-        },
-        {
-          "name": "COOKIE_NAME_ACCESS",
-          "kind": "value"
-        },
-        {
-          "name": "COLLAB_PATH_PREFIX",
-          "kind": "value"
-        },
-        {
-          "name": "COLLAB_DEBOUNCE",
-          "kind": "value"
-        },
-        {
-          "name": "COLLAB_MAX_DEBOUNCE",
-          "kind": "value"
-        },
-        {
-          "name": "diagramModel",
-          "kind": "value"
-        },
-        {
-          "name": "diagramYDocModel",
-          "kind": "value"
-        },
-        {
-          "name": "loadDocument",
-          "kind": "value"
-        },
-        {
-          "name": "storeDocument",
-          "kind": "value"
-        },
-        {
-          "name": "logger",
-          "kind": "value"
-        },
-        {
-          "name": "createLogger",
-          "kind": "value"
-        },
-        {
-          "name": "REMOTE_ORIGIN",
-          "kind": "value"
-        },
-        {
-          "name": "onRemoteUpdate",
-          "kind": "value"
-        },
-        {
-          "name": "connectCollabRedis",
-          "kind": "value"
-        },
-        {
-          "name": "publishCollabUpdate",
-          "kind": "value"
-        },
-        {
-          "name": "disconnectCollabRedis",
-          "kind": "value"
-        },
-        {
-          "name": "canWriteDiagram",
-          "kind": "value"
-        },
-        {
-          "name": "shutdownCollab",
-          "kind": "value"
-        },
-        {
-          "name": "invalidateRoom",
-          "kind": "value"
-        },
-        {
-          "name": "collab",
-          "kind": "value"
-        },
-        {
-          "name": "invalidateUserProjectsCache",
-          "kind": "value"
-        },
-        {
-          "name": "diagramVersionModel",
-          "kind": "value"
-        },
-        {
-          "name": "BasedDiagram",
-          "kind": "value"
-        },
-        {
-          "name": "getDiagramController",
-          "kind": "value"
-        },
-        {
-          "name": "getVersionController",
-          "kind": "value"
-        },
-        {
-          "name": "getVersionsController",
-          "kind": "value"
-        },
-        {
-          "name": "restoreVersionController",
-          "kind": "value"
-        },
-        {
-          "name": "updateDiagramController",
-          "kind": "value"
-        },
-        {
-          "name": "ROLE_RANK",
-          "kind": "value"
-        },
-        {
-          "name": "ACTION_MIN_ROLE",
-          "kind": "value"
-        },
-        {
-          "name": "resolveDiagramAccess",
-          "kind": "value"
-        },
-        {
-          "name": "authorizeDiagram",
-          "kind": "value"
-        },
-        {
-          "name": "diagram_module",
-          "kind": "value"
-        },
-        {
-          "name": "BasedEmails",
-          "kind": "value"
-        },
-        {
-          "name": "clickController",
-          "kind": "value"
-        },
-        {
-          "name": "openedController",
-          "kind": "value"
-        },
-        {
-          "name": "emails_module",
-          "kind": "value"
-        },
-        {
-          "name": "createProjectDTO",
-          "kind": "value"
-        },
-        {
-          "name": "editProjectDTO",
-          "kind": "value"
-        },
-        {
-          "name": "getInviteDTO",
-          "kind": "value"
-        },
-        {
-          "name": "inviteProjectDTO",
-          "kind": "value"
-        },
-        {
-          "name": "INVITE_TOKEN",
-          "kind": "value"
-        },
-        {
-          "name": "inviteToken",
-          "kind": "value"
-        },
-        {
-          "name": "uploadAvatar",
-          "kind": "value"
-        },
-        {
-          "name": "meMiddleware",
-          "kind": "value"
-        },
-        {
-          "name": "imagesUpload",
-          "kind": "value"
-        },
-        {
-          "name": "avatarProcess",
-          "kind": "value"
-        },
-        {
-          "name": "imageProcess",
-          "kind": "value"
-        },
-        {
-          "name": "updateProfileDTO",
-          "kind": "value"
-        },
-        {
-          "name": "BaseUser",
-          "kind": "value"
-        },
-        {
-          "name": "deleteController",
-          "kind": "value"
-        },
-        {
-          "name": "profileController",
-          "kind": "value"
-        },
-        {
-          "name": "updateProfileController",
-          "kind": "value"
-        },
-        {
-          "name": "user_module",
-          "kind": "value"
-        },
-        {
-          "name": "authenticateFromRequest",
-          "kind": "value"
-        },
-        {
-          "name": "siteIdFromUrl",
-          "kind": "value"
-        },
-        {
-          "name": "authorizeDiagramAccess",
-          "kind": "value"
-        },
-        {
-          "name": "attachCollab",
-          "kind": "value"
-        },
-        {
-          "name": "dotenv",
-          "kind": "value"
-        },
-        {
-          "name": "mongoDBConfig",
-          "kind": "value"
-        },
-        {
-          "name": "startSubscriber",
-          "kind": "value"
-        },
-        {
-          "name": "getContentType",
-          "kind": "value"
-        },
-        {
-          "name": "formatSSEEvent",
-          "kind": "value"
-        },
-        {
-          "name": "formatHeartbeat",
-          "kind": "value"
-        },
-        {
-          "name": "formatLoginTime",
-          "kind": "value"
-        },
-        {
-          "name": "getAuthenticatedUser",
-          "kind": "value"
-        },
-        {
-          "name": "errorHandler",
-          "kind": "value"
-        },
-        {
-          "name": "getLocation",
-          "kind": "value"
-        },
-        {
-          "name": "sendEmail",
-          "kind": "value"
-        },
-        {
-          "name": "jobProcessor",
-          "kind": "value"
-        },
-        {
-          "name": "app_module",
-          "kind": "value"
-        },
-        {
-          "name": "forgetPasswordController",
-          "kind": "value"
-        },
-        {
-          "name": "googleController",
-          "kind": "value"
-        },
-        {
-          "name": "loginController",
-          "kind": "value"
-        },
-        {
-          "name": "auth_module",
-          "kind": "value"
-        },
-        {
-          "name": "BasedProject",
-          "kind": "value"
-        },
-        {
-          "name": "acceptInvitesController",
-          "kind": "value"
-        },
-        {
-          "name": "createController",
-          "kind": "value"
-        },
-        {
-          "name": "editController",
-          "kind": "value"
-        },
-        {
-          "name": "getController",
-          "kind": "value"
-        },
-        {
-          "name": "getInvitesController",
-          "kind": "value"
-        },
-        {
-          "name": "invitesController",
-          "kind": "value"
-        },
-        {
-          "name": "project_module",
-          "kind": "value"
-        }
-      ],
-      "importedBy": [],
-      "importsFrom": []
-    },
-    {
       "file": "src/gen-import.ts",
       "exports": [
         {
@@ -1204,11 +625,35 @@
           "kind": "value"
         },
         {
+          "name": "PaginationCursor",
+          "kind": "value"
+        },
+        {
           "name": "addJobToQueue",
           "kind": "value"
         },
         {
           "name": "queue",
+          "kind": "value"
+        },
+        {
+          "name": "addNotificationJobToQueue",
+          "kind": "value"
+        },
+        {
+          "name": "dotenv",
+          "kind": "value"
+        },
+        {
+          "name": "getPostgresConnectionString",
+          "kind": "value"
+        },
+        {
+          "name": "logger",
+          "kind": "value"
+        },
+        {
+          "name": "createLogger",
           "kind": "value"
         },
         {
@@ -1232,10 +677,6 @@
           "kind": "value"
         },
         {
-          "name": "getPostgresConnectionString",
-          "kind": "value"
-        },
-        {
           "name": "prisma",
           "kind": "value"
         },
@@ -1244,7 +685,19 @@
           "kind": "value"
         },
         {
-          "name": "addNotificationJobToQueue",
+          "name": "generateUUID",
+          "kind": "value"
+        },
+        {
+          "name": "sendEmail",
+          "kind": "value"
+        },
+        {
+          "name": "jobProcessor",
+          "kind": "value"
+        },
+        {
+          "name": "redisConfig",
           "kind": "value"
         },
         {
@@ -1292,10 +745,6 @@
           "kind": "value"
         },
         {
-          "name": "redisConfig",
-          "kind": "value"
-        },
-        {
           "name": "cacheService",
           "kind": "value"
         },
@@ -1317,6 +766,30 @@
         },
         {
           "name": "token_PASETO",
+          "kind": "value"
+        },
+        {
+          "name": "cloudinary",
+          "kind": "value"
+        },
+        {
+          "name": "imagesUpload",
+          "kind": "value"
+        },
+        {
+          "name": "avatarProcess",
+          "kind": "value"
+        },
+        {
+          "name": "imageProcess",
+          "kind": "value"
+        },
+        {
+          "name": "updateProfileDTO",
+          "kind": "value"
+        },
+        {
+          "name": "BaseUser",
           "kind": "value"
         },
         {
@@ -1376,7 +849,31 @@
           "kind": "value"
         },
         {
-          "name": "generateUUID",
+          "name": "avatarProfile",
+          "kind": "value"
+        },
+        {
+          "name": "BaseAuth",
+          "kind": "value"
+        },
+        {
+          "name": "getLocation",
+          "kind": "value"
+        },
+        {
+          "name": "forgetPasswordController",
+          "kind": "value"
+        },
+        {
+          "name": "formatLoginTime",
+          "kind": "value"
+        },
+        {
+          "name": "googleController",
+          "kind": "value"
+        },
+        {
+          "name": "loginController",
           "kind": "value"
         },
         {
@@ -1388,23 +885,15 @@
           "kind": "value"
         },
         {
-          "name": "cloudinary",
-          "kind": "value"
-        },
-        {
-          "name": "avatarProfile",
-          "kind": "value"
-        },
-        {
-          "name": "BaseAuth",
-          "kind": "value"
-        },
-        {
           "name": "registerController",
           "kind": "value"
         },
         {
           "name": "resetPasswordController",
+          "kind": "value"
+        },
+        {
+          "name": "auth_module",
           "kind": "value"
         },
         {
@@ -1441,14 +930,6 @@
         },
         {
           "name": "storeDocument",
-          "kind": "value"
-        },
-        {
-          "name": "logger",
-          "kind": "value"
-        },
-        {
-          "name": "createLogger",
           "kind": "value"
         },
         {
@@ -1572,6 +1053,34 @@
           "kind": "value"
         },
         {
+          "name": "BasedProject",
+          "kind": "value"
+        },
+        {
+          "name": "acceptInvitesController",
+          "kind": "value"
+        },
+        {
+          "name": "createController",
+          "kind": "value"
+        },
+        {
+          "name": "deleteController",
+          "kind": "value"
+        },
+        {
+          "name": "editController",
+          "kind": "value"
+        },
+        {
+          "name": "getController",
+          "kind": "value"
+        },
+        {
+          "name": "getInvitesController",
+          "kind": "value"
+        },
+        {
           "name": "INVITE_TOKEN",
           "kind": "value"
         },
@@ -1580,35 +1089,19 @@
           "kind": "value"
         },
         {
+          "name": "invitesController",
+          "kind": "value"
+        },
+        {
+          "name": "project_module",
+          "kind": "value"
+        },
+        {
           "name": "uploadAvatar",
           "kind": "value"
         },
         {
           "name": "meMiddleware",
-          "kind": "value"
-        },
-        {
-          "name": "imagesUpload",
-          "kind": "value"
-        },
-        {
-          "name": "avatarProcess",
-          "kind": "value"
-        },
-        {
-          "name": "imageProcess",
-          "kind": "value"
-        },
-        {
-          "name": "updateProfileDTO",
-          "kind": "value"
-        },
-        {
-          "name": "BaseUser",
-          "kind": "value"
-        },
-        {
-          "name": "deleteController",
           "kind": "value"
         },
         {
@@ -1621,6 +1114,10 @@
         },
         {
           "name": "user_module",
+          "kind": "value"
+        },
+        {
+          "name": "app_module",
           "kind": "value"
         },
         {
@@ -1637,10 +1134,6 @@
         },
         {
           "name": "attachCollab",
-          "kind": "value"
-        },
-        {
-          "name": "dotenv",
           "kind": "value"
         },
         {
@@ -1664,84 +1157,26 @@
           "kind": "value"
         },
         {
-          "name": "formatLoginTime",
+          "name": "getAuthenticatedUser",
           "kind": "value"
         },
         {
-          "name": "getAuthenticatedUser",
+          "name": "encodeCursor",
+          "kind": "value"
+        },
+        {
+          "name": "decodeCursor",
           "kind": "value"
         },
         {
           "name": "errorHandler",
           "kind": "value"
-        },
-        {
-          "name": "getLocation",
-          "kind": "value"
-        },
-        {
-          "name": "sendEmail",
-          "kind": "value"
-        },
-        {
-          "name": "jobProcessor",
-          "kind": "value"
-        },
-        {
-          "name": "app_module",
-          "kind": "value"
-        },
-        {
-          "name": "forgetPasswordController",
-          "kind": "value"
-        },
-        {
-          "name": "googleController",
-          "kind": "value"
-        },
-        {
-          "name": "loginController",
-          "kind": "value"
-        },
-        {
-          "name": "auth_module",
-          "kind": "value"
-        },
-        {
-          "name": "BasedProject",
-          "kind": "value"
-        },
-        {
-          "name": "acceptInvitesController",
-          "kind": "value"
-        },
-        {
-          "name": "createController",
-          "kind": "value"
-        },
-        {
-          "name": "editController",
-          "kind": "value"
-        },
-        {
-          "name": "getController",
-          "kind": "value"
-        },
-        {
-          "name": "getInvitesController",
-          "kind": "value"
-        },
-        {
-          "name": "invitesController",
-          "kind": "value"
-        },
-        {
-          "name": "project_module",
-          "kind": "value"
         }
       ],
       "importedBy": [
-        "src/MessageQueue/emails/jobs/job.process.emails.ts",
+        "src/MessageQueue/jobs/job.process.emails.ts",
+        "src/MessageQueue/jobs/job.process.notification.ts",
+        "src/middleware/user/user.middleware.ts",
         "src/module/authentication/controller/forget.password.controller.ts",
         "src/module/authentication/controller/google.controller.ts",
         "src/module/authentication/controller/login.controller.ts",
@@ -1785,11 +1220,35 @@
           "kind": "value"
         },
         {
+          "name": "PaginationCursor",
+          "kind": "value"
+        },
+        {
           "name": "addJobToQueue",
           "kind": "value"
         },
         {
           "name": "queue",
+          "kind": "value"
+        },
+        {
+          "name": "addNotificationJobToQueue",
+          "kind": "value"
+        },
+        {
+          "name": "dotenv",
+          "kind": "value"
+        },
+        {
+          "name": "getPostgresConnectionString",
+          "kind": "value"
+        },
+        {
+          "name": "logger",
+          "kind": "value"
+        },
+        {
+          "name": "createLogger",
           "kind": "value"
         },
         {
@@ -1813,10 +1272,6 @@
           "kind": "value"
         },
         {
-          "name": "getPostgresConnectionString",
-          "kind": "value"
-        },
-        {
           "name": "prisma",
           "kind": "value"
         },
@@ -1825,7 +1280,19 @@
           "kind": "value"
         },
         {
-          "name": "addNotificationJobToQueue",
+          "name": "generateUUID",
+          "kind": "value"
+        },
+        {
+          "name": "sendEmail",
+          "kind": "value"
+        },
+        {
+          "name": "jobProcessor",
+          "kind": "value"
+        },
+        {
+          "name": "redisConfig",
           "kind": "value"
         },
         {
@@ -1873,10 +1340,6 @@
           "kind": "value"
         },
         {
-          "name": "redisConfig",
-          "kind": "value"
-        },
-        {
           "name": "cacheService",
           "kind": "value"
         },
@@ -1898,6 +1361,30 @@
         },
         {
           "name": "token_PASETO",
+          "kind": "value"
+        },
+        {
+          "name": "cloudinary",
+          "kind": "value"
+        },
+        {
+          "name": "imagesUpload",
+          "kind": "value"
+        },
+        {
+          "name": "avatarProcess",
+          "kind": "value"
+        },
+        {
+          "name": "imageProcess",
+          "kind": "value"
+        },
+        {
+          "name": "updateProfileDTO",
+          "kind": "value"
+        },
+        {
+          "name": "BaseUser",
           "kind": "value"
         },
         {
@@ -1957,7 +1444,31 @@
           "kind": "value"
         },
         {
-          "name": "generateUUID",
+          "name": "avatarProfile",
+          "kind": "value"
+        },
+        {
+          "name": "BaseAuth",
+          "kind": "value"
+        },
+        {
+          "name": "getLocation",
+          "kind": "value"
+        },
+        {
+          "name": "forgetPasswordController",
+          "kind": "value"
+        },
+        {
+          "name": "formatLoginTime",
+          "kind": "value"
+        },
+        {
+          "name": "googleController",
+          "kind": "value"
+        },
+        {
+          "name": "loginController",
           "kind": "value"
         },
         {
@@ -1969,23 +1480,15 @@
           "kind": "value"
         },
         {
-          "name": "cloudinary",
-          "kind": "value"
-        },
-        {
-          "name": "avatarProfile",
-          "kind": "value"
-        },
-        {
-          "name": "BaseAuth",
-          "kind": "value"
-        },
-        {
           "name": "registerController",
           "kind": "value"
         },
         {
           "name": "resetPasswordController",
+          "kind": "value"
+        },
+        {
+          "name": "auth_module",
           "kind": "value"
         },
         {
@@ -2022,14 +1525,6 @@
         },
         {
           "name": "storeDocument",
-          "kind": "value"
-        },
-        {
-          "name": "logger",
-          "kind": "value"
-        },
-        {
-          "name": "createLogger",
           "kind": "value"
         },
         {
@@ -2153,6 +1648,34 @@
           "kind": "value"
         },
         {
+          "name": "BasedProject",
+          "kind": "value"
+        },
+        {
+          "name": "acceptInvitesController",
+          "kind": "value"
+        },
+        {
+          "name": "createController",
+          "kind": "value"
+        },
+        {
+          "name": "deleteController",
+          "kind": "value"
+        },
+        {
+          "name": "editController",
+          "kind": "value"
+        },
+        {
+          "name": "getController",
+          "kind": "value"
+        },
+        {
+          "name": "getInvitesController",
+          "kind": "value"
+        },
+        {
           "name": "INVITE_TOKEN",
           "kind": "value"
         },
@@ -2161,35 +1684,19 @@
           "kind": "value"
         },
         {
+          "name": "invitesController",
+          "kind": "value"
+        },
+        {
+          "name": "project_module",
+          "kind": "value"
+        },
+        {
           "name": "uploadAvatar",
           "kind": "value"
         },
         {
           "name": "meMiddleware",
-          "kind": "value"
-        },
-        {
-          "name": "imagesUpload",
-          "kind": "value"
-        },
-        {
-          "name": "avatarProcess",
-          "kind": "value"
-        },
-        {
-          "name": "imageProcess",
-          "kind": "value"
-        },
-        {
-          "name": "updateProfileDTO",
-          "kind": "value"
-        },
-        {
-          "name": "BaseUser",
-          "kind": "value"
-        },
-        {
-          "name": "deleteController",
           "kind": "value"
         },
         {
@@ -2202,6 +1709,10 @@
         },
         {
           "name": "user_module",
+          "kind": "value"
+        },
+        {
+          "name": "app_module",
           "kind": "value"
         },
         {
@@ -2218,10 +1729,6 @@
         },
         {
           "name": "attachCollab",
-          "kind": "value"
-        },
-        {
-          "name": "dotenv",
           "kind": "value"
         },
         {
@@ -2245,79 +1752,19 @@
           "kind": "value"
         },
         {
-          "name": "formatLoginTime",
-          "kind": "value"
-        },
-        {
           "name": "getAuthenticatedUser",
           "kind": "value"
         },
         {
+          "name": "encodeCursor",
+          "kind": "value"
+        },
+        {
+          "name": "decodeCursor",
+          "kind": "value"
+        },
+        {
           "name": "errorHandler",
-          "kind": "value"
-        },
-        {
-          "name": "getLocation",
-          "kind": "value"
-        },
-        {
-          "name": "sendEmail",
-          "kind": "value"
-        },
-        {
-          "name": "jobProcessor",
-          "kind": "value"
-        },
-        {
-          "name": "app_module",
-          "kind": "value"
-        },
-        {
-          "name": "forgetPasswordController",
-          "kind": "value"
-        },
-        {
-          "name": "googleController",
-          "kind": "value"
-        },
-        {
-          "name": "loginController",
-          "kind": "value"
-        },
-        {
-          "name": "auth_module",
-          "kind": "value"
-        },
-        {
-          "name": "BasedProject",
-          "kind": "value"
-        },
-        {
-          "name": "acceptInvitesController",
-          "kind": "value"
-        },
-        {
-          "name": "createController",
-          "kind": "value"
-        },
-        {
-          "name": "editController",
-          "kind": "value"
-        },
-        {
-          "name": "getController",
-          "kind": "value"
-        },
-        {
-          "name": "getInvitesController",
-          "kind": "value"
-        },
-        {
-          "name": "invitesController",
-          "kind": "value"
-        },
-        {
-          "name": "project_module",
           "kind": "value"
         }
       ],
@@ -2354,12 +1801,7 @@
         "src/module/user/user.module.ts"
       ],
       "importsFrom": [
-        "src/utils/api-requesthandler.ts",
-        "src/utils/loadKey.ts",
-        "src/config/prisma.ts",
-        "src/utils/errors/app-error.ts",
-        "src/module/authentication/utils/paseto.utils.ts",
-        "src/functions/redis/cache.service.fun.ts"
+        "src/gen-import.ts"
       ]
     },
     {
@@ -2420,7 +1862,7 @@
       "importedBy": [],
       "importsFrom": [
         "src/utils/api-requesthandler.ts",
-        "src/MessageQueue/notifications/Queue/queue.notification.ts",
+        "src/MessageQueue/Queue/queue.notification.ts",
         "src/utils/errors/app-error.ts",
         "src/config/prisma.ts",
         "src/module/Notifications/DTO/index.ts"
@@ -2500,7 +1942,6 @@
         }
       ],
       "importedBy": [
-        "src/MessageQueue/notifications/jobs/job.process.notification.ts",
         "src/config/subscriber.ts"
       ],
       "importsFrom": []
@@ -2681,7 +2122,7 @@
         "src/module/authentication/DTO/index.dto.ts",
         "src/module/authentication/service/base.auth.service.ts",
         "src/module/authentication/utils/paseto.utils.ts",
-        "src/MessageQueue/emails/Queue/queue.email.ts"
+        "src/MessageQueue/Queue/queue.email.ts"
       ]
     },
     {
@@ -2716,7 +2157,8 @@
       "importsFrom": [
         "src/config/prisma.ts",
         "src/module/authentication/DTO/index.dto.ts",
-        "src/functions/upload/avatar.image.fun.ts"
+        "src/functions/upload/avatar.image.fun.ts",
+        "src/module/user/Service/base.user.service.ts"
       ]
     },
     {
@@ -2747,7 +2189,6 @@
         }
       ],
       "importedBy": [
-        "src/middleware/user/user.middleware.ts",
         "src/module/authentication/controller/refresh.controller.ts",
         "src/module/authentication/controller/register.controller.ts",
         "src/module/authentication/controller/reset.password.controller.ts",
@@ -3104,7 +2545,7 @@
       "importedBy": [],
       "importsFrom": [
         "src/utils/api-requesthandler.ts",
-        "src/MessageQueue/notifications/Queue/queue.notification.ts",
+        "src/MessageQueue/Queue/queue.notification.ts",
         "src/module/project/service/base.project.service.ts"
       ]
     },
@@ -3193,7 +2634,7 @@
       "importsFrom": [
         "src/utils/api-requesthandler.ts",
         "src/module/project/service/base.project.service.ts",
-        "src/MessageQueue/emails/Queue/queue.email.ts",
+        "src/MessageQueue/Queue/queue.email.ts",
         "src/module/project/utils/token.ts"
       ]
     },
@@ -3362,6 +2803,7 @@
         }
       ],
       "importedBy": [
+        "src/module/authentication/service/base.auth.service.ts",
         "src/module/user/Controller/delete.controller.ts",
         "src/module/user/Controller/update.controller.ts"
       ],
@@ -3402,7 +2844,6 @@
         }
       ],
       "importedBy": [
-        "src/middleware/user/user.middleware.ts",
         "src/middleware/validateDTO.ts",
         "src/module/Notifications/controller/list.controller.ts",
         "src/module/Notifications/controller/publish.controller.ts",
@@ -3452,6 +2893,25 @@
       ]
     },
     {
+      "file": "src/utils/cursor.ts",
+      "exports": [
+        {
+          "name": "encodeCursor",
+          "kind": "value"
+        },
+        {
+          "name": "decodeCursor",
+          "kind": "value"
+        },
+        {
+          "name": "PaginationCursor",
+          "kind": "type"
+        }
+      ],
+      "importedBy": [],
+      "importsFrom": []
+    },
+    {
       "file": "src/utils/errors/app-error.ts",
       "exports": [
         {
@@ -3461,7 +2921,6 @@
       ],
       "importedBy": [
         "src/middleware/multer/index.ts",
-        "src/middleware/user/user.middleware.ts",
         "src/middleware/validateDTO.ts",
         "src/module/Notifications/controller/publish.controller.ts",
         "src/module/authentication/controller/refresh.controller.ts",
@@ -3498,10 +2957,10 @@
         }
       ],
       "importedBy": [
-        "src/MessageQueue/emails/template/forgetPassword.ts",
-        "src/MessageQueue/emails/template/invite.ts",
-        "src/MessageQueue/emails/template/login.ts",
-        "src/MessageQueue/emails/template/register.ts"
+        "src/MessageQueue/template/forgetPassword.ts",
+        "src/MessageQueue/template/invite.ts",
+        "src/MessageQueue/template/login.ts",
+        "src/MessageQueue/template/register.ts"
       ],
       "importsFrom": []
     },
@@ -3552,7 +3011,6 @@
       ],
       "importedBy": [
         "src/collab/auth.ts",
-        "src/middleware/user/user.middleware.ts",
         "src/module/authentication/controller/refresh.controller.ts",
         "src/module/authentication/controller/reset.password.controller.ts",
         "src/module/authentication/utils/paseto.utils.ts",

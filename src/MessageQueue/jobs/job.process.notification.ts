@@ -1,7 +1,6 @@
 import { Job } from "bullmq";
 import { v4 as uuidv4 } from 'uuid'
-import { connectRedis, redis } from "../../../module/Notifications/shared/redis";
-import prisma from "../../../config/prisma";
+import { connectRedis, prisma, redis } from "../../gen-import";
 
 export const sendNotification = async (data: any) => {
      try {

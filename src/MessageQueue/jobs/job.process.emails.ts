@@ -1,5 +1,5 @@
 import { Job } from "bullmq";
-import { forgetPasswordTemp, generateUUID, inviteTemp, loginTemp, registerTemp, resendFunction } from "../../../gen-import";
+import { forgetPasswordTemp, generateUUID, inviteTemp, loginTemp, registerTemp, resendFunction } from "../../gen-import";
 
 export const sendEmail = async (data: any) => {
      try {

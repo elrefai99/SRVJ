@@ -11,7 +11,7 @@ const REMOVE_CONFIG = {
           age: 60 * 60,
      },
      removeOnFail: {
-          age: 24 * 60 * 60,
+          age: 12 * 60 * 60,
      },
 };
 

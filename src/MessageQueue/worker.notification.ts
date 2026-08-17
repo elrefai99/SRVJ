@@ -1,6 +1,6 @@
 import "../config/dotenv"
 import { Worker, Job } from "bullmq";
-import { jobNotificationProcessor } from "./notifications/jobs/job.process.notification";
+import { jobNotificationProcessor } from "./jobs/job.process.notification";
 
 const worker = new Worker("notificationQueue", jobNotificationProcessor, {
      connection: {

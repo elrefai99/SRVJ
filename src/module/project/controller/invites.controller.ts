@@ -1,7 +1,7 @@
 import { NextFunction, Request, RequestHandler, Response } from "express";
 import { asyncHandler } from "../../../utils/api-requesthandler";
 import { BasedProject } from "../service/base.project.service";
-import { addJobToQueue } from "../../../MessageQueue/emails/Queue/queue.email";
+import { addJobToQueue } from "../../../MessageQueue/Queue/queue.email";
 import { inviteToken } from "../utils/token";
 
 export const invitesController: RequestHandler = asyncHandler(

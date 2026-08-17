@@ -3,7 +3,7 @@ import { cacheService } from "../../../functions/redis/cache.service.fun";
 import { invalidateUserProjectsCache } from "../../../functions/redis/cache.invalidation";
 import { tableStatus } from "../../../generated/prisma";
 import { IPayloadProject } from "../@types";
-import { AppError } from "../../../gen-import";
+import { AppError, decodeCursor, encodeCursor } from "../../../gen-import";
 import jwt from "jsonwebtoken";
 import { diagramModel } from "../../diagram/schema/diagram.schema";
 import { diagramVersionModel } from "../../diagram/schema/diagram.version.schema";
@@ -34,32 +34,66 @@ export class BasedProject {
      }
 
      public async getService(payload: IPayloadProject) {
-          const cacheKey = `projects:${payload.user}:${payload.page || 1}:${payload.limit || 10}:${payload.search || ""}`
+          const cacheKey = `projects:${payload.user}:${payload.cursor || 1}:${payload.limit || 10}:${payload.search || ""}`
           const cachedData = await this.redis.getData(cacheKey)
           if (cachedData) {
                return cachedData
           }
-          const page = Number(payload.page) || 1;
-          const limit = Number(payload.limit) || 10;
-          const search = String(payload.search || "");
+          const cursor =
+               typeof payload.cursor === "string"
+                    ? payload.cursor
+                    : undefined;
+          const limit = Math.min(
+               Number(payload.limit) || 20,
+               100,
+          );
+          let cursorData:
+               | {
+                    createdAt: Date;
+                    id: string;
+               }
+               | undefined;
 
-          const skip = (page - 1) * limit;
+          if (cursor) {
+               const decoded = decodeCursor(cursor);
+
+               cursorData = {
+                    createdAt: new Date(decoded.createdAt),
+                    id: decoded.id,
+               };
+          }
+          const search = String(payload.search || "");
 
           const [projects, total] = await Promise.all([
                prisma.project.findMany({
+                    take: limit + 1,
                     where: {
+                         ...(cursor && {
+                              OR: [
+                                   {
+                                        createdAt: {
+                                             lt: cursorData?.createdAt,
+                                        },
+                                   },
+                                   {
+                                        createdAt: cursorData?.createdAt,
+                                        id: {
+                                             lt: cursorData?.id,
+                                        },
+                                   },
+                              ],
+                         }),
                          OR: [
                               { ownerId: payload.user },
                               { members: { some: { userId: payload.user } } }
                          ],
                          status: tableStatus.active,
-
                          ...(search && {
                               title: {
                                    contains: search,
-                                   mode: "insensitive"
-                              }
-                         })
+                                   mode: "insensitive",
+                              },
+                         }),
                     },
                     include: {
                          members: {
@@ -76,11 +110,14 @@ export class BasedProject {
                               },
                          },
                     },
-                    skip,
-                    take: limit,
-                    orderBy: {
-                         createdAt: "desc"
-                    }
+                    orderBy: [
+                         {
+                              createdAt: "desc",
+                         },
+                         {
+                              id: "desc",
+                         },
+                    ],
                }),
                prisma.project.count({
                     where: {
@@ -100,6 +137,22 @@ export class BasedProject {
                })
           ]);
 
+          const hasNextPage = projects.length > limit;
+
+          if (hasNextPage) {
+               projects.pop();
+          }
+
+          const lastUser = projects[projects.length - 1];
+
+          const nextCursor =
+               hasNextPage && lastUser
+                    ? encodeCursor({
+                         createdAt: lastUser.createdAt.toISOString(),
+                         id: String(lastUser?.id),
+                    })
+                    : null;
+
           const diagrams = await diagramModel
                .find({ projectId: { $in: projects.map((project) => project.site_id) } })
                .lean()
@@ -112,7 +165,7 @@ export class BasedProject {
                })),
                pagination: {
                     total,
-                    page,
+                    page: nextCursor,
                     limit,
                     totalPages: Math.ceil(total / limit)
                }

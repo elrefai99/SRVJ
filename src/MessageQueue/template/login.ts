@@ -1,16 +1,13 @@
-import { IPayload_invite } from "./@types"
-import { escapeHtml } from "../../../utils/escapeHtml"
+import { IPayload_login } from "./@types"
+import { escapeHtml } from "../../utils/escapeHtml"
 
-export const inviteTemp = (payload: IPayload_invite) => {
+export const loginTemp = (payload: IPayload_login) => {
   const firstName = escapeHtml(payload.firstName)
-  const inviterName = escapeHtml(payload.inviterName)
-  const boardName = escapeHtml(payload.boardName)
-  const workspaceName = escapeHtml(payload.workspaceName)
-  const role = escapeHtml(payload.role)
-
-  console.log(payload)
+  const device = escapeHtml(payload.device)
+  const location = escapeHtml(payload.location)
+  const ipAddress = escapeHtml(payload.ipAddress)
   return `
-     <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
 <head>
   <meta charset="utf-8">
@@ -19,7 +16,7 @@ export const inviteTemp = (payload: IPayload_invite) => {
   <meta name="x-apple-disable-message-reformatting">
   <meta name="color-scheme" content="dark">
   <meta name="supported-color-schemes" content="dark">
-  <title>${inviterName} invited you to a whiteboard</title>
+  <title>New sign-in to your SRVJ account</title>
   <!--[if mso]>
   <noscript>
     <xml>
@@ -46,13 +43,12 @@ export const inviteTemp = (payload: IPayload_invite) => {
       .px { padding-left: 24px !important; padding-right: 24px !important; }
     }
   </style>
-               <img src="${process.env.API_LINK}/api/v1/emails/opened?uuid=${payload.uuid}" width="1" height="1" style="display: none;" />
 </head>
 <body class="body-bg" style="margin:0; padding:0; background-color:#0a0a0b;">
+  <img src="${process.env.API_LINK}/api/v1/emails/opened?uuid=${payload.uuid}" width="1" height="1" alt="" style="display:none;">
 
-  <!-- Preheader -->
   <div style="display:none; font-size:1px; color:#0a0a0b; line-height:1px; max-height:0; max-width:0; opacity:0; overflow:hidden; mso-hide:all;">
-    ${inviterName} invited you to collaborate on "${boardName}". Open the whiteboard to get started.&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;
+    A new sign-in to your SRVJ account was detected. Review the details to confirm it was you.&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;
   </div>
 
   <table role="presentation" class="body-bg" width="100%" cellpadding="0" cellspacing="0" style="background-color:#0a0a0b;">
@@ -63,13 +59,17 @@ export const inviteTemp = (payload: IPayload_invite) => {
         <table role="presentation" class="container" width="600" cellpadding="0" cellspacing="0" style="width:600px; max-width:600px;">
 
           <!-- Brand -->
-       <tr>
+          <tr>
             <td align="center" style="padding:0 0 28px 0;">
-              <!-- Inline SVG: renders in browser preview + Apple Mail. Gmail/Outlook strip it, so the SRVJ wordmark stays as fallback. -->
+              <!-- Inline SVG: renders in browser preview + Apple Mail. Gmail / Outlook strip it, so the SRVJ wordmark stays as fallback. -->
               <table role="presentation" cellpadding="0" cellspacing="0" align="center" style="margin:0 auto;">
                 <tr>
                   <td style="vertical-align:middle; padding-right:12px; line-height:0; font-size:0;">
-                    <img src="https://res.cloudinary.com/cs74as-sjoaaaaaaaaaaaadsa/image/upload/v1782020694/SRVJ/favicon_le87qf.png" width="40" height="40" alt="SRVJ" style="display:block; width:40px; height:40px; border:0; outline:none; text-decoration:none;">
+                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="SRVJ">
+                      <rect x="3" y="3" width="6" height="6" rx="1" />
+                      <rect x="15" y="15" width="6" height="6" rx="1" />
+                      <path d="M9 6h6a3 3 0 0 1 3 3v6" />
+                    </svg>
                   </td>
                   <td style="vertical-align:middle;">
                     <span style="font-family:'Helvetica Neue',Arial,sans-serif; font-size:22px; font-weight:700; letter-spacing:6px; color:#fafafa;">SRVJ</span>
@@ -87,7 +87,7 @@ export const inviteTemp = (payload: IPayload_invite) => {
                 <tr>
                   <td class="px" style="padding:40px 40px 0 40px;">
                     <h1 class="text-primary" style="margin:0; font-family:'Helvetica Neue',Arial,sans-serif; font-size:24px; line-height:32px; font-weight:600; color:#f4f4f5;">
-                      You've been invited to collaborate
+                      New sign-in detected
                     </h1>
                   </td>
                 </tr>
@@ -95,12 +95,12 @@ export const inviteTemp = (payload: IPayload_invite) => {
                 <tr>
                   <td class="px" style="padding:16px 40px 0 40px;">
                     <p class="text-secondary" style="margin:0; font-family:'Helvetica Neue',Arial,sans-serif; font-size:15px; line-height:24px; color:#a1a1aa;">
-                      Hi ${firstName}, ${inviterName} invited you to join a whiteboard on SRVJ. Open it to start collaborating in real time.
+                      Hi ${firstName}, we noticed a new sign-in to your SRVJ account. If this was you, you can safely ignore this email.
                     </p>
                   </td>
                 </tr>
 
-                <!-- Invitation details -->
+                <!-- Sign-in details -->
                 <tr>
                   <td class="px" style="padding:24px 40px 0 40px;">
                     <table role="presentation" class="meta-bg" width="100%" cellpadding="0" cellspacing="0" style="background-color:#1c1c1f; border:1px solid #2a2a2e; border-radius:10px;">
@@ -108,20 +108,20 @@ export const inviteTemp = (payload: IPayload_invite) => {
                         <td style="padding:18px 20px;">
                           <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
                             <tr>
-                              <td style="padding:6px 0; font-family:'Helvetica Neue',Arial,sans-serif; font-size:13px; color:#71717a;">Whiteboard</td>
-                              <td align="right" style="padding:6px 0; font-family:'Helvetica Neue',Arial,sans-serif; font-size:13px; color:#e4e4e7;">${boardName}</td>
+                              <td style="padding:6px 0; font-family:'Helvetica Neue',Arial,sans-serif; font-size:13px; color:#71717a;">Date &amp; time</td>
+                              <td align="right" style="padding:6px 0; font-family:'Helvetica Neue',Arial,sans-serif; font-size:13px; color:#e4e4e7;">${payload.loginTime}</td>
                             </tr>
                             <tr>
-                              <td style="padding:6px 0; font-family:'Helvetica Neue',Arial,sans-serif; font-size:13px; color:#71717a;">Invited by</td>
-                              <td align="right" style="padding:6px 0; font-family:'Helvetica Neue',Arial,sans-serif; font-size:13px; color:#e4e4e7;">${inviterName}</td>
+                              <td style="padding:6px 0; font-family:'Helvetica Neue',Arial,sans-serif; font-size:13px; color:#71717a;">Device</td>
+                              <td align="right" style="padding:6px 0; font-family:'Helvetica Neue',Arial,sans-serif; font-size:13px; color:#e4e4e7;">${device}</td>
                             </tr>
                             <tr>
-                              <td style="padding:6px 0; font-family:'Helvetica Neue',Arial,sans-serif; font-size:13px; color:#71717a;">Workspace</td>
-                              <td align="right" style="padding:6px 0; font-family:'Helvetica Neue',Arial,sans-serif; font-size:13px; color:#e4e4e7;">${workspaceName}</td>
+                              <td style="padding:6px 0; font-family:'Helvetica Neue',Arial,sans-serif; font-size:13px; color:#71717a;">Location</td>
+                              <td align="right" style="padding:6px 0; font-family:'Helvetica Neue',Arial,sans-serif; font-size:13px; color:#e4e4e7;">${location}</td>
                             </tr>
                             <tr>
-                              <td style="padding:6px 0; font-family:'Helvetica Neue',Arial,sans-serif; font-size:13px; color:#71717a;">Your access</td>
-                              <td align="right" style="padding:6px 0; font-family:'Helvetica Neue',Arial,sans-serif; font-size:13px; color:#e4e4e7;">${role}</td>
+                              <td style="padding:6px 0; font-family:'Helvetica Neue',Arial,sans-serif; font-size:13px; color:#71717a;">IP address</td>
+                              <td align="right" style="padding:6px 0; font-family:'Helvetica Neue',Arial,sans-serif; font-size:13px; color:#e4e4e7;">${ipAddress}</td>
                             </tr>
                           </table>
                         </td>
@@ -133,26 +133,26 @@ export const inviteTemp = (payload: IPayload_invite) => {
                 <tr>
                   <td class="px" style="padding:24px 40px 0 40px;">
                     <p class="text-secondary" style="margin:0; font-family:'Helvetica Neue',Arial,sans-serif; font-size:15px; line-height:24px; color:#a1a1aa;">
-                      Click below to accept the invitation and open the whiteboard. This link expires in ${payload.expiresIn}.
+                      Don't recognise this activity? Secure your account right away by resetting your password.
                     </p>
                   </td>
                 </tr>
 
-                <!-- Bulletproof button (brand accent) -->
+                <!-- Bulletproof button (security accent) -->
                 <tr>
                   <td class="px" style="padding:24px 40px 8px 40px;">
                     <table role="presentation" cellpadding="0" cellspacing="0">
                       <tr>
-                        <td align="center" bgcolor="#6366f1" style="border-radius:10px;">
+                        <td align="center" bgcolor="#dc2626" style="border-radius:10px;">
                           <!--[if mso]>
-                          <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" href="${payload.acceptUrl}" style="height:48px;v-text-anchor:middle;width:236px;" arcsize="20%" strokecolor="#6366f1" fillcolor="#6366f1">
-                          <w:anchorlock/>
-                          <center style="color:#ffffff;font-family:'Helvetica Neue',Arial,sans-serif;font-size:15px;font-weight:600;">Open the whiteboard</center>
+                          <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" href="${payload.secureAccountUrl}" style="height:48px;v-text-anchor:middle;width:236px;" arcsize="20%" strokecolor="#dc2626" fillcolor="#dc2626">
+                            <w:anchorlock/>
+                            <center style="color:#ffffff;font-family:'Helvetica Neue',Arial,sans-serif;font-size:15px;font-weight:600;">This wasn't me</center>
                           </v:roundrect>
                           <![endif]-->
                           <!--[if !mso]><!-->
-                          <a href="${payload.acceptUrl}" target="_blank" style="display:inline-block; padding:14px 32px; font-family:'Helvetica Neue',Arial,sans-serif; font-size:15px; font-weight:600; color:#ffffff; background-color:#6366f1; border-radius:10px;">
-                            Open the whiteboard
+                          <a href="${payload.secureAccountUrl}" target="_blank" style="display:inline-block; padding:14px 32px; font-family:'Helvetica Neue',Arial,sans-serif; font-size:15px; font-weight:600; color:#ffffff; background-color:#dc2626; border-radius:10px;">
+                            This wasn't me &mdash; secure my account
                           </a>
                           <!--<![endif]-->
                         </td>
@@ -169,6 +169,7 @@ export const inviteTemp = (payload: IPayload_invite) => {
                     </table>
                   </td>
                 </tr>
+
               </table>
             </td>
           </tr>
@@ -177,7 +178,7 @@ export const inviteTemp = (payload: IPayload_invite) => {
           <tr>
             <td style="padding:28px 24px 0 24px;">
               <p style="margin:0 0 6px 0; font-family:'Helvetica Neue',Arial,sans-serif; font-size:12px; line-height:18px; color:#52525b; text-align:center;">
-                You received this email because ${inviterName} invited you to collaborate on SRVJ. If you weren't expecting this, you can safely ignore it.
+                This is a security notification and cannot be unsubscribed from.
               </p>
               <p style="margin:0; font-family:'Helvetica Neue',Arial,sans-serif; font-size:12px; line-height:18px; color:#52525b; text-align:center;">
                 &copy; ${new Date().getFullYear()} SRVJ. All rights reserved.

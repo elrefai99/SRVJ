@@ -10,6 +10,42 @@ export class BaseUser {
           this.redis = new cacheService()
      }
 
+     public async user_profile(userId: number) {
+          const user = await prisma.user.findFirst({
+               where: {
+                    id: userId,
+                    status: tableStatus.active,
+               },
+               select: {
+                    id: true,
+                    fullname: true,
+                    email: true,
+                    username: true,
+                    avatar: true,
+                    sessionVersion: true
+               }
+          })
+          return user
+     }
+     public async user_profile_email(payload: { email: string }): Promise<any> {
+          const user = await prisma.user.findFirst({
+               where: {
+                    email: payload.email.toLowerCase(),
+                    status: tableStatus.active
+               },
+               select: {
+                    id: true,
+                    password: true,
+                    fullname: true,
+                    googleId: true,
+                    sessionVersion: true
+               }
+          })
+          if (!user) {
+               return { status: false, data: null }
+          }
+          return { status: true, data: { id: user.id } }
+     }
      public async update_profile(userId: number, payload: updateProfileDTO) {
           const data: Prisma.UserUpdateInput = { fullname: payload?.fullname }
 

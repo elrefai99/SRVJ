@@ -9,6 +9,6 @@ export interface IPayloadProject {
      public readonly oldProject?: any
      public readonly search?: string
      public readonly limit?: string
-     public readonly page?: string
+     public readonly cursor?: string
 }
 

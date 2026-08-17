@@ -1,9 +1,7 @@
 name: Notify Discord
 
 on:
-  push:
-    branches:
-      - "**"
+  workflow_call:
 
 permissions:
   contents: read
@@ -12,19 +10,32 @@ jobs:
   notify:
     runs-on: ubuntu-latest
     steps:
-      - name: Send Discord Notification Lesoll Server
+      - name: Send Discord notification
         env:
           GH_ACTOR: ${{ github.actor }}
           GH_BRANCH: ${{ github.ref_name }}
-          GH_COMMIT_MSG: ${{ github.event.head_commit.message }}
+          GH_COMMIT_MSG: ${{ github.event.head_commit.message || github.sha }}
+          GH_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           DISCORD_WEBHOOK_SRVJ: ${{ secrets.DISCORD_WEBHOOK_SRVJ }}
         run: |
+          if [ -z "$DISCORD_WEBHOOK_SRVJ" ]; then
+            echo "::error::DISCORD_WEBHOOK_SRVJ secret is not configured"
+            exit 1
+          fi
+
           payload=$(jq -n \
             --arg avatar "https://github.com/${GH_ACTOR}.png" \
             --arg username "$GH_ACTOR" \
-            --arg content "Admin: @elrefai99
+            --arg content "TypeScript build: Passed
+          Docker build: Passed
           Server: **SRVJ Server**
-          New push in branch: **${GH_BRANCH}**
-          Commit: **${GH_COMMIT_MSG}**" \
+          Branch: **${GH_BRANCH}**
+          Commit: **${GH_COMMIT_MSG}**
+          Run: ${GH_RUN_URL}" \
             '{avatar_url: $avatar, username: $username, content: $content}')
-          curl -H "Content-Type: application/json" -X POST -d "$payload" "$DISCORD_WEBHOOK_SRVJ"
+
+          curl --fail-with-body --silent --show-error \
+            -H "Content-Type: application/json" \
+            -X POST \
+            -d "$payload" \
+            "$DISCORD_WEBHOOK_SRVJ"
