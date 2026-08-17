@@ -17,6 +17,7 @@ export type { DiagramAction } from './module/diagram/middleware/role.constant';
 export type { DiagramAccess, ResolveBy } from './module/diagram/service/resolve.access';
 export type { CollabIdentity, CollabContext } from './collab/auth';
 export type { AuthenticatedUser } from './utils/authenticated-user';
+export type { PaginationCursor } from './utils/cursor';
 
 export declare const addJobToQueue: typeof import('./MessageQueue/Queue/queue.email').addJobToQueue;
 export declare const queue: typeof import('./MessageQueue/Queue/queue.email').queue;
@@ -25,6 +26,7 @@ export declare const dotenv: typeof import('./config/dotenv').default;
 export declare const getPostgresConnectionString: typeof import('./config/postgres-url').getPostgresConnectionString;
 export declare const logger: typeof import('./utils/logger').logger;
 export declare const createLogger: typeof import('./utils/logger').createLogger;
+export declare const escapeHtml: typeof import('./utils/escapeHtml').escapeHtml;
 export declare const forgetPasswordTemp: typeof import('./MessageQueue/template/forgetPassword').forgetPasswordTemp;
 export declare const inviteTemp: typeof import('./MessageQueue/template/invite').inviteTemp;
 export declare const loginTemp: typeof import('./MessageQueue/template/login').loginTemp;
@@ -150,8 +152,9 @@ export declare const getContentType: typeof import('./functions/upload/image.con
 export declare const formatSSEEvent: typeof import('./module/Notifications/utils/sseFormat').formatSSEEvent;
 export declare const formatHeartbeat: typeof import('./module/Notifications/utils/sseFormat').formatHeartbeat;
 export declare const getAuthenticatedUser: typeof import('./utils/authenticated-user').getAuthenticatedUser;
+export declare const encodeCursor: typeof import('./utils/cursor').encodeCursor;
+export declare const decodeCursor: typeof import('./utils/cursor').decodeCursor;
 export declare const errorHandler: typeof import('./utils/errors/errorHandler').errorHandler;
-export declare const escapeHtml: typeof import('./utils/escapeHtml').escapeHtml;
 
 Object.defineProperty(module.exports, 'addJobToQueue', { get() { return require('./MessageQueue/Queue/queue.email').addJobToQueue }, enumerable: true, configurable: true });
 Object.defineProperty(module.exports, 'queue', { get() { return require('./MessageQueue/Queue/queue.email').queue }, enumerable: true, configurable: true });
@@ -160,6 +163,7 @@ Object.defineProperty(module.exports, 'dotenv', { get() { return require('./conf
 Object.defineProperty(module.exports, 'getPostgresConnectionString', { get() { return require('./config/postgres-url').getPostgresConnectionString }, enumerable: true, configurable: true });
 Object.defineProperty(module.exports, 'logger', { get() { return require('./utils/logger').logger }, enumerable: true, configurable: true });
 Object.defineProperty(module.exports, 'createLogger', { get() { return require('./utils/logger').createLogger }, enumerable: true, configurable: true });
+Object.defineProperty(module.exports, 'escapeHtml', { get() { return require('./utils/escapeHtml').escapeHtml }, enumerable: true, configurable: true });
 Object.defineProperty(module.exports, 'forgetPasswordTemp', { get() { return require('./MessageQueue/template/forgetPassword').forgetPasswordTemp }, enumerable: true, configurable: true });
 Object.defineProperty(module.exports, 'inviteTemp', { get() { return require('./MessageQueue/template/invite').inviteTemp }, enumerable: true, configurable: true });
 Object.defineProperty(module.exports, 'loginTemp', { get() { return require('./MessageQueue/template/login').loginTemp }, enumerable: true, configurable: true });
@@ -285,5 +289,6 @@ Object.defineProperty(module.exports, 'getContentType', { get() { return require
 Object.defineProperty(module.exports, 'formatSSEEvent', { get() { return require('./module/Notifications/utils/sseFormat').formatSSEEvent }, enumerable: true, configurable: true });
 Object.defineProperty(module.exports, 'formatHeartbeat', { get() { return require('./module/Notifications/utils/sseFormat').formatHeartbeat }, enumerable: true, configurable: true });
 Object.defineProperty(module.exports, 'getAuthenticatedUser', { get() { return require('./utils/authenticated-user').getAuthenticatedUser }, enumerable: true, configurable: true });
+Object.defineProperty(module.exports, 'encodeCursor', { get() { return require('./utils/cursor').encodeCursor }, enumerable: true, configurable: true });
+Object.defineProperty(module.exports, 'decodeCursor', { get() { return require('./utils/cursor').decodeCursor }, enumerable: true, configurable: true });
 Object.defineProperty(module.exports, 'errorHandler', { get() { return require('./utils/errors/errorHandler').errorHandler }, enumerable: true, configurable: true });
-Object.defineProperty(module.exports, 'escapeHtml', { get() { return require('./utils/escapeHtml').escapeHtml }, enumerable: true, configurable: true });

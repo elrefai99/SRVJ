@@ -7,7 +7,7 @@ export const getController: RequestHandler = asyncHandler(
   async (req: Request, res: Response, _next: NextFunction) => {
     const payload: IPayloadProject = {
       user: req.user?.id,
-      page: req.query.page as string,
+      cursor: req.query.cursor as string,
       limit: req.query.limit as string,
       search: req.query.search as string
     }

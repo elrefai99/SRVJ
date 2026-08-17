@@ -1,7 +1,7 @@
 {
-  "totalFiles": 110,
-  "totalExports": 462,
-  "totalImportEdges": 179,
+  "totalFiles": 111,
+  "totalExports": 471,
+  "totalImportEdges": 184,
   "files": [
     {
       "file": "src/MessageQueue/Queue/queue.email.ts",
@@ -86,7 +86,9 @@
         }
       ],
       "importedBy": [],
-      "importsFrom": []
+      "importsFrom": [
+        "src/utils/escapeHtml.ts"
+      ]
     },
     {
       "file": "src/MessageQueue/template/invite.ts",
@@ -97,7 +99,9 @@
         }
       ],
       "importedBy": [],
-      "importsFrom": []
+      "importsFrom": [
+        "src/utils/escapeHtml.ts"
+      ]
     },
     {
       "file": "src/MessageQueue/template/login.ts",
@@ -108,7 +112,9 @@
         }
       ],
       "importedBy": [],
-      "importsFrom": []
+      "importsFrom": [
+        "src/utils/escapeHtml.ts"
+      ]
     },
     {
       "file": "src/MessageQueue/template/register.ts",
@@ -119,7 +125,9 @@
         }
       ],
       "importedBy": [],
-      "importsFrom": []
+      "importsFrom": [
+        "src/utils/escapeHtml.ts"
+      ]
     },
     {
       "file": "src/__mocks__/prisma.ts",
@@ -617,6 +625,10 @@
           "kind": "value"
         },
         {
+          "name": "PaginationCursor",
+          "kind": "value"
+        },
+        {
           "name": "addJobToQueue",
           "kind": "value"
         },
@@ -642,6 +654,10 @@
         },
         {
           "name": "createLogger",
+          "kind": "value"
+        },
+        {
+          "name": "escapeHtml",
           "kind": "value"
         },
         {
@@ -1145,11 +1161,15 @@
           "kind": "value"
         },
         {
-          "name": "errorHandler",
+          "name": "encodeCursor",
           "kind": "value"
         },
         {
-          "name": "escapeHtml",
+          "name": "decodeCursor",
+          "kind": "value"
+        },
+        {
+          "name": "errorHandler",
           "kind": "value"
         }
       ],
@@ -1200,6 +1220,10 @@
           "kind": "value"
         },
         {
+          "name": "PaginationCursor",
+          "kind": "value"
+        },
+        {
           "name": "addJobToQueue",
           "kind": "value"
         },
@@ -1225,6 +1249,10 @@
         },
         {
           "name": "createLogger",
+          "kind": "value"
+        },
+        {
+          "name": "escapeHtml",
           "kind": "value"
         },
         {
@@ -1728,11 +1756,15 @@
           "kind": "value"
         },
         {
-          "name": "errorHandler",
+          "name": "encodeCursor",
           "kind": "value"
         },
         {
-          "name": "escapeHtml",
+          "name": "decodeCursor",
+          "kind": "value"
+        },
+        {
+          "name": "errorHandler",
           "kind": "value"
         }
       ],
@@ -2125,7 +2157,8 @@
       "importsFrom": [
         "src/config/prisma.ts",
         "src/module/authentication/DTO/index.dto.ts",
-        "src/functions/upload/avatar.image.fun.ts"
+        "src/functions/upload/avatar.image.fun.ts",
+        "src/module/user/Service/base.user.service.ts"
       ]
     },
     {
@@ -2770,6 +2803,7 @@
         }
       ],
       "importedBy": [
+        "src/module/authentication/service/base.auth.service.ts",
         "src/module/user/Controller/delete.controller.ts",
         "src/module/user/Controller/update.controller.ts"
       ],
@@ -2859,6 +2893,25 @@
       ]
     },
     {
+      "file": "src/utils/cursor.ts",
+      "exports": [
+        {
+          "name": "encodeCursor",
+          "kind": "value"
+        },
+        {
+          "name": "decodeCursor",
+          "kind": "value"
+        },
+        {
+          "name": "PaginationCursor",
+          "kind": "type"
+        }
+      ],
+      "importedBy": [],
+      "importsFrom": []
+    },
+    {
       "file": "src/utils/errors/app-error.ts",
       "exports": [
         {
@@ -2903,7 +2956,12 @@
           "kind": "value"
         }
       ],
-      "importedBy": [],
+      "importedBy": [
+        "src/MessageQueue/template/forgetPassword.ts",
+        "src/MessageQueue/template/invite.ts",
+        "src/MessageQueue/template/login.ts",
+        "src/MessageQueue/template/register.ts"
+      ],
       "importsFrom": []
     },
     {
