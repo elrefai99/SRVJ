@@ -6,7 +6,15 @@ import { invalidateRoom } from "../../../collab/server";
 
 export class BasedDiagram {
      public async getDiagramService(payload: IPayloadDiagram): Promise<any> {
-          const diagram: any = await diagramModel.findOne({ site_id: payload.siteId }).read("secondaryPreferred")
+          const diagram: any = await diagramModel.findOne({ site_id: payload.siteId }, {
+               site_id: 1,
+               version: 1,
+               nodes: 1,
+               edges: 1,
+               metadata: 1,
+               createdAt: 1,
+               updatedAt: 1,
+          }).read("secondaryPreferred")
           if (!diagram) {
                return { success: false, error: true, message: "Diagram not found", data: null }
           }

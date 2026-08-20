@@ -29,7 +29,7 @@ export class BaseAuth {
      public async create_user(payload: RegisterDTO): Promise<any> {
           const user = await this.baseUser.user_profile_email({ email: payload.email })
 
-          if (user.status) {
+          if (user.data.status) {
                return { success: false, error: true, message: "this user account already exist", data: null }
           }
           const salt = await bcrypt.genSalt(this.API_KEY_SALT)
@@ -62,21 +62,21 @@ export class BaseAuth {
      public async login_service(payload: LoginDTO): Promise<any> {
           const user = await this.baseUser.user_profile_email({ email: payload.email })
 
-          if (!user) {
+          if (!user.data) {
                return { success: false, error: true, message: "Invalid email or password", data: null }
           }
-          const check_password = await bcrypt.compare(payload.password, user.password)
+          const check_password = await bcrypt.compare(payload.password, user.data.password)
           if (!check_password) {
                return { success: false, error: true, message: "Invalid email or password", data: null }
           }
 
-          return { success: true, error: false, message: "Success fetch user account, success login", data: user }
+          return { success: true, error: false, message: "Success fetch user account, success login", data: user.data }
      }
 
      public async forgetPasswordService(payload: string): Promise<any> {
           const user = await this.baseUser.user_profile_email({ email: payload })
 
-          if (!user) {
+          if (!user.data) {
                return { error: true, message: "user not founded" }
           }
           return user
@@ -92,14 +92,14 @@ export class BaseAuth {
           const email = token.email.toLowerCase()
           const user = await this.baseUser.user_profile_email({ email: email })
 
-          if (user) {
-               if (!user.googleId) {
+          if (user.data) {
+               if (!user.data.googleId) {
                     await prisma.user.update({
-                         where: { id: user.id },
+                         where: { id: user.data.id },
                          data: { googleId: token.sub }
                     })
                }
-               return { success: true, error: false, message: "Success create new account", data: { id: user.id, email: user.email, fullname: user.fullname, login: true } }
+               return { success: true, error: false, message: "Success create new account", data: { id: user.data.id, email: user.data.email, fullname: user.data.fullname, login: true } }
           }
 
           const fullname: string = `${token.given_name} ${token.family_name}`

@@ -44,7 +44,7 @@ export class BaseUser {
           if (!user) {
                return { status: false, data: null }
           }
-          return { status: true, data: { id: user.id } }
+          return { status: true, data: user }
      }
      public async update_profile(userId: number, payload: updateProfileDTO) {
           const data: Prisma.UserUpdateInput = { fullname: payload?.fullname }

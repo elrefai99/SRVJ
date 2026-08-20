@@ -6,13 +6,10 @@ const diagramSchema = new Schema<IDiagram>({
      site_id: {
           type: String,
           default: uuidv4,
-          index: true,
-          unique: true,
      },
      projectId: {
           type: String,
           required: true,
-          index: true,
           unique: true,
      },
      version: {
@@ -36,5 +33,6 @@ const diagramSchema = new Schema<IDiagram>({
 })
 
 diagramSchema.index({ createdAt: -1 });
+diagramSchema.index({ site_id: 1 }, { unique: true })
 
 export const diagramModel = model<IDiagram>('diagram', diagramSchema)
