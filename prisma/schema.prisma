@@ -34,8 +34,8 @@ model User {
   receivedInvites       InviteProjects[] @relation("InviteTo")
   inviteProjects        InviteProjects[]
 
-  @@index([email])
-  @@index([username])
+  @@index([status, email])
+  @@index([status, username])
   @@index([createdAt])
   @@map("users")
 }
