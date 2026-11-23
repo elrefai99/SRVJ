@@ -43,6 +43,6 @@ RUN mkdir -p /app/logs && chown -R node:node /app/logs
 
 USER node
 
-EXPOSE 60459
+EXPOSE 9000
 
 CMD ["pm2-runtime", "start", "ecosystem.config.cjs"]
