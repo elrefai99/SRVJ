@@ -9,6 +9,7 @@ services:
 
     environment:
       NODE_ENV: development
+      DATABASE_URL: postgresql://srvj:srvj_dev@postgres:5432/srvj?schema=public
       REDIS_CACHE_DEV: redis://:${REDIS_DEV_PASSWORD:-devpassword}@redis-cache:6379
       REDIS_CACHE_BULLMQ: redis://:${REDIS_DEV_PASSWORD:-devpassword}@redis-bullmq:6379
 
@@ -22,6 +23,8 @@ services:
     command: npm run dev
 
     depends_on:
+      postgres:
+        condition: service_healthy
       redis-cache:
         condition: service_healthy
       redis-bullmq:
@@ -29,6 +32,22 @@ services:
       leoxy:
         condition: service_started
 
+    networks:
+      - SRVJ_network
+
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: srvj
+      POSTGRES_USER: srvj
+      POSTGRES_PASSWORD: srvj_dev
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U srvj -d srvj"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
     networks:
       - SRVJ_network
 
@@ -86,3 +105,6 @@ services:
 networks:
   SRVJ_network:
     driver: bridge
+
+volumes:
+  postgres_data:
