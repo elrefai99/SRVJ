@@ -43,7 +43,7 @@ upstream:
     ip: true
     body: 10
     servers:
-      - "http://node:9000"
+      - "http://app:9000"
     # Set per-client and per-route request limits.
     security:
       rate_limit: 1000

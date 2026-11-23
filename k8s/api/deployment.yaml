@@ -45,7 +45,7 @@ spec:
             - secretRef:
                 name: srvj-secret
           ports:
-            - containerPort: 60459
+            - containerPort: 9000
           resources:
             requests:
               cpu: 200m
@@ -56,14 +56,14 @@ spec:
           livenessProbe:
             httpGet:
               path: /api/health
-              port: 60459
+              port: 9000
             initialDelaySeconds: 20
             periodSeconds: 15
             failureThreshold: 3
           readinessProbe:
             httpGet:
               path: /api/health
-              port: 60459
+              port: 9000
             initialDelaySeconds: 10
             periodSeconds: 10
             failureThreshold: 3

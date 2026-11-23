@@ -6,8 +6,8 @@
   "scripts": {
     "format": "eslint . --fix",
     "lint": "eslint .",
-    "dev": "concurrently \"NODE_ENV=development nodemon -L\" \"NODE_ENV=development npx ts-node ./src/MessageQueue/index.ts\"",
-    "dev:local": "concurrently \" nodemon -L\" \"npx ts-node ./src/MessageQueue/index.ts\"",
+    "dev": "concurrently \"NODE_ENV=development nodemon -L\" \"NODE_ENV=development tsx ./src/MessageQueue/index.ts\"",
+    "dev:local": "concurrently \" nodemon -L\" \"tsx ./src/MessageQueue/index.ts\"",
     "build": "prisma generate && tsc -p tsconfig.build.json && node scripts/copy-generated.mjs",
     "start": "concurrently \"TS_NODE_BASEURL=./dist node -r tsconfig-paths/register ./dist/src/app.js\" \"TS_NODE_BASEURL=./dist node -r tsconfig-paths/register ./dist/src/MessageQueue/index.js\"",
     "test": "vitest run",

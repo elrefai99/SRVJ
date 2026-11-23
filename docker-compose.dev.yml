@@ -9,11 +9,12 @@ services:
 
     environment:
       NODE_ENV: development
+      DATABASE_URL: postgresql://srvj:srvj_dev@postgres:5432/srvj?schema=public
       REDIS_CACHE_DEV: redis://:${REDIS_DEV_PASSWORD:-devpassword}@redis-cache:6379
       REDIS_CACHE_BULLMQ: redis://:${REDIS_DEV_PASSWORD:-devpassword}@redis-bullmq:6379
 
     ports:
-      - "${PORT}:60459"
+      - "${PORT}:9000"
 
     volumes:
       - .:/app
@@ -22,9 +23,31 @@ services:
     command: npm run dev
 
     depends_on:
-      - redis-cache
-      - redis-bullmq
+      postgres:
+        condition: service_healthy
+      redis-cache:
+        condition: service_healthy
+      redis-bullmq:
+        condition: service_healthy
+      leoxy:
+        condition: service_started
 
+    networks:
+      - SRVJ_network
+
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: srvj
+      POSTGRES_USER: srvj
+      POSTGRES_PASSWORD: srvj_dev
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U srvj -d srvj"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
     networks:
       - SRVJ_network
 
@@ -32,6 +55,17 @@ services:
     image: redis:7-alpine
     container_name: redis-cache-dev
     command: redis-server --requirepass "${REDIS_DEV_PASSWORD:-devpassword}"
+    environment:
+      REDIS_DEV_PASSWORD: ${REDIS_DEV_PASSWORD:-devpassword}
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "REDISCLI_AUTH=$${REDIS_DEV_PASSWORD} redis-cli ping | grep -q PONG",
+        ]
+      interval: 5s
+      timeout: 3s
+      retries: 10
     ports:
       - "127.0.0.1:6379:6379"
     networks:
@@ -41,6 +75,17 @@ services:
     image: redis:7-alpine
     container_name: redis-bullmq-dev
     command: redis-server --requirepass "${REDIS_DEV_PASSWORD:-devpassword}"
+    environment:
+      REDIS_DEV_PASSWORD: ${REDIS_DEV_PASSWORD:-devpassword}
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "REDISCLI_AUTH=$${REDIS_DEV_PASSWORD} redis-cli ping | grep -q PONG",
+        ]
+      interval: 5s
+      timeout: 3s
+      retries: 10
     ports:
       - "127.0.0.1:6380:6379"
     networks:
@@ -54,9 +99,12 @@ services:
       - NET_BIND_SERVICE
     volumes:
       - ./leoxy:/app/leoxy
-    depends_on:
-      - app
+    networks:
+      - SRVJ_network
 
 networks:
   SRVJ_network:
     driver: bridge
+
+volumes:
+  postgres_data:

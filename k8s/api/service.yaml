@@ -11,4 +11,4 @@ spec:
     app: srvj-api
   ports:
     - port: 80
-      targetPort: 60459
+      targetPort: 9000
