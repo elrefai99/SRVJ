@@ -9,7 +9,7 @@ export function validateDTO<T>(schema: ZodSchema<T>): RequestHandler {
                const result: any = schema.safeParse(req.body)
 
                if (!result.success) {
-                    const messages = result.error.errors.map((e: any) => e.message).join('; ')
+                    const messages = result.error.issues.map((e: any) => e.message).join('; ')
                     return next(AppError.badRequest(messages))
                }
 
